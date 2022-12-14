@@ -80,7 +80,7 @@ class SimpleCache : public ClockedObject
 
         /**
          * Send a packet across this port. This is called by the owner and
-         * all of the flow control is hanled in this function.
+         * all of the flow control is handled in this function.
          * This is a convenience function for the SimpleCache to send pkts.
          *
          * @param packet to send.

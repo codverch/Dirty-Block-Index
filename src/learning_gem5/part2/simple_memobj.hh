@@ -74,7 +74,7 @@ class SimpleMemobj : public SimObject
 
         /**
          * Send a packet across this port. This is called by the owner and
-         * all of the flow control is hanled in this function.
+         * all of the flow control is handled in this function.
          *
          * @param packet to send.
          */
