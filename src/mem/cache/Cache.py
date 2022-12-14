@@ -165,4 +165,15 @@ class NoncoherentCache(BaseCache):
     # This is typically a last level cache and any clean
     # writebacks would be unnecessary traffic to the main memory.
     writeback_clean = False
+    
+    # DBI is last-level cache with the capability to store the dirty bits 
+    # of cacheblocks corresponding to a single row of DRAM in a separate structure
+    
+class DBICache(NoncoherentCache):
+    type = 'DBICache'
+    cxx_header = 'mem/cache/dbi_cache.hh'
+    cxx_class = 'gem5::DBICache'
+    
+    
+
 

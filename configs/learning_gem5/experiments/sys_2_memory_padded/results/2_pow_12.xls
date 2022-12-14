@@ -1,0 +1,8 @@
+system.cpu.dcache.overallMissRate::total     0.229792                       # miss rate for overall accesses (Ratio)
+system.cpu.icache.overallMissRate::total     0.000001                       # miss rate for overall accesses (Ratio)
+system.l2cache.overallMissRate::total        0.999935                       # miss rate for overall accesses (Ratio)
+system.l3cache.overallMissRate::total        0.096226                       # miss rate for overall accesses (Ratio)
+system.cpu.dcache.overallMissRate::total     0.228827                       # miss rate for overall accesses (Ratio)
+system.cpu.icache.overallMissRate::total     0.000190                       # miss rate for overall accesses (Ratio)
+system.l2cache.overallMissRate::total        0.999861                       # miss rate for overall accesses (Ratio)
+system.l3cache.overallMissRate::total        0.098333                       # miss rate for overall accesses (Ratio)

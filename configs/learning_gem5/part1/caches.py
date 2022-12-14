@@ -52,6 +52,7 @@ class L1Cache(Cache):
     response_latency = 2
     mshrs = 4
     tgts_per_mshr = 20
+    blk_size = 64
 
     def __init__(self, options=None):
         super(L1Cache, self).__init__()
