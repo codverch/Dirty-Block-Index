@@ -169,11 +169,10 @@ class NoncoherentCache(BaseCache):
     # DBI is last-level cache with the capability to store the dirty bits 
     # of cacheblocks corresponding to a single row of DRAM in a separate structure
     
-class DBICache(NoncoherentCache):
+class DBICache(BaseCache):
     type = 'DBICache'
     cxx_header = 'mem/cache/dbi_cache.hh'
     cxx_class = 'gem5::DBICache'
-    
     
 
 

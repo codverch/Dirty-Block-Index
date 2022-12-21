@@ -1,10 +1,12 @@
-#ifndef _MEM_CACHE_DBI_CACHE_HH_
-#define _MEM_CACHE_DBI_CACHE_HH_
+#ifndef __MEM_CACHE_DBI_CACHE_HH__
+#define __MEM_CACHE_DBI_CACHE_HH__
 
+#include <cstdint>
+#include <unordered_set>
 #include <unordered_map>
+#include <string>
 
 #include "base/compiler.hh"
-#include "base/logging.hh"
 #include "base/types.hh"
 #include "mem/cache/base.hh"
 #include "mem/packet.hh"
@@ -13,76 +15,128 @@ using namespace std;
 
 namespace gem5
 {
+
     class CacheBlk;
+    struct DBICacheParams;
     class MSHR;
-    struct DBICache;
 
-    // A cache augmented with: Dirty Block Index(DBI)
-
-    class DBICache : public NoncoherentCache
+    /**
+     * A coherent cache that can be arranged in flexible topologies.
+     */
+    class DBICache : public BaseCache
     {
     protected:
+        /**
+         * This cache should allocate a block on a line-sized write miss.
+         */
+        const bool doFastWrites;
+
+        /**
+         * Store the outstanding requests that we are expecting snoop
+         * responses from so we can determine which snoop responses we
+         * generated and which ones were merely forwarded.
+         */
+        std::unordered_set<RequestPtr> outstandingSnoop;
+
+    protected:
+        /**
+         * Turn line-sized writes into WriteInvalidate transactions.
+         */
+        void promoteWholeLineWrites(PacketPtr pkt);
+
         bool access(PacketPtr pkt, CacheBlk *&blk, Cycles &lat,
-                    PacketList &writebacks);
+                    PacketList &writebacks) override;
+
+        void handleTimingReqHit(PacketPtr pkt, CacheBlk *blk,
+                                Tick request_time) override;
 
         void handleTimingReqMiss(PacketPtr pkt, CacheBlk *blk,
                                  Tick forward_time,
-                                 Tick request_time);
-        void recvTimingReq(PacketPtr pkt);
+                                 Tick request_time) override;
 
-        void doWritebacks(PacketList &writebacks,
-                          Tick forward_time);
+        void recvTimingReq(PacketPtr pkt) override;
 
-        void doWritebacksAtomic(PacketList &writebacks);
+        void doWritebacks(PacketList &writebacks, Tick forward_time) override;
+
+        void doWritebacksAtomic(PacketList &writebacks) override;
 
         void serviceMSHRTargets(MSHR *mshr, const PacketPtr pkt,
-                                CacheBlk *blk);
+                                CacheBlk *blk) override;
 
-        void recvTimingResp(PacketPtr pkt);
+        void recvTimingSnoopReq(PacketPtr pkt) override;
 
-        void recvTimingSnoopReq(PacketPtr pkt)
-        {
-            panic("Unexpected timing snoop request %s", pkt->print());
-        }
-
-        void recvTimingSnoopResp(PacketPtr pkt)
-        {
-            panic("Unexpected timing snoop response %s", pkt->print());
-        }
+        void recvTimingSnoopResp(PacketPtr pkt) override;
 
         Cycles handleAtomicReqMiss(PacketPtr pkt, CacheBlk *&blk,
-                                   PacketList &writebacks);
+                                   PacketList &writebacks) override;
 
-        Tick recvAtomic(PacketPtr pkt);
+        Tick recvAtomic(PacketPtr pkt) override;
 
-        Tick recvAtomicSnoop(PacketPtr pkt)
-        {
-            panic("Unexpected atomic snoop request %s", pkt->print());
-        }
-
-        void functionalAccess(PacketPtr pkt, bool from_cpu_side);
+        Tick recvAtomicSnoop(PacketPtr pkt) override;
 
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                             bool deferred_response = false,
-                            bool pending_downgrade = false);
+                            bool pending_downgrade = false) override;
 
-        /*
-         * Creates a new packet with the request to be send to the memory
-         * below. The noncoherent cache is below the point of coherence
-         * and therefore all fills bring in writable, therefore the
-         * needs_writeble parameter is ignored.
+        void doTimingSupplyResponse(PacketPtr req_pkt, const uint8_t *blk_data,
+                                    bool already_copied, bool pending_inval);
+
+        /**
+         * Perform an upward snoop if needed, and update the block state
+         * (possibly invalidating the block). Also create a response if required.
+         *
+         * @param pkt Snoop packet
+         * @param blk Cache block being snooped
+         * @param is_timing Timing or atomic for the response
+         * @param is_deferred Is this a deferred snoop or not?
+         * @param pending_inval Do we have a pending invalidation?
+         *
+         * @return The snoop delay incurred by the upwards snoop
          */
+        uint32_t handleSnoop(PacketPtr pkt, CacheBlk *blk,
+                             bool is_timing, bool is_deferred, bool pending_inval);
+
+        [[nodiscard]] PacketPtr evictBlock(CacheBlk *blk) override;
+
+        /**
+         * Create a CleanEvict request for the given block.
+         *
+         * @param blk The block to evict.
+         * @return The CleanEvict request for the block.
+         */
+        PacketPtr cleanEvictBlk(CacheBlk *blk);
+
         PacketPtr createMissPacket(PacketPtr cpu_pkt, CacheBlk *blk,
                                    bool needs_writable,
-                                   bool is_whole_line_write) const;
+                                   bool is_whole_line_write) const override;
 
-        [[nodiscard]] PacketPtr evictBlock(CacheBlk *blk);
+        /**
+         * Send up a snoop request and find cached copies. If cached copies are
+         * found, set the BLOCK_CACHED flag in pkt.
+         */
+        bool isCachedAbove(PacketPtr pkt, bool is_timing = true);
 
-        unordered_map<Addr tag, bool DirtyBit> DBIStore;
+        // Storage for DirtyBlockIndex
+        unordered_map<Addr, bool> DirtyBlockIndex;
 
     public:
-        NoncoherentCache(const NoncoherentCacheParams &p);
-    };
-}
+        /** Instantiates a basic cache object. */
+        DBICache(const DBICacheParams &p);
 
-#endif // _MEM_CACHE_DBI_CACHE_HH_
+        /**
+         * Take an MSHR, turn it into a suitable downstream packet, and
+         * send it out. This construct allows a queue entry to choose a suitable
+         * approach based on its type.
+         *
+         * @param mshr The MSHR to turn into a packet and send
+         * @return True if the port is waiting for a retry
+         */
+        bool sendMSHRQueuePacket(MSHR *mshr) override;
+
+        /** Prints the entires in the DirtyBlockIndex*/
+        void print(const unordered_map<Addr, bool> &DirtyBlockIndex);
+    };
+
+} // namespace gem5
+
+#endif // __MEM_CACHE_DBI_CACHE_HH__
