@@ -29,8 +29,9 @@
 Import('*')
 
 SimObject('Cache.py', sim_objects=[
-    'WriteAllocator', 'BaseCache', 'Cache', 'NoncoherentCache', 'DBICache'],
+    'WriteAllocator', 'BaseCache', 'Cache', 'NoncoherentCache', 'Toy'],
     enums=['Clusivity'])
+
 
 
 
@@ -42,7 +43,7 @@ Source('mshr_queue.cc')
 Source('noncoherent_cache.cc')
 Source('write_queue.cc')
 Source('write_queue_entry.cc')
-Source('dbi_cache.cc')
+Source('toy.cc')
 
 
 
@@ -56,7 +57,7 @@ DebugFlag('CacheVerbose')
 DebugFlag('HWPrefetch')
 DebugFlag('MSHR')
 DebugFlag('HWPrefetchQueue')
-DebugFlag('DBICache')
+DebugFlag('Toy')
 
 
 
@@ -64,5 +65,5 @@ DebugFlag('DBICache')
 # array on each timing access, that you should probably have to ask for
 # it explicitly even above and beyond CacheAll.
 CompoundFlag('CacheAll', ['Cache', 'CacheComp', 'CachePort', 'CacheRepl',
-                          'CacheVerbose', 'HWPrefetch', 'MSHR', 'DBICache'])
+                          'CacheVerbose', 'HWPrefetch', 'MSHR', 'DBICache', 'Toy'])
 

@@ -1992,7 +1992,6 @@ void
 BaseCache::serialize(CheckpointOut &cp) const
 {
     bool dirty(isDirty());
-
     if (dirty) {
         warn("*** The cache still contains dirty data. ***\n");
         warn("    Make sure to drain the system using the correct flags.\n");
