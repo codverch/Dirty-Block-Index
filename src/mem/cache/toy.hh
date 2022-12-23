@@ -23,7 +23,6 @@ namespace gem5
 
         void insertIntoToyStore(Addr addr, bool value);
 
-        // Overriding/Re-declaring the BaseCache functions with additional functionality
         void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
 
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
@@ -32,6 +31,13 @@ namespace gem5
 
         void serviceMSHRTargets(MSHR *mshr, const PacketPtr pkt,
                                 CacheBlk *blk) override;
+
+        CacheBlk *handleFill(PacketPtr pkt, CacheBlk *blk,
+                             PacketList &writebacks, bool allocate);
+
+        bool isBlkSet(CacheBlk *blk, unsigned bits);
+        void setBlkCoherenceBits(CacheBlk *blk, unsigned bits);
+        void clearBlkCoherenceBits(CacheBlk *blk, unsigned bits);
 
     public:
         // Instantitates a toy object
