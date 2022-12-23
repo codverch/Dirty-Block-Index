@@ -46,8 +46,70 @@ namespace gem5
     }
 
     void
-    Toy::satisfyRequest(PacketPtr pkt, CacheBlk *blk,
-                        bool deferred_response, bool pending_downgrade)
+    Toy::cmpAndSwap(CacheBlk *blk, PacketPtr pkt)
+    {
+        assert(pkt->isRequest());
+
+        uint64_t overwrite_val;
+        bool overwrite_mem;
+        uint64_t condition_val64;
+        uint32_t condition_val32;
+
+        int offset = pkt->getOffset(blkSize);
+        uint8_t *blk_data = blk->data + offset;
+
+        assert(sizeof(uint64_t) >= pkt->getSize());
+
+        // Get a copy of the old block's contents for the probe before the update
+        DataUpdate data_update(regenerateBlkAddr(blk), blk->isSecure());
+        if (ppDataUpdate->hasListeners())
+        {
+            data_update.oldData = std::vector<uint64_t>(blk->data,
+                                                        blk->data + (blkSize / sizeof(uint64_t)));
+        }
+
+        overwrite_mem = true;
+        // keep a copy of our possible write value, and copy what is at the
+        // memory address into the packet
+        pkt->writeData((uint8_t *)&overwrite_val);
+        pkt->setData(blk_data);
+
+        if (pkt->req->isCondSwap())
+        {
+            if (pkt->getSize() == sizeof(uint64_t))
+            {
+                condition_val64 = pkt->req->getExtraData();
+                overwrite_mem = !std::memcmp(&condition_val64, blk_data,
+                                             sizeof(uint64_t));
+            }
+            else if (pkt->getSize() == sizeof(uint32_t))
+            {
+                condition_val32 = (uint32_t)pkt->req->getExtraData();
+                overwrite_mem = !std::memcmp(&condition_val32, blk_data,
+                                             sizeof(uint32_t));
+            }
+            else
+                panic("Invalid size for conditional read/write\n");
+        }
+
+        if (overwrite_mem)
+        {
+            std::memcpy(blk_data, &overwrite_val, pkt->getSize());
+            blk->setCoherenceBits(CacheBlk::DirtyBit);
+            insertIntoToyStore(pkt->getAddr(), true); // Deepanjali
+            cout << pkt->getAddr() << endl;           // Deepanjali
+
+            if (ppDataUpdate->hasListeners())
+            {
+                data_update.newData = std::vector<uint64_t>(blk->data,
+                                                            blk->data + (blkSize / sizeof(uint64_t)));
+                ppDataUpdate->notify(data_update);
+            }
+        }
+    }
+
+    void Toy::satisfyRequest(PacketPtr pkt, CacheBlk *blk,
+                             bool deferred_response, bool pending_downgrade)
     {
         BaseCache::satisfyRequest(pkt, blk);
 
@@ -151,7 +213,7 @@ namespace gem5
                         assert(blk);
                         blk->setCoherenceBits(CacheBlk::DirtyBit);
                         insertIntoToyStore(pkt->getAddr(), true); // Deepanjali
-
+                        cout << pkt->getAddr() << endl;
                         panic_if(isReadOnly, "Prefetch exclusive requests from "
                                              "read-only cache %s\n",
                                  name());
