@@ -23,19 +23,15 @@ namespace gem5
 
         void insertIntoToyStore(Addr addr, bool value);
 
+        // Overriding/Re-declaring the BaseCache functions with additional functionality
+        void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
+
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                             bool deferred_response = false,
                             bool pending_downgrade = false) override;
 
         void serviceMSHRTargets(MSHR *mshr, const PacketPtr pkt,
                                 CacheBlk *blk) override;
-
-        // //   void recvTimingSnoopReq(PacketPtr pkt) override;
-
-        // PacketPtr cleanEvictBlk(CacheBlk *blk);
-
-        // uint32_t handleSnoop(PacketPtr pkt, CacheBlk *blk,
-        //                      bool is_timing, bool is_deferred, bool pending_inval);
 
     public:
         // Instantitates a toy object

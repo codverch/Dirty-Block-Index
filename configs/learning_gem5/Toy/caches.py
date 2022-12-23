@@ -19,6 +19,9 @@ from common import SimpleOpts
 # Some specific options for caches
 # For all options see src/mem/cache/BaseCache.py
 
+SimpleOpts.add_option('-n', help=" " )  
+SimpleOpts.add_option('-t', help=" " )
+
 class L1Cache(Cache):
     """Simple L1 Cache with default values"""
 
