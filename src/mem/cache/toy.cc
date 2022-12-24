@@ -26,7 +26,7 @@ namespace gem5
     Toy::Toy(const ToyParams &p)
         : Cache(p)
     {
-        // cout << "Hey, I am a toy component" << endl;
+
         DPRINTF(Toy, "Hey, I am a toy component. Glad to exist in 2022 xoxo\n");
     }
 
@@ -36,16 +36,25 @@ namespace gem5
         ToyStore[addr] = value;
     }
 
-    bool Toy::isBlkSet(CacheBlk *blk, unsigned bits)
+    bool
+    Toy::isBlkSet(CacheBlk *blk, unsigned bits)
     {
-        return blk->isSet(bits);
+        if (useDBI && bits == CacheBlk::DirtyBit)
+        {
+            return ToyStore[blk->getTag()];
+        }
+        else
+        {
+            return blk->isSet(bits);
+        }
     }
 
-    void Toy::setBlkCoherenceBits(CacheBlk *blk, unsigned bits)
+    void
+    Toy::setBlkCoherenceBits(CacheBlk *blk, unsigned bits)
     {
         if (bits == CacheBlk::DirtyBit)
         {
-            insertIntoToyStore(blk->tag, true);
+            insertIntoToyStore(blk->getTag(), true);
         }
         else
         {
@@ -53,9 +62,17 @@ namespace gem5
         }
     }
 
-    void Toy::clearBlkCoherenceBits(CacheBlk *blk, unsigned bits)
+    void
+    Toy::clearBlkCoherenceBits(CacheBlk *blk, unsigned bits)
     {
-        blk->clearCoherenceBits(bits);
+        if (bits == CacheBlk::DirtyBit)
+        {
+            insertIntoToyStore(blk->getTag(), false);
+        }
+        else
+        {
+            blk->clearCoherenceBits(bits);
+        }
     }
 
     void
@@ -118,7 +135,7 @@ namespace gem5
         {
             std::memcpy(blk_data, &overwrite_val, pkt->getSize());
             setBlkCoherenceBits(blk, CacheBlk::DirtyBit);
-            insertIntoToyStore(pkt->getAddr(), true);
+
             if (isBlkSet(blk, CacheBlk::DirtyBit))
             {
                 cout << pkt->getAddr() << endl;
@@ -152,11 +169,16 @@ namespace gem5
                            pkt->cmd == MemCmd::SCUpgradeFailReq);
                     assert(!pkt->hasSharers());
 
-                    if (blk->isSet(CacheBlk::DirtyBit))
+                    // if (blk->isSet(CacheBlk::DirtyBit))
+                    // {
+                    //     pkt->setCacheResponding();
+                    //     blk->clearCoherenceBits(CacheBlk::DirtyBit);
+                    // }
+
+                    if (isBlkSet(blk, CacheBlk::DirtyBit))
                     {
                         pkt->setCacheResponding();
-                        blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                        insertIntoToyStore(pkt->getAddr(), false);
+                        clearBlkCoherenceBits(blk, CacheBlk::DirtyBit);
                     }
                 }
                 else if (blk->isSet(CacheBlk::WritableBit) &&
@@ -164,22 +186,16 @@ namespace gem5
                          pkt->cmd != MemCmd::ReadCleanReq)
                 {
 
-                    if (blk->isSet(CacheBlk::DirtyBit))
+                    if (isBlkSet(blk, CacheBlk::DirtyBit))
                     {
-                        insertIntoToyStore(pkt->getAddr(), true);
-                        // cout << pkt->getAddr() << endl;
-                        printToyStore();
+                        cout << pkt->getAddr() << endl;
                         if (!deferred_response)
                         {
-
                             pkt->setCacheResponding();
-
-                            blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                            insertIntoToyStore(pkt->getAddr(), false); // Deepanjali
+                            clearBlkCoherenceBits(blk, CacheBlk::DirtyBit);
                         }
                         else
                         {
-
                             pkt->setHasSharers();
                         }
                     }
@@ -263,10 +279,23 @@ namespace gem5
                         // between the PrefetchExReq and the expected WriteReq, we
                         // proactively mark the block as Dirty.
                         assert(blk);
-                        blk->setCoherenceBits(CacheBlk::DirtyBit);
 
-                        insertIntoToyStore(pkt->getAddr(), true);
-                        if (blk->isSet(CacheBlk::DirtyBit))
+                        // blk->setCoherenceBits(CacheBlk::DirtyBit);
+                        // setBlkCoherenceBits(pkt->getAddr(), CacheBlk::DirtyBit);
+                        setBlkCoherenceBits(blk, CacheBlk::DirtyBit);
+
+                        // insertIntoToyStore(pkt->getAddr(), true);
+
+                        // if (blk->isSet(CacheBlk::DirtyBit))
+                        // {
+                        //     cout << pkt->getAddr() << endl;
+                        // }
+
+                        // if (isBlkSet(pkt->getAddr(), CacheBlk::DirtyBit))
+                        // {
+                        //     cout << pkt->getAddr() << endl;
+                        // }
+                        if (isBlkSet(blk, CacheBlk::DirtyBit))
                         {
                             cout << pkt->getAddr() << endl;
                         }
@@ -535,7 +564,9 @@ namespace gem5
         assert(blk->isSecure() == is_secure);
         assert(regenerateBlkAddr(blk) == addr);
 
-        blk->setCoherenceBits(CacheBlk::ReadableBit);
+        // blk->setCoherenceBits(CacheBlk::ReadableBit);
+        // setBlkCoherenceBits(pkt->getAddr(), CacheBlk::DirtyBit);
+        setBlkCoherenceBits(blk, CacheBlk::DirtyBit);
 
         // sanity check for whole-line writes, which should always be
         // marked as writable as part of the fill, and then later marked
@@ -565,9 +596,18 @@ namespace gem5
             {
                 // we got the block in Modified state, and invalidated the
                 // owners copy
-                blk->setCoherenceBits(CacheBlk::DirtyBit);
-                insertIntoToyStore(pkt->getAddr(), true);
-                if (blk->isSet(CacheBlk::DirtyBit))
+
+                // blk->setCoherenceBits(CacheBlk::DirtyBit);
+                // setBlkCoherenceBits(pkt->getAddr(), CacheBlk::DirtyBit);
+                setBlkCoherenceBits(blk, CacheBlk::DirtyBit);
+
+                // insertIntoToyStore(pkt->getAddr(), true);
+                // if (blk->isSet(CacheBlk::DirtyBit))
+                // {
+                //     cout << pkt->getAddr() << endl;
+                // }
+
+                                if (isBlkSet(blk, CacheBlk::DirtyBit))
                 {
                     cout << pkt->getAddr() << endl;
                 }

@@ -36,7 +36,9 @@ namespace gem5
                              PacketList &writebacks, bool allocate);
 
         bool isBlkSet(CacheBlk *blk, unsigned bits);
+
         void setBlkCoherenceBits(CacheBlk *blk, unsigned bits);
+
         void clearBlkCoherenceBits(CacheBlk *blk, unsigned bits);
 
     public:
