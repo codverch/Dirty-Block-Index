@@ -19,6 +19,8 @@ namespace gem5
     class Toy : public Cache
     {
     protected:
+        bool useDBI = false;
+
         unordered_map<Addr, bool> ToyStore;
 
         void insertIntoToyStore(Addr addr, bool value);
