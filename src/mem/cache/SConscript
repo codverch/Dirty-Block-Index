@@ -65,5 +65,5 @@ DebugFlag('Toy')
 # array on each timing access, that you should probably have to ask for
 # it explicitly even above and beyond CacheAll.
 CompoundFlag('CacheAll', ['Cache', 'CacheComp', 'CachePort', 'CacheRepl',
-                          'CacheVerbose', 'HWPrefetch', 'MSHR', 'DBICache', 'Toy'])
+                          'CacheVerbose', 'HWPrefetch', 'MSHR', 'Toy'])
 

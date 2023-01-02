@@ -30,18 +30,13 @@ namespace gem5
         DPRINTF(Toy, "Hey, I am a toy component. Glad to exist in 2022 xoxo\n");
     }
 
-    void
-    Toy::insertIntoToyStore(Addr addr, bool value)
-    {
-        ToyStore[addr] = value;
-    }
-
     bool
     Toy::isBlkSet(CacheBlk *blk, unsigned bits)
     {
-        if (useDBI && bits == CacheBlk::DirtyBit)
+        if (bits == CacheBlk::DirtyBit)
         {
-            return ToyStore[blk->getTag()];
+             return dbi.isDirty(blk->getTag());
+            
         }
         else
         {
@@ -54,7 +49,7 @@ namespace gem5
     {
         if (bits == CacheBlk::DirtyBit)
         {
-            insertIntoToyStore(blk->getTag(), true);
+            dbi.setDirtyBit(blk->getTag());
         }
         else
         {
@@ -67,20 +62,12 @@ namespace gem5
     {
         if (bits == CacheBlk::DirtyBit)
         {
-            insertIntoToyStore(blk->getTag(), false);
+
+            dbi.clearDirtyBit(blk->getTag());
         }
         else
         {
             blk->clearCoherenceBits(bits);
-        }
-    }
-
-    void
-    Toy::printToyStore()
-    {
-        for (auto it = ToyStore.begin(); it != ToyStore.end(); ++it)
-        {
-            cout << "Key: " << it->first << " Value: " << it->second << endl;
         }
     }
 
@@ -607,7 +594,7 @@ namespace gem5
                 //     cout << pkt->getAddr() << endl;
                 // }
 
-                                if (isBlkSet(blk, CacheBlk::DirtyBit))
+                if (isBlkSet(blk, CacheBlk::DirtyBit))
                 {
                     cout << pkt->getAddr() << endl;
                 }

@@ -5,11 +5,10 @@ using namespace std;
 namespace gem5
 {
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------
     /**
      * Constructor for RegDBI.
      */
-    //----------------------------------------------------------------------------------------------------------------------------------------------
+
     RegDBI::RegDBI(unsigned int RegDBISets, unsigned int RegDBIAssoc, unsigned int RegDBIBlkPerDBIEntry)
     {
         // Set the number of sets in the DBI Cache
@@ -23,32 +22,29 @@ namespace gem5
         // Initialize the RegDBIStore
         initRegDBIStore();
     }
-    //----------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
      * Set the size of the DBI. : NEEDS TO BE FIXED
      */
-    //----------------------------------------------------------------------------------------------------------------------------------------------
+
     RegDBI::setRegDBISize(unsigned int DBISize)
     {
         RegDBISize = DBISize;
     }
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------
     /**
      * Get the size of the DBI.
      */
-    //----------------------------------------------------------------------------------------------------------------------------------------------
+
     RegDBI::getRegDBISize()
     {
         return RegDBISize;
     }
 
-    //----------------------------------------------------------------------------------------------------------------------------------------------
     /**
      * Initialize the RegDBIStore based on RegDBISize. NOT SURE IF THE CONSTRUCTOR SHOULD HAVE DBI SIZE
      */
-    //----------------------------------------------------------------------------------------------------------------------------------------------
+    void
     RegDBI::initRegDBIStore()
     {
         // Fetch the size of the RegDBI
@@ -57,6 +53,51 @@ namespace gem5
         RegDBIStore.resize(RegDBISize);
     }
 
+    /*
+     * Get the cacheblock address from the incoming packet based on the cacheblock size.
+     */
+    Addr
+    RegDBI::getCacheBlockAddr(PacketPtr pkt)
+    {
+
+        // Get the cacheblock address from the incoming packet
+        Addr cacheBlockAddr = pkt->getBlockAddr(BaseCache::blkSize);
+        return cacheBlockAddr;
+    }
+    /*
+     * Get the number of DBIEntries in the RegDBIStore.
+     */
+
+    unsigned int
+    RegDBI::getNumDBIEntries()
+    {
+        // Get the number of DBIEntries in the RegDBIStore
+        unsigned int numDBIEntries = RegDBIStore.size();
+        return numDBIEntries;
+    }
+
+    /*
+     * Get the RowTag from the cacheblock address.
+     */
+
+    Addr
+    RegDBI::getRowTag(Packet *pkt)
+    {
+        // Get the cacheblock address from the incoming packet
+        Addr cacheBlockAddr = getCacheBlockAddr(pkt);
+        // Number of bits required to store the byte in block offset
+        int bytesInBlk = log2(BaseCache::blkSize);
+        // DRAM row address
+        unsigned int RowAddr = cacheBlockAddr >> (bytesInBlk + log2(RegDBIBlkPerDBIEntry));
+
+        // Number of bits required to index into RegDBIStore i.e., based on the number of DBIEntries
+        int bitsInDBIStore = log2(getNumDBIEntries());
+        // RowTag
+        unsigned int RowTag = RowAddr >> bitsInDBIStore;
+        return RowTag;
+    }
+
+    int
     RegDBI::getIndexRegDBIStore(int RowTag)
     {
         for (int i = 0; i < RegDBISize; i++)
@@ -131,3 +172,4 @@ namespace gem5
         unsigned int index = HashFunction(row_address); // Calculate the index in the DBI using the hash function
     DBIEntry entry = DBI[index];                        // Look up the DBI entry at the calculated index
 }
+#endif // __REG_DBI_HH__

@@ -2,3 +2,4 @@ Import('*')
 
 Source("map_dbi.cc")
 Source("set_dbi.cc")
+Source("reg_dbi.cc")

@@ -176,8 +176,3 @@ class Toy(Cache):
     cxx_header = 'mem/cache/toy.hh'
     cxx_class = 'gem5::Toy'
     
-    
-
-    
-
-

@@ -5,6 +5,8 @@
 #include <cstdint>
 
 #include "base/types.hh"
+#include "mem/packet.hh"
+#include "mem/cache/base.hh"
 #include "mem/cache/dbi/base_dbi.hh"
 #include "mem/cache/dbi/dbi_tags/dbi_entry.hh"
 #include "mem/cache/dbi/dbi_tags/dbi_entry.cc"
@@ -13,6 +15,8 @@ using namespace std;
 
 namespace gem5
 {
+
+    class BaseCache;
     class DBIEntry;
     // typedef DBIEntry *DBIEntryPtr;
 
@@ -30,9 +34,9 @@ namespace gem5
         unsigned int RegDBIAssoc;
 
         // Number of cacheblocks per DBIEntry in the DBI Cache
-        unsigned int RegDBIBlkPerDBIEntry;
+        unsigned int RegDBIBlkPerDBIEntry = 64;
 
-    protected:
+        protected:
         // An array of DBIEntry objects
         vector<DBIEntry> RegDBIStore;
 
@@ -40,17 +44,30 @@ namespace gem5
         // A Constructor for RegDBI, which takes the sets, associativity and number of cacheblocks per DBIEntry as arguments
         RegDBI(unsigned int RegDBISets, unsigned int RegDBIAssoc, unsigned int RegDBIBlkPerDBIEntry);
 
-        // Function to set the size of the DBI
+        // Set the size of the DBI
         void setRegDBISize(unsigned int DBISize);
 
-        // Function to get the size of the DBI
+        // Get the size of the DBI
         unsigned int getRegDBISize();
 
-        // Function to initialize the RegDBIStore based on RegDBISize
+        // Initialize the RegDBIStore based on RegDBISize
         void initRegDBIStore();
 
-        // Function to generate the index in the RegDBIStore based on the RowTag
-        int getIndexRegDBIStore(int RowTag);
+        // Get the number of DBIEntries in the RegDBIStore
+        unsigned int getNumDBIEntries();
+
+        // Get the cacheblock address from the incoming packet based on the cacheblock size
+        Addr getCacheBlockAddr(PacketPtr pkt, unsigned int cacheBlockSize);
+
+        // Get the RowTag from the cacheblock address
+        Addr getRowTag(Packet *pkt);
+
+        // // Function to calculate the number of bits required to index into the RegDBIStore
+        // // Based on the number of DBIEntries in the RegDBIStore
+        // int getNumBitsRegDBIStore();
+
+        // // Function to generate the index in the RegDBIStore based on the RowTag
+        // int getIndexRegDBIStore(int RowTag);
 
         // void setDirtyBitRegDBI(int RowTag, int bit_index);
         // void clearDirtyBitRegDBI(int RowTag, int bit_index);
