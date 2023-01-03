@@ -247,7 +247,7 @@ namespace gem5
      */
 
     // Create a new DBI entry and evict an existing DBI entry if necessary
-    RegDBI::createDBIEntry(Packet *pkt, unsigned int RegDBIAssoc, unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry)
+    RegDBI::createRegDBIEntry(Packet *pkt, unsigned int RegDBIAssoc, unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry)
     {
         // Step 1: Calculate the RowTag of the given cache block address
         unsigned int TempRowTag = getRowTag(pkt);
@@ -284,6 +284,32 @@ namespace gem5
             TempDBIEntry.DirtyBits = 0;
             // Insert the new DBIEntry into the RegDBIStore
             RegDBIStore.insert(TempDBIEntryIndex, TempDBIEntry);
+        }
+    }
+
+    /* Evict an entry from the RegDBIStore and perform any necessary writebacks.*/
+
+    RegDBI::evictRegDBIEntry(Packet *pkt, unsigned int RegDBIAssoc, unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry)
+    {
+        // Evict an entry from RegDBIStore and perform any necessary writebacks
+        // Based on the given DBIEntry index, evict the corresponding DBIEntry from the RegDBIStore
+        // Check if the index is within the bounds of the RegDBIStore vector
+        if (index < RegDBIStore.size())
+        {
+            // Access the DBI entry at the given index
+            DBIEntry &entry = RegDBIStore[index];
+            // Check if any of the dirty bits in the dirty bit field are set
+            for (unsigned int i = 0; i < entry.DirtyBits.size(); i++)
+            {
+                if (entry.DirtyBits[i])
+                {
+                    // Perform the necessary writeback to the DRAM based on the cache block address
+                    // unsigned int cache_block_address = GetCacheBlockAddress(entry.row_tag, i, blocks_per_entry);
+                    // PerformWriteback(cache_block_address);
+                }
+            }
+            // Erase the DBI entry from the RegDBIStore vector
+            RegDBIStore.erase(RegDBIStore.begin() + index);
         }
     }
 }

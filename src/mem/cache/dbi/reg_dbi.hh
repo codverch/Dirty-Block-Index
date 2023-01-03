@@ -92,8 +92,14 @@ namespace gem5
         bool isDirty(Packet *pkt, int);
 
         // Create a new DBI entry by evicting an existing DBI entry
-        void createNewDBIEntry(Packet *pkt,  unsigned int RegDBIAssoc,
+        void createRegDBIEntry(Packet *pkt, unsigned int RegDBIAssoc,
                                unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry = 64);
+
+        // CURRENTLY WE ARE USING POP_BACK TO EVICT THE DBI ENTRY
+
+        // Evict an entry from the RegDBIStore and perform any necessary writebacks.
+        void evictRegDBIEntry(Packet *pkt, unsigned int RegDBIAssoc,
+                              unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry = 64);
     };
 }
 
