@@ -1,4 +1,6 @@
 #include "mem/cache/dbi/reg_dbi.hh"
+#include "mem/cache/dbi/dbi_tags/dbi_entry.hh"
+#include "mem/cache/dbi/dbi_tags/dbi_entry.cc"
 
 using namespace std;
 
@@ -26,7 +28,7 @@ namespace gem5
     /**
      * Set the size of the DBI. : NEEDS TO BE FIXED
      */
-
+    void
     RegDBI::setRegDBISize(unsigned int DBISize)
     {
         RegDBISize = DBISize;
@@ -35,7 +37,7 @@ namespace gem5
     /**
      * Get the size of the DBI.
      */
-
+    unsigned int
     RegDBI::getRegDBISize()
     {
         return RegDBISize;
@@ -61,7 +63,7 @@ namespace gem5
     {
 
         // Get the cacheblock address from the incoming packet
-        Addr cacheBlockAddr = pkt->getBlockAddr(BaseCache::blkSize);
+        Addr cacheBlockAddr = pkt->getBlockAddr(cacheBlockSize);
         return cacheBlockAddr;
     }
     /*
@@ -86,8 +88,9 @@ namespace gem5
         // Get the cacheblock address from the incoming packet
         Addr cacheBlockAddr = getCacheBlockAddr(pkt);
         // Number of bits required to store the byte in block offset
-        int bytesInBlk = log2(BaseCache::blkSize);
-        RowAddr = cacheBlockAddr >> (bytesInBlk + log2(RegDBIBlkPerDBIEntry));
+        int bytesInBlk = log2(cacheBlockSize);
+        // Get the RowAddr from the cacheblock address
+        RowAddr = cacheBlockAddr >> (int)(bytesInBlk + log2(RegDBIBlkPerDBIEntry));
 
         return RowAddr;
     }
@@ -96,7 +99,7 @@ namespace gem5
     RegDBI::getNumTagShiftBits()
     {
         // Number of bits required to index into RegDBIStore i.e., based on the number of DBIEntries
-        int bitsInDBIStore = log2(getNumDBIEntries());
+        int numTagShiftBits = log2(getNumDBIEntries());
 
         return numTagShiftBits;
     }
@@ -121,19 +124,20 @@ namespace gem5
     /* Extract the bits required to index into RegDBIStore
      * From the RowAddr
      */
+    unsigned int
     RegDBI::IndexBits(Packet *pkt)
     {
         // Get the RowAddr from the cacheblock address
         RowAddr = getRowAddr(pkt);
         // Get the number of bits required to index into RegDBIStore i.e., based on the number of DBIEntries
-        NumTagShiftBits = getNumTagShiftBits(pkt);
+        NumTagShiftBits = getNumTagShiftBits();
 
         // Create a mask with 1's in the LSBs(Number of tagshift bits) and 0's in the MSBs
         unsigned int mask = (1 << NumTagShiftBits) - 1;
         // Extract the bits required to index into RegDBIStore
-        IndexBits = RowAddr & mask;
+        unsigned int indexBits = RowAddr & mask;
 
-        return IndexBits;
+        return indexBits;
     }
 
     /*
@@ -142,7 +146,7 @@ namespace gem5
      */
 
     int
-    RegDBI::getDBIEntryIndex(Packet *pkt, unsigned int RegDBIAssoc, unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry)
+    RegDBI::getIndexRegDBIStore(Packet *pkt, unsigned int RegDBIAssoc, unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry = 64)
     {
 
         // Get the RowAddr from the cacheblock address NOOO use the first few bits of the Row Address
@@ -150,7 +154,7 @@ namespace gem5
         // Extract the LSB from the row address
         unsigned int lsb = IndexBits(pkt);
         // Combine the LSB with the set, associativity, and blocks per entry to generate the hash value
-        unsigned int hash_value = lsb ^ set ^ associativity ^ blocks_per_entry;
+        unsigned int hash_value = lsb ^ RegDBISets ^ RegDBIAssoc ^ RegDBIBlkPerDBIEntry;
 
         return hash_value;
     }
@@ -158,6 +162,7 @@ namespace gem5
     /*
      * Set the dirty bit of a cache block in a DBIEntry
      */
+    void
     RegDBI::setDirtyBit(Packet *pkt, int bit_index)
     {
         // Given is a cache block address (By the cache)
@@ -165,13 +170,10 @@ namespace gem5
         // Match it with all the RowTags in the RegDBIStore
         // If there is a match, set the dirty bit of an index in the bitset as true
 
-        // Step-1: Compute the RowAddr of the given cache block address
-        unsigned int TempRowAddr = getRowAddr(pkt);
-
-        // Step-2: Compute the RowTag of the given cache block address
+        // Step-1: Compute the RowTag of the given cache block address
         unsigned int TempRowTag = getRowTag(pkt);
 
-        // Step-3: Match it with all the RowTags in the RegDBIStore
+        // Step-2: Match it with all the RowTags in the RegDBIStore
         const size_t count = RegDBIStore.size();
 
         for (size_t i = 0; i < count; i++)
@@ -187,24 +189,21 @@ namespace gem5
     /*
      * Clear the dirty bit of a cache block in a DBIEntry
      */
-
+    void
     RegDBI::clearDirtyBit(Packet *pkt, int bit_index)
     {
 
-        // Step-1: Compute the RowAddr of the given cache block address
-        unsigned int TempRowAddr = getRowAddr(pkt);
-
-        // Step-2: Compute the RowTag of the given cache block address
+        // Step-1: Compute the RowTag of the given cache block address
         unsigned int TempRowTag = getRowTag(pkt);
 
-        // Step-3: Match it with all the RowTags in the RegDBIStore
+        // Step-2: Match it with all the RowTags in the RegDBIStore
         const size_t count = RegDBIStore.size();
 
         for (size_t i = 0; i < count; i++)
         {
             if (RegDBIStore[i].RowTag == TempRowTag)
             {
-                // Step-4: If there is a match, clear the dirty bit of the corresponding index in the bitset
+                // Step-3: If there is a match, clear the dirty bit of the corresponding index in the bitset
                 RegDBIStore[i].DirtyBits[bit_index] = false;
             }
         }
@@ -213,16 +212,14 @@ namespace gem5
     /*
      * Check if a cache block is dirty in a DBIEntry
      */
-
+    bool
     RegDBI::isDirty(Packet *pkt, int bit_index)
     {
-        // Step-1: Compute the RowAddr of the given cache block address
-        unsigned int TempRowAddr = getRowAddr(pkt);
 
-        // Step-2: Compute the RowTag of the given cache block address
+        // Step-1: Compute the RowTag of the given cache block address
         unsigned int TempRowTag = getRowTag(pkt);
 
-        // Step-3: Match it with all the RowTags in the RegDBIStore
+        // Step-2: Match it with all the RowTags in the RegDBIStore
         const size_t count = RegDBIStore.size();
 
         for (size_t i = 0; i < count; i++)
@@ -253,7 +250,7 @@ namespace gem5
         unsigned int TempRowTag = getRowTag(pkt);
 
         // Step 2: Calculate the DBIEntry index of the given cache block address
-        unsigned int TempDBIEntryIndex = getDBIEntryIndex(pkt, RegDBIAssoc, RegDBISets, RegDBIBlkPerDBIEntry);
+        unsigned int TempDBIEntryIndex = getIndexRegDBIStore(pkt, RegDBIAssoc, RegDBISets, RegDBIBlkPerDBIEntry);
 
         // Step 3: Check if there is space in the DBI vector array at the generated index
 
@@ -262,13 +259,13 @@ namespace gem5
         if (RegDBIStore.size() < TempDBIEntryIndex + 1)
         {
             // Create a new DBIEntry
-            RegDBIEntry TempDBIEntry;
+            DBIEntry RegDBIEntry;
             // Set the RowTag of the new DBIEntry
-            TempDBIEntry.RowTag = TempRowTag;
+            RegDBIEntry.RowTag = TempRowTag;
             // Set the dirty bits of the new DBIEntry
-            TempDBIEntry.DirtyBits = 0;
+            RegDBIEntry.DirtyBits = 0;
             // Insert the new DBIEntry into the RegDBIStore
-            RegDBIStore.insert(TempDBIEntryIndex, TempDBIEntry);
+            RegDBIStore.insert(RegDBIStore.begin() + TempDBIEntryIndex, RegDBIEntry);
         }
 
         // If there is no space, evict an existing DBIEntry and insert the new DBIEntry into the RegDBIStore
@@ -311,39 +308,39 @@ namespace gem5
             RegDBIStore.erase(RegDBIStore.begin() + index);
         }
     }
-    /*
-     * Re-generate the RowAddress from the RowTag
-     */
-    unsigned int
-    RegDBI::GenerateRowAddress(unsigned int RowTag)
-    {
+    // /*
+    //  * Re-generate the RowAddress from the RowTag
+    //  */
+    // unsigned int
+    // RegDBI::GenerateRowAddress(Addr RowTag)
+    // {
 
-        // Use the hash function to re-generate the DRAM row address
-        // Shift the RowTag left by the number of bits used to index into RegDBIStore
-        unsigned int row_addr = RowTag << getNumTagShiftBits();
-        // Get the current index of the DBIEntry just based on the location in the RegDBIStore
+    //     // Use the hash function to re-generate the DRAM row address
+    //     // Shift the RowTag left by the number of bits used to index into RegDBIStore
+    //     unsigned int row_addr = RowTag << getNumTagShiftBits();
+    //     // Get the current index of the DBIEntry just based on the location in the RegDBIStore
 
-        // Use the getDBIEntryIndex() function to use the DBIEntry index of this RowTag and re-generate the DRAM row address
-        row_addr = row_addr | getDBIEntryIndex(pkt, RegDBIAssoc, RegDBISets, RegDBIBlkPerDBIEntry);
-        return row_addr;
-    }
+    //     // Use the getDBIEntryIndex() function to use the DBIEntry index of this RowTag and re-generate the DRAM row address
+    //     row_addr = row_addr | getDBIEntryIndex(pkt, RegDBIAssoc, RegDBISets, RegDBIBlkPerDBIEntry);
+    //     return row_addr;
+    // }
 
-    /*
-     * Get the cache block address from the RowTag and bit index
-     */
+    // /*
+    //  * Get the cache block address from the RowTag and bit index
+    //  */
 
-    unsigned int
-    RegDBI::GenerateCacheBlockAddress(unsigned int RowTag, unsigned int bitIndex, unsigned int RegDBIBlkPerDBIEntry)
-    {
-        // Reverse engineer the DRAM row address from the row tag and the number of bits required to index into the RegDBIStore
-        unsigned int row_addr = ReverseEngineerRowAddress(RowTag, getNumTagShiftBits());
-        int bytesInBlk = log2(BaseCache::blkSize);
-        // Calculate the byte offset within the cache block using the index of the dirty bit in the bit set
-        unsigned int byte_offset = bitIndex * 1; // Dirty bits are stored in 1-bit chunks
-        // Shift the DRAM row address left by the same number of bits used to extract it from the cache block address
-        unsigned int cache_block_address = row_addr << (bytesInBlk + log2(RegDBIBlkPerDBIEntry));
-        // OR the cache block address with the byte offset
-        cache_block_address |= byte_offset;
-        return cache_block_address;
+    // unsigned int
+    // RegDBI::GenerateCacheBlockAddress(unsigned int RowTag, unsigned int bitIndex, unsigned int RegDBIBlkPerDBIEntry)
+    // {
+    //     // Reverse engineer the DRAM row address from the row tag and the number of bits required to index into the RegDBIStore
+    //     unsigned int row_addr = ReverseEngineerRowAddress(RowTag, getNumTagShiftBits());
+    //     int bytesInBlk = log2(BaseCache::blkSize);
+    //     // Calculate the byte offset within the cache block using the index of the dirty bit in the bit set
+    //     unsigned int byte_offset = bitIndex * 1; // Dirty bits are stored in 1-bit chunks
+    //     // Shift the DRAM row address left by the same number of bits used to extract it from the cache block address
+    //     unsigned int cache_block_address = row_addr << (bytesInBlk + log2(RegDBIBlkPerDBIEntry));
+    //     // OR the cache block address with the byte offset
+    //     cache_block_address |= byte_offset;
+    //     return cache_block_address;
     }
 }

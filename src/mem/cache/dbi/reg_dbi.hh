@@ -18,12 +18,16 @@ namespace gem5
 
     class BaseCache;
     class DBIEntry;
-    // typedef DBIEntry *DBIEntryPtr;
 
+    // typedef DBIEntry *DsBIEntryPtr;
+    // FIGURE out if RegDBI needs to be derived from DBIEntry
     class RegDBI : public BaseDBI
     {
 
     private:
+        // Cache block size: NEEDS TO BE CHANGED, TO ACCEPT IT AS A PARAMETER FROM
+        // CONFIGURATION/CACHE
+        const unsigned int cacheBlockSize = 64;
         // Size of the DBI
         unsigned int RegDBISize;
 
@@ -99,6 +103,7 @@ namespace gem5
         void evictRegDBIEntry(int index);
 
         // Re-generate the RowAddress from the RowTag
+        // Use THE ROWTAG DEFINED IN DBIEntry?
         unsigned int GenerateRowAddress(Addr RowTag);
 
         // Re-generate the cache block address from the RowTag
