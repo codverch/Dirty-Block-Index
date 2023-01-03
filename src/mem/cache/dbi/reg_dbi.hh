@@ -36,7 +36,13 @@ namespace gem5
         // Number of cacheblocks per DBIEntry in the DBI Cache
         unsigned int RegDBIBlkPerDBIEntry = 64;
 
-        protected:
+        // Row Address of the DBIEntry
+        unsigned int RowAddr;
+
+        // Number of bits required to shift the RowAddr to get the RowTag
+        unsigned int NumTagShiftBits;
+
+    protected:
         // An array of DBIEntry objects
         vector<DBIEntry> RegDBIStore;
 
@@ -57,17 +63,33 @@ namespace gem5
         unsigned int getNumDBIEntries();
 
         // Get the cacheblock address from the incoming packet based on the cacheblock size
-        Addr getCacheBlockAddr(PacketPtr pkt, unsigned int cacheBlockSize);
+        Addr getCacheBlockAddr(PacketPtr pkt);
+
+        // Get the RowAddress from the cacheblock address
+        Addr getRowAddr(Packet *pkt);
+
+        // Get the number of tagshift bits from the cacheblock address
+        int getNumTagShiftBits();
 
         // Get the RowTag from the cacheblock address
-        Addr getRowTag(Packet *pkt);
+        Addr getRowTag(Packet *ptr);
 
-        // // Function to calculate the number of bits required to index into the RegDBIStore
-        // // Based on the number of DBIEntries in the RegDBIStore
-        // int getNumBitsRegDBIStore();
+        // Get the bits required to index into RegDBIStore from the RowAddress
+        unsigned int IndexBits(Packet *pkt);
 
-        // // Function to generate the index in the RegDBIStore based on the RowTag
-        // int getIndexRegDBIStore(int RowTag);
+        // Get the index in the RegDBIStore from the RowAddress
+        int getIndexRegDBIStore(Packet *pkt, unsigned int RegDBIAssoc, unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry = 64);
+
+        // Will setDirtyBit take packet or just the cacheblock address as argument
+
+        // Set the dirty bit in the DBIEntry
+        void setDirtyBit(Packet *pkt, int);
+
+        // Clear the dirty bit in the DBIEntry
+        void clearDirtyBit(Packet *pkt, int);
+
+        // Check if a cache block in a DBIEntry is dirty
+        bool isDirty(Packet *pkt, int);
 
         // void setDirtyBitRegDBI(int RowTag, int bit_index);
         // void clearDirtyBitRegDBI(int RowTag, int bit_index);

@@ -20,7 +20,10 @@ namespace gem5
     {
     protected:
         bool useDBI = false;
+<<<<<<< HEAD
         
+=======
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
 
         unordered_map<Addr, bool> ToyStore;
 

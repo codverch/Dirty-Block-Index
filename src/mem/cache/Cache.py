@@ -170,9 +170,24 @@ class NoncoherentCache(BaseCache):
     # of cacheblocks corresponding to a single row of DRAM in a separate structure
     
 
+<<<<<<< HEAD
+=======
+    
+class Toy(Cache):
+    type = 'Toy'
+    cxx_header = 'mem/cache/toy.hh'
+    cxx_class = 'gem5::Toy'
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
     
 class Toy(Cache):
     type = 'Toy'
     cxx_header = 'mem/cache/toy.hh'
     cxx_class = 'gem5::Toy'
     
+<<<<<<< HEAD
+=======
+
+    
+
+
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
