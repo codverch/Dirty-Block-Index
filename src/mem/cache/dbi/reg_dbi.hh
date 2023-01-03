@@ -95,10 +95,11 @@ namespace gem5
         void createRegDBIEntry(Packet *pkt, unsigned int RegDBIAssoc,
                                unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry = 64);
 
-        // CURRENTLY WE ARE USING POP_BACK TO EVICT THE DBI ENTRY
-
         // Evict an entry from the RegDBIStore and perform any necessary writebacks.
         void evictRegDBIEntry(int index);
+
+        // Re-generate the cache block address from the RowTag
+        unsigned int GenerateCacheBlockAddress(Addr RowTag, int bitIndex, unsigned int RegDBIBlkPerDBIEntry = 64);
     };
 }
 
