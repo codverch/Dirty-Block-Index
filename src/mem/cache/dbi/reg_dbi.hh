@@ -91,15 +91,10 @@ namespace gem5
         // Check if a cache block in a DBIEntry is dirty
         bool isDirty(Packet *pkt, int);
 
-        // void setDirtyBitRegDBI(int RowTag, int bit_index);
-        // void clearDirtyBitRegDBI(int RowTag, int bit_index);
-        // int getIndexRegDBIStore(int RowTag);
-        // void evictRegDBIEntry(int RowTag);
+        // Create a new DBI entry by evicting an existing DBI entry
+        void createNewDBIEntry(Packet *pkt,  unsigned int RegDBIAssoc,
+                               unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry = 64);
     };
 }
 
-// Wrong implementation since the index for DBI entry should be evaluated from the
-// Cacheblock address. This is just a placeholder for now.
-
-// Actually, that index can be hashed
 #endif // _MEM_CACHE_DBI_REG_DBI_HH_

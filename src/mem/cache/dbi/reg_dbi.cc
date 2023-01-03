@@ -242,48 +242,50 @@ namespace gem5
         }
     }
 
-    /* A hash function that maps the DRAM row address to an index in the RegDBI.
-     * It takes the DRAM row address as an input and returns an index in the RegDBI as an output.
-     */
-
-    RegDBI::getIndexRegDBIStore(unsigned int row_addr)
-    {
-        return row_addr % RegDBISize;
-        // return row_addr;
-    }
-
-    RegDBI::clearDirtyBitRegDBI(int RowTag, int bit_index)
-    {
-        int index = getIndexRegDBIStore(RowTag);
-        if (index != -1)
-        {
-            RegDBIStore[index].DirtyBits[bit_index] = false;
-        }
-
-        // doWriteback()?
-    }
-
-    RegDBI::evictRegDBIEntry(int RowTag)
-    {
-        int index = getIndexRegDBIStore(RowTag);
-        if (index != -1)
-        {
-            RegDBIStore.erase(RegDBIStore.begin() + index);
-        }
-    }
-
     /*
-     * This hash function is a modulo operation that maps the DRAM row address to an index in the RegDBI.
+     * Create a new DBI entry and evict an existing DBI entry if necessary.
      */
 
-    unsigned int RegDBI::HashFunction(unsigned int row_addr)
+    // Create a new DBI entry and evict an existing DBI entry if necessary
+    RegDBI::createDBIEntry(Packet *pkt, unsigned int RegDBIAssoc, unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry)
+    {
+        // Step 1: Calculate the RowTag of the given cache block address
+        unsigned int TempRowTag = getRowTag(pkt);
 
-        Re
+        // Step 2: Calculate the DBIEntry index of the given cache block address
+        unsigned int TempDBIEntryIndex = getDBIEntryIndex(pkt, RegDBIAssoc, RegDBISets, RegDBIBlkPerDBIEntry);
 
-        // HashFunction method to look up values in the DBI by their DRAM row address.
+        // Step 3: Check if there is space in the DBI vector array at the generated index
 
-        unsigned int index = HashFunction(row_address); // Calculate the index in the DBI using the hash function
-    DBIEntry entry = DBI[index];                        // Look up the DBI entry at the calculated index
+        // If there is space, create a new DBIEntry and insert it into the RegDBIStore
+
+        if (RegDBIStore.size() < TempDBIEntryIndex + 1)
+        {
+            // Create a new DBIEntry
+            RegDBIEntry TempDBIEntry;
+            // Set the RowTag of the new DBIEntry
+            TempDBIEntry.RowTag = TempRowTag;
+            // Set the dirty bits of the new DBIEntry
+            TempDBIEntry.DirtyBits = 0;
+            // Insert the new DBIEntry into the RegDBIStore
+            RegDBIStore.insert(TempDBIEntryIndex, TempDBIEntry);
+        }
+
+        // If there is no space, evict an existing DBIEntry and insert the new DBIEntry into the RegDBIStore
+        else
+        {
+            // Evict an existing DBIEntry
+            RegDBIStore.pop_back();
+            // Create a new DBIEntry
+            RegDBIEntry TempDBIEntry;
+            // Set the RowTag of the new DBIEntry
+            TempDBIEntry.RowTag = TempRowTag;
+            // Set the dirty bits of the new DBIEntry
+            TempDBIEntry.DirtyBits = 0;
+            // Insert the new DBIEntry into the RegDBIStore
+            RegDBIStore.insert(TempDBIEntryIndex, TempDBIEntry);
+        }
+    }
 }
 
 #endif // __REG_DBI_HH__
