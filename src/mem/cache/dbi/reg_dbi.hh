@@ -99,7 +99,7 @@ namespace gem5
         void evictRegDBIEntry(int index);
 
         // Re-generate the RowAddress from the RowTag
-        unsigned int GenerateRowAddress(Addr RowTag, int bitIndex);
+        unsigned int GenerateRowAddress(Addr RowTag);
 
         // Re-generate the cache block address from the RowTag
         unsigned int GenerateCacheBlockAddress(Addr RowTag, int bitIndex, unsigned int RegDBIBlkPerDBIEntry = 64);

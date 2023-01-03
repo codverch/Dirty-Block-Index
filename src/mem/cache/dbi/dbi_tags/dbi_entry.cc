@@ -1,4 +1,6 @@
 #include "mem/cache/dbi/dbi_tags/dbi_entry.hh"
+#include "base/types.hh"
+#include "mem/cache/tags/tagged_entry.hh"
 
 using namespace std;
 
@@ -12,6 +14,7 @@ namespace gem5
      *
      * @return True if the DBI entry is valid.
      */
+    bool
     DBIEntry::isValid()
     {
         return validBit;
@@ -22,7 +25,7 @@ namespace gem5
      *
      * @param validBit The valid bit to set.
      */
-
+    void
     DBIEntry::setValidBit(int validBit)
     {
         this->validBit = validBit;
@@ -32,11 +35,11 @@ namespace gem5
      * Get RowTag asscoiated to this DBI entry, from the cacheblock
      * @return The RowTag value.
      */
-
-    DBIEntry::getRowTag(CacheBlk *block, Addr address)
+    Addr
+    DBIEntry::getRowTag(CacheBlk *block)
     {
         /*DRAM row address*/
-        Addr row_addr = block->getTag(address);
+        Addr row_addr = block->getTag(block);
         /*Number of bits required to index into DBI*/
         unsigned int num_bits = log2(RegDBI::getRegDBISize() / 64);
         RowTag = row_addr >> num_bits;

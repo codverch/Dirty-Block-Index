@@ -315,10 +315,16 @@ namespace gem5
      * Re-generate the RowAddress from the RowTag
      */
     unsigned int
-    RegDBI::GenerateRowAddress(unsigned int RowTag, int bitIndex)
+    RegDBI::GenerateRowAddress(unsigned int RowTag)
     {
-        // Shift the RowTag right by the number of bits used to extract it from the cache block address
-        unsigned int row_addr = RowTag >> getNumTagShiftBits();
+
+        // Use the hash function to re-generate the DRAM row address
+        // Shift the RowTag left by the number of bits used to index into RegDBIStore
+        unsigned int row_addr = RowTag << getNumTagShiftBits();
+        // Get the current index of the DBIEntry just based on the location in the RegDBIStore
+
+        // Use the getDBIEntryIndex() function to use the DBIEntry index of this RowTag and re-generate the DRAM row address
+        row_addr = row_addr | getDBIEntryIndex(pkt, RegDBIAssoc, RegDBISets, RegDBIBlkPerDBIEntry);
         return row_addr;
     }
 
@@ -341,5 +347,3 @@ namespace gem5
         return cache_block_address;
     }
 }
-
-#endif // __REG_DBI_HH__

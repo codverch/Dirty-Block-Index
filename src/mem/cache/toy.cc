@@ -30,18 +30,6 @@ namespace gem5
         DPRINTF(Toy, "Hey, I am a toy component. Glad to exist in 2022 xoxo\n");
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    bool
-    Toy::isBlkSet(CacheBlk *blk, unsigned bits)
-    {
-        if (bits == CacheBlk::DirtyBit)
-        {
-             return dbi.isDirty(blk->getTag());
-            
-=======
-=======
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
     void
     Toy::insertIntoToyStore(Addr addr, bool value)
     {
@@ -54,10 +42,6 @@ namespace gem5
         if (useDBI && bits == CacheBlk::DirtyBit)
         {
             return ToyStore[blk->getTag()];
-<<<<<<< HEAD
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
-=======
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
         }
         else
         {
@@ -70,15 +54,7 @@ namespace gem5
     {
         if (bits == CacheBlk::DirtyBit)
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-            dbi.setDirtyBit(blk->getTag());
-=======
             insertIntoToyStore(blk->getTag(), true);
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
-=======
-            insertIntoToyStore(blk->getTag(), true);
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
         }
         else
         {
@@ -91,16 +67,7 @@ namespace gem5
     {
         if (bits == CacheBlk::DirtyBit)
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-            dbi.clearDirtyBit(blk->getTag());
-=======
             insertIntoToyStore(blk->getTag(), false);
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
-=======
-            insertIntoToyStore(blk->getTag(), false);
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
         }
         else
         {
@@ -109,11 +76,6 @@ namespace gem5
     }
 
     void
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
     Toy::printToyStore()
     {
         for (auto it = ToyStore.begin(); it != ToyStore.end(); ++it)
@@ -123,10 +85,6 @@ namespace gem5
     }
 
     void
-<<<<<<< HEAD
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
-=======
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
     Toy::cmpAndSwap(CacheBlk *blk, PacketPtr pkt)
     {
         assert(pkt->isRequest());
@@ -649,15 +607,7 @@ namespace gem5
                 //     cout << pkt->getAddr() << endl;
                 // }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
                 if (isBlkSet(blk, CacheBlk::DirtyBit))
-=======
-                                if (isBlkSet(blk, CacheBlk::DirtyBit))
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
-=======
-                                if (isBlkSet(blk, CacheBlk::DirtyBit))
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
                 {
                     cout << pkt->getAddr() << endl;
                 }

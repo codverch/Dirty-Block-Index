@@ -6,8 +6,8 @@
 
 #include "base/types.hh"
 #include "mem/cache/cache_blk.hh"
-#include "src/mem/cache/tags/indexing_policies/base.hh"
-#include "src/mem/cache/dbi/reg_dbi.hh"
+#include "mem/cache/tags/indexing_policies/base.hh"
+#include "mem/cache/dbi/reg_dbi.hh"
 
 namespace gem5
 {
@@ -36,10 +36,10 @@ namespace gem5
         DBIEntry(int validBit, uint64_t RowTag, bitset<64> DirtyBits) : validBit(validBit), RowTag(RowTag), DirtyBits(DirtyBits) {}
         ~DBIEntry() = default;
 
-        bool isValid() const;
+        bool isValid();
         void setValidBit(int validBit);
 
-        Addr getRowTag(CacheBlk *block, Addr address);
+        Addr getRowTag(CacheBlk *block);
     };
 }
 

@@ -9,6 +9,7 @@
 #include "mem/cache/base.hh"
 #include "mem/packet.hh"
 #include "mem/cache/cache.hh"
+#include "mem/cache/dbi/map_dbi.hh"
 
 using namespace std;
 
@@ -20,13 +21,7 @@ namespace gem5
     {
     protected:
         bool useDBI = false;
-<<<<<<< HEAD
-<<<<<<< HEAD
-        
-=======
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
-=======
->>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
+        MapDBI dbi;
 
         unordered_map<Addr, bool> ToyStore;
 
