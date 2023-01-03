@@ -311,17 +311,29 @@ namespace gem5
             RegDBIStore.erase(RegDBIStore.begin() + index);
         }
     }
+    /*
+     * Re-generate the RowAddress from the RowTag
+     */
+    unsigned int
+    RegDBI::GenerateRowAddress(unsigned int RowTag, int bitIndex)
+    {
+        // Shift the RowTag right by the number of bits used to extract it from the cache block address
+        unsigned int row_addr = RowTag >> getNumTagShiftBits();
+        return row_addr;
+    }
 
     /*
      * Get the cache block address from the RowTag and bit index
      */
 
-    unsigned int GenerateCacheBlockAddress(unsigned int RowTag, unsigned int index, unsigned int bytesInBlk, unsigned int RegDBIBlkPerDBIEntry)
+    unsigned int
+    RegDBI::GenerateCacheBlockAddress(unsigned int RowTag, unsigned int bitIndex, unsigned int RegDBIBlkPerDBIEntry)
     {
         // Reverse engineer the DRAM row address from the row tag and the number of bits required to index into the RegDBIStore
-        unsigned int row_addr = ReverseEngineerCacheBlockAddress(RowTag, getNumTagShiftBits());
+        unsigned int row_addr = ReverseEngineerRowAddress(RowTag, getNumTagShiftBits());
+        int bytesInBlk = log2(BaseCache::blkSize);
         // Calculate the byte offset within the cache block using the index of the dirty bit in the bit set
-        unsigned int byte_offset = index * 1; // Dirty bits are stored in 1-bit chunks
+        unsigned int byte_offset = bitIndex * 1; // Dirty bits are stored in 1-bit chunks
         // Shift the DRAM row address left by the same number of bits used to extract it from the cache block address
         unsigned int cache_block_address = row_addr << (bytesInBlk + log2(RegDBIBlkPerDBIEntry));
         // OR the cache block address with the byte offset

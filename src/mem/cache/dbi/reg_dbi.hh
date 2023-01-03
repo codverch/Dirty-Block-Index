@@ -98,6 +98,9 @@ namespace gem5
         // Evict an entry from the RegDBIStore and perform any necessary writebacks.
         void evictRegDBIEntry(int index);
 
+        // Re-generate the RowAddress from the RowTag
+        unsigned int GenerateRowAddress(Addr RowTag, int bitIndex);
+
         // Re-generate the cache block address from the RowTag
         unsigned int GenerateCacheBlockAddress(Addr RowTag, int bitIndex, unsigned int RegDBIBlkPerDBIEntry = 64);
     };
