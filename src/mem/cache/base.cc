@@ -574,9 +574,13 @@ BaseCache::recvTimingResp(PacketPtr pkt)
         }
 
         if (blk && blk->isSet(CacheBlk::WritableBit) &&
+<<<<<<< HEAD
             !pkt->req->isCacheInval
                  idate())
         {
+=======
+            !pkt->req->isCacheInvalidate()) {
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
             // If at this point the referenced block is writable and the
             // response is not a cache invalidate, we promote targets that
             // were deferred as we couldn't guarrantee a writable copy
@@ -963,7 +967,11 @@ BaseCache::handleEvictions(std::vector<CacheBlk*> &evict_blks,
     if (replacement) {
         stats.replacements++;
 
+<<<<<<< HEAD
         // Evict valid blocks associated to this victim block0
+=======
+        // Evict valid blocks associated to this victim block
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
         for (auto& blk : evict_blks) {
             if (blk->isValid()) {
                 evictBlock(blk, writebacks);
@@ -1205,7 +1213,10 @@ BaseCache::calculateAccessLatency(const CacheBlk* blk, const uint32_t delay,
         if (sequentialAccess) {
             lat = ticksToCycles(delay) + lookup_lat + dataLatency;
         } else {
+<<<<<<< HEAD
 
+=======
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
             lat = ticksToCycles(delay) + std::max(lookup_lat, dataLatency);
         }
 
@@ -1296,7 +1307,11 @@ BaseCache::access(PacketPtr pkt, CacheBlk *&blk, Cycles &lat,
                 // Dirty writeback from above trumps our clean
                 // writeback... discard here
                 // Note: markInService will remove entry from writeback buffer.
+<<<<<<< HEAD
                 markInSe rvice(wb_entry);
+=======
+                markInService(wb_entry);
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
                 delete wbPkt;
             }
         }

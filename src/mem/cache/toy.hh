@@ -21,7 +21,10 @@ namespace gem5
     protected:
         bool useDBI = false;
 <<<<<<< HEAD
+<<<<<<< HEAD
         
+=======
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
 =======
 >>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
 

@@ -171,12 +171,16 @@ class NoncoherentCache(BaseCache):
     
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
     
 class Toy(Cache):
     type = 'Toy'
     cxx_header = 'mem/cache/toy.hh'
     cxx_class = 'gem5::Toy'
+<<<<<<< HEAD
 >>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
     
 class Toy(Cache):
@@ -186,8 +190,15 @@ class Toy(Cache):
     
 <<<<<<< HEAD
 =======
+=======
+    
+    
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
 
     
 
 
+<<<<<<< HEAD
+>>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
+=======
 >>>>>>> 16fdf635c0a52408c75411451eb7e0e4061eb1c4
