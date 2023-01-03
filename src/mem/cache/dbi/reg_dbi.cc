@@ -289,9 +289,8 @@ namespace gem5
 
     /* Evict an entry from the RegDBIStore and perform any necessary writebacks.*/
 
-    RegDBI::evictRegDBIEntry(Packet *pkt, unsigned int RegDBIAssoc, unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry)
+    RegDBI::evictRegDBIEntry(int index)
     {
-        // Evict an entry from RegDBIStore and perform any necessary writebacks
         // Based on the given DBIEntry index, evict the corresponding DBIEntry from the RegDBIStore
         // Check if the index is within the bounds of the RegDBIStore vector
         if (index < RegDBIStore.size())
@@ -304,8 +303,6 @@ namespace gem5
                 if (entry.DirtyBits[i])
                 {
                     // Perform the necessary writeback to the DRAM based on the cache block address
-                    // unsigned int cache_block_address = GetCacheBlockAddress(entry.row_tag, i, blocks_per_entry);
-                    // PerformWriteback(cache_block_address);
                 }
             }
             // Erase the DBI entry from the RegDBIStore vector
