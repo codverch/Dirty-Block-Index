@@ -14,32 +14,47 @@ namespace gem5
     class CacheBlk;
     class RegDBI;
 
-    /** Each DBI entry corresponds to some row in DRAM. Each entry contains a row tag,
-     *  a valid bit, and a vector of dirty bits. The dirty bits are used to track which
-     *  cacheblocks are dirty in the corresponding row in DRAM.
+    /** For each entry in the DBI, there is a corresponding row in DRAM.
+     *  The entry includes a row tag, a valid bit, and a vector of dirty bits.
+     *  The dirty bits are used to indicate which cache blocks within the corresponding DRAM row have been modified.
      */
     class DBIEntry
     {
 
-    protected:
+    public:
         /*Valid bit for a given DBI entry*/
         int validBit;
 
-        /*Address of a DRAM row corresponding to a given cache block*/
+        /*The address of the DRAM row that corresponds to a specific cache block.*/
         uint64_t RowTag;
 
-        /*Dirty bits for each cache block in a DRAM row*/
+        /*The dirty bits that indicate which cache blocks within a DRAM row have been modified*/
         bitset<64> DirtyBits;
         vector<CacheBlk *> cacheBlocks;
 
-    public:
+        DBIEntry() = default;
         DBIEntry(int validBit, uint64_t RowTag, bitset<64> DirtyBits) : validBit(validBit), RowTag(RowTag), DirtyBits(DirtyBits) {}
         ~DBIEntry() = default;
 
-        bool isValid();
-        void setValidBit(int validBit);
+        // Setter function for the valid bit
+        void setValidBit(bool value)
+        {
+            validBit = value;
+        }
 
-        Addr getRowTag(CacheBlk *block);
+        // Check if the valid bit is set for a DBI entry.
+
+        bool isValid(int validBit)
+        {
+            if (validBit == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     };
 }
 
