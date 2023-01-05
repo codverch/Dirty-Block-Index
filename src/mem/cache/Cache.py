@@ -175,9 +175,9 @@ class Toy(Cache):
     cxx_header = 'mem/cache/toy.hh'
     cxx_class = 'gem5::Toy'
     
-    toy_cache_size = Param.MemorySize("Capacity of the toy cache")
-    dbi_size = Param.Float("Size of the DBI")
-    dbi_sets = Param.Unsigned("Number of sets in the DBI")
+    toy_cache_size = Param.MemorySize("Capacity of the toy cache") # not needed -- available in cache
+    dbi_size = Param.Float("Size of the DBI") # convert to integer(k) -> 1 / 2^k
+    dbi_sets = Param.Unsigned("Number of sets in the DBI") # not needed -- compute from dbi size and assoc and num blocks per entry
     dbi_assoc = Param.Unsigned("Associativity of the DBI")
     dbi_blk_per_dbi_entry = Param.Unsigned("Number of cache blocks per DBI entry")
     

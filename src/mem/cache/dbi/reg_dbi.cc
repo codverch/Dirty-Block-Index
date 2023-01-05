@@ -10,10 +10,10 @@ namespace gem5
      * Constructor for RegDBI.
      */
 
-    RegDBI::RegDBI(unsigned int RegDBISets, unsigned int RegDBIAssoc, unsigned int RegDBIBlkPerDBIEntry, int NumRegDBIEntries)
+    RegDBI::RegDBI(unsigned int _RegDBISets, unsigned int RegDBIAssoc, unsigned int RegDBIBlkPerDBIEntry, int NumRegDBIEntries)
     {
         // Set the number of sets in the DBI Cache
-        this->RegDBISets = RegDBISets;
+        RegDBISets = _RegDBISets;
         // Set the associativity of the DBI Cache
         this->RegDBIAssoc = RegDBIAssoc;
         // Set the number of cacheblocks per DBIEntry in the DBI Cache
@@ -86,7 +86,7 @@ namespace gem5
      */
 
     Addr
-    RegDBI::getRowAddr(Packet *pkt)
+    RegDBI::getRowAddr(PacketPtr pkt)
     {
         // Retrieve the cache block address from the incoming packet.
         Addr cacheBlockAddr = getCacheBlockAddr(pkt);

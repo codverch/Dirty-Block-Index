@@ -24,8 +24,6 @@ namespace gem5
     {
 
     private:
-        // Cache block size: NEEDS TO BE CHANGED, TO ACCEPT IT AS A PARAMETER FROM
-        // CONFIGURATION/CACHE
         const unsigned int cacheBlockSize = 64;
         // Size of the DBI
         unsigned int RegDBISize;
