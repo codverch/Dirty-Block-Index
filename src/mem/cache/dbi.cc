@@ -38,6 +38,20 @@ namespace gem5
     unsigned int
     DBICache::numBlksInDBI(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha)
     {
-        return (numBlksInCache(cacheSize, blkSize)) / alpha;
+        unsigned int _numBlksInCache = numBlksInCache(cacheSize, blkSize);
+        return _numBlksInCache * alpha;
     }
-}
+
+    unsigned int
+    DBICache::numDBIEntries(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry)
+    {
+        unsigned int _numBlksInDBI = numBlksInDBI(cacheSize, blkSize, alpha);
+        return _numBlksInDBI / blkEntry;
+    }
+
+    unsigned int
+    DBICache::numDBISets(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry, unsigned int dbiAssoc)
+    {
+        unsigned int numEntriesInDBI = numDBIEntries(cacheSize, blkSize, alpha, blkEntry);
+        return numEntriesInDBI / dbiAssoc;
+    }
