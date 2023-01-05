@@ -42,7 +42,17 @@ namespace gem5
                   unsigned int numblkIndexBits)
     {
 
+        // Get the complete address
+        Addr addr = pkt->getAddr();
+        // Shift right to remove the block offset bits
+        Addr temp = addr >> numBlkBits;
+        // Construct bitmask with 1's in the lower (z) bits from notes
+        int bitmask = (1 << numBlkIndexBits) - 1;
+        // AND the bitmask with the shifted address to get the block index
+        int blkIndex = temp & bitmask;
+
         regAddr = getRegDBITag(pkt);
+
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt, numSetBits, numBlkBits, numblkIndexBits);
 
@@ -55,8 +65,12 @@ namespace gem5
             RDBIEntry &entry = *i;
             if (entry.regTag == regAddr)
             {
-                // Return a reference to the matching DBI entry
-                return entry;
+                // If the entry is valid, return the dirty bit
+                if (entry.validBit == 1)
+                {
+                    // Check the entry's dirty bit from the bitset
+                    return entry.dirtyBits.test(blkIndex);
+                }
             }
         }
 
