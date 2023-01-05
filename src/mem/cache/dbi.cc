@@ -64,4 +64,16 @@ namespace gem5
         unsigned int numDBISets = numDBISets(cacheSize, blkSize, alpha, blkEntry, dbiAssoc);
         return log2(numDBISets) + 1;
     }
+
+    unsigned int
+    DBICache::numBlockSizeBits(unsigned int blkSize)
+    {
+        return log2(blkSize) + 1;
+    }
+
+    unsigned int
+    DBICache::numBlocksPerDBIEntryBits(unsigned int blkEntry)
+    {
+        return log2(blkEntry) + 1;
+    }
 }
