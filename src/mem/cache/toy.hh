@@ -67,6 +67,14 @@ namespace gem5
         // DBI augmented caceh size
         unsigned int ToyCacheSize;
 
+        // DBI Capacity
+        unsigned int calculateRegDBICapacity(float, unsigned int);
+        unsigned int RegDBICapacity;
+
+        // Number of entries RegDBI can hold
+        int calculateNumRegDBIEntries(float RegDBISize, unsigned int ToyCacheSize);
+        int NumRegDBIEntries;
+
         // Instantitates a toy object
         Toy(const ToyParams &p);
 

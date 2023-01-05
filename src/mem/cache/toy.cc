@@ -34,6 +34,20 @@ namespace gem5
         RegDBI dbi(p.dbi_sets, p.dbi_assoc, p.dbi_blk_per_dbi_entry);
     }
 
+    unsigned int
+    Toy::calculateRegDBICapacity(float RegDBISize, unsigned int ToyCacheSize)
+    {
+        return RegDBISize * ToyCacheSize;
+    }
+
+    int
+    Toy::calculateNumRegDBIEntries(float RegDBISize, unsigned int ToyCacheSize)
+    {
+        RegDBICapacity = calculateRegDBICapacity(RegDBISize, ToyCacheSize);
+        NumRegDBIEntries = RegDBICapacity / RegDBIBlkPerDBIEntry;
+        return NumRegDBIEntries;
+    }
+
     void
     Toy::insertIntoToyStore(Addr addr, bool value)
     {
