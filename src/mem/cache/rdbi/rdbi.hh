@@ -37,5 +37,11 @@ namespace gem5
 
         bool isDirty(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
                      unsigned int numblkIndexBits);
+
+        void clearDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
+                           unsigned int numblkIndexBits);
+
+        void setDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
+                         unsigned int numblkIndexBits)
     };
 }

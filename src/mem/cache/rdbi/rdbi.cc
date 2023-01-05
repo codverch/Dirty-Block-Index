@@ -78,4 +78,42 @@ namespace gem5
         return RDBIEntry();
     }
 
+    void
+    RDBI::clearDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
+                        unsigned int numblkIndexBits)
+    {
+
+        // Get the complete address
+        Addr addr = pkt->getAddr();
+        // Shift right to remove the block offset bits
+        Addr temp = addr >> numBlkBits;
+        // Construct bitmask with 1's in the lower (z) bits from notes
+        int bitmask = (1 << numBlkIndexBits) - 1;
+        // AND the bitmask with the shifted address to get the block index
+        int blkIndex = temp & bitmask;
+
+        regAddr = getRegDBITag(pkt);
+
+        // Identify the entry
+        rDBIIndex = getRDBIEntryIndex(pkt, numSetBits, numBlkBits, numblkIndexBits);
+
+        // Get the inner vector of DBI entries at the specified index location
+        vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
+
+        // Iterate through the inner vector of DBI entries using an iterator
+        for (vector<DBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
+        {
+            RDBIEntry &entry = *i;
+            if (entry.regTag == regAddr)
+            {
+                // If the entry is valid, return the dirty bit
+                if (entry.validBit == 1)
+                {
+                    // NEEDS TO DO WRITEBACK
+                    // Check the entry's dirty bit from the bitset
+                    entry.dirtyBits.reset(blkIndex);
+                }
+            }
+        }
+    }
 }
