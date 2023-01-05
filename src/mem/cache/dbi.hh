@@ -20,7 +20,8 @@ namespace gem5
     protected:
         RDBI RDBIStore;
 
-        int numBlksInCache(unsigned int cacheSize, unsigned int blkSize);
+        unsigned int numBlksInCache(unsigned int cacheSize, unsigned int blkSize);
+        unsigned int numBlksInDBI(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha);
 
         void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
@@ -40,7 +41,7 @@ namespace gem5
         void clearBlkCoherenceBits(CacheBlk *blk, unsigned bits);
 
     public:
-        // Alpha needs to be re-defines as type ALPHA
+        // Alpha needs to be re-defined as type ALPHA
         float alpha;
         unsigned int dbiAssoc;
         unsigned int blkEntry;

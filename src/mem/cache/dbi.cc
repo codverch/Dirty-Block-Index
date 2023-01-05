@@ -29,10 +29,15 @@ namespace gem5
         DPRINTF(DBICache, "Hey, I am a DBICache object");
     }
 
-    int
+    unsigned int
     DBICache::numBlksInCache(unsigned int cacheSize, unsigned int blkSize)
     {
         return cacheSize / blkSize;
     }
 
+    unsigned int
+    DBICache::numBlksInDBI(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha)
+    {
+        return (numBlksInCache(cacheSize, blkSize)) / alpha;
+    }
 }
