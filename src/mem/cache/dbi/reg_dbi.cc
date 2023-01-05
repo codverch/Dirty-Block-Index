@@ -21,8 +21,8 @@ namespace gem5
         // Set the size of the DBI
         RegDBISize = RegDBISets * RegDBIAssoc * RegDBIBlkPerDBIEntry;
         this->NumRegDBIEntries = NumRegDBIEntries;
-        RegDBIStore = new DBIEntry[NumRegDBIEntries];
-        // Initialize the RegDBIStore
+        // RegDBIStore = new DBIEntry[NumRegDBIEntries];
+        //  Initialize the RegDBIStore
         initRegDBIStore();
     }
 
@@ -341,4 +341,3 @@ namespace gem5
     //     cache_block_address |= byte_offset;
     //     return cache_block_address;
 }
-

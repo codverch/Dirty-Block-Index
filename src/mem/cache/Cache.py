@@ -181,6 +181,19 @@ class Toy(Cache):
     dbi_assoc = Param.Unsigned("Associativity of the DBI")
     dbi_blk_per_dbi_entry = Param.Unsigned("Number of cache blocks per DBI entry")
     
+class DBI(Cache):
+    type = 'DBI'
+    cxx_header = 'mem/cache/dbi.hh'
+    cxx_class = 'gem5::DBI'
+    
+    # Parameters to DBI 
+    alpha = Param.Float("Alpha value for the DBI") # Needs to be defined of type Alpha
+    dbi_assoc = Param.Unsigned("Associativity of the DBI")
+    blk_per_dbi_entry = Param.Unsigned("Number of cache blocks per DBI entry")
+      
+    # Parameters to DBI from the parent class
+    size = Param.MemorySize("DBI cache size") 
+    blkSize = Param.MemorySize("Cache block size")
 
     
 
