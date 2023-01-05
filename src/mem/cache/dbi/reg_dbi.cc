@@ -10,16 +10,17 @@ namespace gem5
      * Constructor for RegDBI.
      */
 
-    RegDBI::RegDBI(unsigned int RegDBISets, unsigned int RegDBIAssoc, unsigned int RegDBIBlkPerDBIEntry)
+    RegDBI::RegDBI(unsigned int RegDBISets, unsigned int RegDBIAssoc, unsigned int RegDBIBlkPerDBIEntry, int NumRegDBIEntries)
     {
         // Set the number of sets in the DBI Cache
-        RegDBISets = RegDBISets;
+        this->RegDBISets = RegDBISets;
         // Set the associativity of the DBI Cache
-        RegDBIAssoc = RegDBIAssoc;
+        this->RegDBIAssoc = RegDBIAssoc;
         // Set the number of cacheblocks per DBIEntry in the DBI Cache
-        RegDBIBlkPerDBIEntry = RegDBIBlkPerDBIEntry;
+        this->RegDBIBlkPerDBIEntry = RegDBIBlkPerDBIEntry;
         // Set the size of the DBI
         RegDBISize = RegDBISets * RegDBIAssoc * RegDBIBlkPerDBIEntry;
+        this->NumRegDBIEntries = NumRegDBIEntries;
         // Initialize the RegDBIStore
         initRegDBIStore();
     }

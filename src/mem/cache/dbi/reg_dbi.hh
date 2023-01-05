@@ -40,7 +40,7 @@ namespace gem5
         unsigned int RegDBIBlkPerDBIEntry = 64;
 
         // Number of RegDBI Entries
-        unsigned int NumRegDBIEntries;
+        int NumRegDBIEntries;
 
         // RegDBI Capacity
         unsigned int RegDBICapacity;
@@ -60,7 +60,7 @@ namespace gem5
 
     public:
         // A Constructor for RegDBI, which takes the sets, associativity and number of cacheblocks per DBIEntry as arguments
-        RegDBI(unsigned int RegDBISets, unsigned int RegDBIAssoc, unsigned int RegDBIBlkPerDBIEntry);
+        RegDBI(unsigned int RegDBISets, unsigned int RegDBIAssoc, unsigned int RegDBIBlkPerDBIEntry, int NumRegDBIEntries);
 
         // Set the size of the DBI
         void setRegDBISize(unsigned int DBISize);

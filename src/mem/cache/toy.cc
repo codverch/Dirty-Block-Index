@@ -29,9 +29,11 @@ namespace gem5
           RegDBISize(p.dbi_size),
           ToyCacheSize(p.toy_cache_size)
     {
+        calculateRegDBICapacity(RegDBISize, ToyCacheSize);
+        NumRegDBIEntries = calculateNumRegDBIEntries(RegDBISize, ToyCacheSize);
 
         DPRINTF(Toy, "Hey, I am a toy component. Glad to exist in 2022 xoxo\n");
-        RegDBI dbi(p.dbi_sets, p.dbi_assoc, p.dbi_blk_per_dbi_entry);
+        RegDBI dbi(p.dbi_sets, p.dbi_assoc, p.dbi_blk_per_dbi_entry, NumRegDBIEntries);
     }
 
     unsigned int
