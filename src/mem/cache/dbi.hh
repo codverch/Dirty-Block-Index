@@ -24,6 +24,7 @@ namespace gem5
         unsigned int numBlksInDBI(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha);
         unsigned int numDBIEntries(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry);
         unsigned int numDBISets(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry, unsigned int dbiAssoc);
+        unsigned int numDBISetsBits(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry, unsigned int dbiAssoc);
 
         void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,

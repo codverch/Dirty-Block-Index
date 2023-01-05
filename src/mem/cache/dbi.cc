@@ -1,4 +1,6 @@
 
+#include <cmath>
+
 #include "mem/cache/dbi.hh"
 #include "base/compiler.hh"
 #include "base/logging.hh"
@@ -55,3 +57,11 @@ namespace gem5
         unsigned int numEntriesInDBI = numDBIEntries(cacheSize, blkSize, alpha, blkEntry);
         return numEntriesInDBI / dbiAssoc;
     }
+
+    unsigned int
+    DBICache::numDBISetsBits(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry, unsigned int dbiAssoc)
+    {
+        unsigned int numDBISets = numDBISets(cacheSize, blkSize, alpha, blkEntry, dbiAssoc);
+        return log2(numDBISets) + 1;
+    }
+}
