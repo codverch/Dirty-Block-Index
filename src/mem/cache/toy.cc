@@ -28,6 +28,17 @@ namespace gem5
     {
 
         DPRINTF(Toy, "Hey, I am a toy component. Glad to exist in 2022 xoxo\n");
+
+        // Incorporating DBI Cache Parameters
+
+        // Number of sets in DBI Cache
+        RegDBISets = p.RegDBISets;
+
+        // The associativity of the DBI Cache.
+        RegDBIAssoc = p.RegDBIAssoc;
+
+        // The number of cache blocks per DBI Entry in the DBI Cache.
+        RegDBIBlkPerDBIEntry = p.RegDBIBlkPerDBIEntry;
     }
 
     void
