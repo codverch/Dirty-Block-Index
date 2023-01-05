@@ -1,6 +1,5 @@
 #include "mem/cache/dbi/reg_dbi.hh"
 #include "mem/cache/dbi/dbi_tags/dbi_entry.hh"
-#include "mem/cache/dbi/dbi_tags/dbi_entry.cc"
 
 using namespace std;
 
@@ -31,6 +30,7 @@ namespace gem5
     void
     RegDBI::setRegDBISize(unsigned int DBISize)
     {
+        // Compute the RegDBI capacity based on the number
         RegDBISize = DBISize;
     }
 
@@ -297,6 +297,7 @@ namespace gem5
                     // Perform the necessary writeback to the DRAM based on the cache block
                     // Call a function that re-generates the cache block address from the RowTag
                     // NEEDS TO BE COMPLETED
+                    cout << "Writeback to DRAM" << endl;
                 }
             }
             // Remove the DBI entry from the RegDBIStore vector.

@@ -16,6 +16,7 @@
 #include "mem/cache/mshr.hh"
 #include "mem/cache/tags/base.hh"
 #include "mem/cache/write_queue_entry.hh"
+#include "mem/cache/dbi/reg_dbi.hh"
 #include "mem/request.hh"
 #include "params/Toy.hh"
 
@@ -24,21 +25,13 @@ using namespace std;
 namespace gem5
 {
     Toy::Toy(const ToyParams &p)
-        : Cache(p)
+        : Cache(p),
+          RegDBISize(p.dbi_size),
+          ToyCacheSize(p.toy_cache_size)
     {
 
         DPRINTF(Toy, "Hey, I am a toy component. Glad to exist in 2022 xoxo\n");
-
-        // Incorporating DBI Cache Parameters
-
-        // Number of sets in DBI Cache
-        RegDBISets = p.RegDBISets;
-
-        // The associativity of the DBI Cache.
-        RegDBIAssoc = p.RegDBIAssoc;
-
-        // The number of cache blocks per DBI Entry in the DBI Cache.
-        RegDBIBlkPerDBIEntry = p.RegDBIBlkPerDBIEntry;
+        RegDBI dbi(p.dbi_sets, p.dbi_assoc, p.dbi_blk_per_dbi_entry);
     }
 
     void

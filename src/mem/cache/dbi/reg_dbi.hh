@@ -9,7 +9,6 @@
 #include "mem/cache/base.hh"
 #include "mem/cache/dbi/base_dbi.hh"
 #include "mem/cache/dbi/dbi_tags/dbi_entry.hh"
-#include "mem/cache/dbi/dbi_tags/dbi_entry.cc"
 
 using namespace std;
 
@@ -39,6 +38,15 @@ namespace gem5
 
         // Number of cacheblocks per DBIEntry in the DBI Cache
         unsigned int RegDBIBlkPerDBIEntry = 64;
+
+        // Number of RegDBI Entries
+        unsigned int NumRegDBIEntries;
+
+        // RegDBI Capacity
+        unsigned int RegDBICapacity;
+
+        // RegDBI Size
+        unsigned int RegDBIStoreSize;
 
         // Row Address of the DBIEntry
         unsigned int RowAddr;
@@ -84,16 +92,16 @@ namespace gem5
         // Get the index in the RegDBIStore from the RowAddress
         int getIndexRegDBIStore(Packet *pkt, unsigned int RegDBIAssoc, unsigned int RegDBISets, unsigned int RegDBIBlkPerDBIEntry = 64);
 
-        // Will setDirtyBit take packet or just the cacheblock address as argument
+        // Will setDirtyBit take packet or just the cacheblock address as argument?
 
         // Set the dirty bit in the DBIEntry
-        void setDirtyBit(Packet *pkt, int);
+        void setDirtyBit(Packet *pkt, int) override;
 
         // Clear the dirty bit in the DBIEntry
-        void clearDirtyBit(Packet *pkt, int);
+        void clearDirtyBit(Packet *pkt, int) override;
 
         // Check if a cache block in a DBIEntry is dirty
-        bool isDirty(Packet *pkt, int);
+        bool isDirty(Packet *pkt, int) override;
 
         // Create a new DBI entry by evicting an existing DBI entry
         void createRegDBIEntry(Packet *pkt, unsigned int RegDBIAssoc,
@@ -104,10 +112,13 @@ namespace gem5
 
         // Re-generate the RowAddress from the RowTag
         // Use THE ROWTAG DEFINED IN DBIEntry?
-        unsigned int GenerateRowAddress(Addr RowTag);
+        // unsigned int GenerateRowAddress(Addr RowTag);
 
-        // Re-generate the cache block address from the RowTag
-        unsigned int GenerateCacheBlockAddress(Addr RowTag, int bitIndex, unsigned int RegDBIBlkPerDBIEntry = 64);
+        // // Re-generate the cache block address from the RowTag
+        // unsigned int GenerateCacheBlockAddress(Addr RowTag, int bitIndex, unsigned int RegDBIBlkPerDBIEntry = 64);
+
+        // // Set the valid bit in the DBIEntry
+        // void setValidBit(Packet *pkt, int);
     };
 }
 

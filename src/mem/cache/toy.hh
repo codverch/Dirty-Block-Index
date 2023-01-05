@@ -10,18 +10,20 @@
 #include "mem/packet.hh"
 #include "mem/cache/cache.hh"
 #include "mem/cache/dbi/map_dbi.hh"
+#include "mem/cache/dbi/reg_dbi.hh"
 
 using namespace std;
 
 namespace gem5
 {
+
     struct ToyParams;
 
     class Toy : public Cache
     {
     protected:
         bool useDBI = false;
-        MapDBI dbi;
+        // MapDBI dbi;
 
         unordered_map<Addr, bool> ToyStore;
 
@@ -46,6 +48,25 @@ namespace gem5
         void clearBlkCoherenceBits(CacheBlk *blk, unsigned bits);
 
     public:
+        // Number of sets in the DBI Cache
+        unsigned int RegDBISets;
+
+        // Associativity of the DBI Cache
+        unsigned int RegDBIAssoc;
+
+        // Number of cacheblocks per DBIEntry in the DBI Cache
+        unsigned int RegDBIBlkPerDBIEntry = 64;
+
+        // DBI Size
+        /*
+         * "DBI Size" is a parameter that represents the desired ratio of the cumulative number of blocks
+            tracked by the DBI to the number of blocks tracked by the cache tag store.
+         */
+        float RegDBISize;
+
+        // DBI augmented caceh size
+        unsigned int ToyCacheSize;
+
         // Instantitates a toy object
         Toy(const ToyParams &p);
 
