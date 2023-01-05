@@ -21,6 +21,7 @@ namespace gem5
         // Set the size of the DBI
         RegDBISize = RegDBISets * RegDBIAssoc * RegDBIBlkPerDBIEntry;
         this->NumRegDBIEntries = NumRegDBIEntries;
+        RegDBIStore = new DBIEntry[NumRegDBIEntries];
         // Initialize the RegDBIStore
         initRegDBIStore();
     }
