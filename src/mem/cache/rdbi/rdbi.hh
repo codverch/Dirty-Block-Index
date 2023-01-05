@@ -16,9 +16,26 @@ namespace gem5
     class RDBI
     {
     private:
-        vector<vector<RDBIEntry>> RDBIStore;
+        vector<vector<RDBIEntry>> rDBIStore;
+
+        unsigned int numSetBits;
+        unsigned int numBlkBits;
+        unsigned int numblkIndexBits;
+        unsigned int regAddr;
+        unsigned int rDBIIndex;
 
     public:
-        RDBI()
+        RDBI() = default;
+
+        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits);
+
+        Addr getRegDBITag(PacketPtr pkt, unsigned int numBlkBits,
+                          unsigned int numblkIndexBits);
+
+        unsigned int getRDBIEntryIndex(PacketPtr pkt, unsigned int numBlkBits,
+                                       unsigned int numblkIndexBits);
+
+        bool isDirty(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
+                     unsigned int numblkIndexBits);
     };
 }

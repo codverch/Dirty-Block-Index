@@ -26,7 +26,7 @@ namespace gem5
         unsigned int numDBISets(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry, unsigned int dbiAssoc);
         unsigned int numDBISetsBits(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry, unsigned int dbiAssoc);
         unsigned int numBlockSizeBits(unsigned int blkSize);
-        unsigned int numBlocksPerDBIEntryBits(unsigned int blocksPerDBIEntry);
+        unsigned int numBlockIndexBits(unsigned int blkEntry);
 
         void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
