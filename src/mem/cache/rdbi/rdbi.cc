@@ -36,7 +36,7 @@ namespace gem5
 
     bool
     RDBI::isDirty(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                  unsigned int numblkIndexBits)
+                  unsigned int numblkIndexBits, PacketList &writebacks)
     {
 
         // Get the complete address
@@ -65,8 +65,19 @@ namespace gem5
                 // If the entry is valid, return the dirty bit
                 if (entry.validBit == 1)
                 {
-                    // Check the entry's dirty bit from the bitset
-                    return entry.dirtyBits.test(blkIndex);
+
+                    // Do writeback if dirty bit is set and clear it after writeback
+                    if (entry.dirtyBits.test(blkIndex) == 1)
+                    {
+                        // Create a new packet for writeback
+                        PacketPtr wbPkt = new Packet(pkt->req, MemCmd::WritebackDirty);
+                        // Set the address of the packet to the address of the dirty block, by re-generating the packet address
+                        wbPkt->setAddr((entry.regTag << (numBlkBits + numblkIndexBits)) | (blkIndex << numBlkBits));
+                        // Add the packet to the writeback list
+                        writebacks.push_back(wbPkt);
+                        // Clear the dirty bit
+                        entry.dirtyBits.reset(blkIndex);
+                    }
                 }
 
                 else
@@ -81,7 +92,7 @@ namespace gem5
 
     void
     RDBI::clearDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                        unsigned int numblkIndexBits)
+                        unsigned int numblkIndexBits, PacketList &writebacks)
     {
 
         // Get the complete address
@@ -120,7 +131,7 @@ namespace gem5
 
     void
     RDBI::setDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                      unsigned int numblkIndexBits)
+                      unsigned int numblkIndexBits, PacketList &writebacks)
     {
 
         // Get the complete address
@@ -149,6 +160,7 @@ namespace gem5
                 // If the entry is valid, return the dirty bit
                 if (entry.validBit == 1)
                 {
+
                     // Check the entry's dirty bit from the bitset
                     entry.dirtyBits.set(blkIndex);
                 }

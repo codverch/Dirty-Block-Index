@@ -8,6 +8,7 @@
 #include "mem/packet.hh"
 #include "mem/cache/rdbi/rdbi_entry.hh"
 #include "mem/cache/dbi.hh"
+#include "mem/cache/cache.hh"
 
 using namespace std;
 
@@ -35,13 +36,13 @@ namespace gem5
                                        unsigned int numblkIndexBits);
 
         bool isDirty(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                     unsigned int numblkIndexBits);
+                     unsigned int numblkIndexBits, PacketList &writebacks);
 
         void clearDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                           unsigned int numblkIndexBits);
+                           unsigned int numblkIndexBits, PacketList &writebacks);
 
         void setDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                         unsigned int numblkIndexBits);
+                         unsigned int numblkIndexBits, PacketList &writebacks);
     };
 }
 

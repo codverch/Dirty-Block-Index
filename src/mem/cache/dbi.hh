@@ -7,6 +7,7 @@
 #include "mem/cache/cache.hh"
 #include "mem/packet.hh"
 #include "mem/cache/rdbi/rdbi.hh"
+#include "mem/cache/cache.hh"
 
 using namespace std;
 

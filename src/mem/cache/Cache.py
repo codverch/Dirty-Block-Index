@@ -165,9 +165,6 @@ class NoncoherentCache(BaseCache):
     # This is typically a last level cache and any clean
     # writebacks would be unnecessary traffic to the main memory.
     writeback_clean = False
-  
-    
-
     
 class DBICache(Cache):
     type = 'DBICache'
