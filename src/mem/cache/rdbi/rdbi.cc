@@ -71,6 +71,12 @@ namespace gem5
                     // Check the entry's dirty bit from the bitset
                     return entry.dirtyBits.test(blkIndex);
                 }
+
+                else
+                {
+                    // If the entry is not valid, return false
+                    return false;
+                }
             }
         }
 

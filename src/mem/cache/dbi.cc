@@ -28,6 +28,8 @@ namespace gem5
           cacheSize(p.size),
           blkSize(p.blkSize)
     {
+        RDBI rdbi(numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+                  numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry));
         DPRINTF(DBICache, "Hey, I am a DBICache object");
     }
 
