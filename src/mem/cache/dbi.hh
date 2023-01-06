@@ -18,7 +18,7 @@ namespace gem5
     {
 
     protected:
-        RDBI RDBIStore;
+        RDBI *rdbi;
 
         unsigned int numBlksInCache(unsigned int cacheSize, unsigned int blkSize);
         unsigned int numBlksInDBI(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha);
@@ -39,12 +39,6 @@ namespace gem5
         CacheBlk *handleFill(PacketPtr pkt, CacheBlk *blk,
                              PacketList &writebacks, bool allocate);
 
-        bool isBlkSet(CacheBlk *blk, unsigned bits);
-
-        void setBlkCoherenceBits(CacheBlk *blk, unsigned bits);
-
-        void clearBlkCoherenceBits(CacheBlk *blk, unsigned bits);
-
     public:
         // Alpha needs to be re-defined as type ALPHA
         float alpha;
@@ -52,6 +46,7 @@ namespace gem5
         unsigned int blkEntry;
         unsigned int cacheSize;
         unsigned int blkSize;
+        rdbi = new RDBI(numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc), numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry));
 
         DBICache(const DBICacheParams &p);
     }
