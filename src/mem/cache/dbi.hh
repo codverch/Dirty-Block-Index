@@ -13,6 +13,7 @@ using namespace std;
 namespace gem5
 {
     struct DBICacheParams;
+    class RDBI;
 
     class DBICache : public Cache
     {
@@ -46,11 +47,9 @@ namespace gem5
         unsigned int blkEntry;
         unsigned int cacheSize;
         unsigned int blkSize;
-        rdbi = new RDBI(numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc), numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry));
 
         DBICache(const DBICacheParams &p);
-    }
-
+    };
 }
 
 #endif // _MEM_CACHE_DBI_HH_

@@ -7,10 +7,6 @@ using namespace std;
 namespace gem5
 {
 
-    RDBI::RDBI()
-    {
-    }
-
     RDBI::RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits)
     {
         numSetBits = _numSetBits;
@@ -19,7 +15,8 @@ namespace gem5
     }
 
     Addr
-    RDBI::getRegDBITag(PacketPtr pkt)
+    RDBI::getRegDBITag(PacketPtr pkt, unsigned int numBlkBits,
+                               unsigned int numblkIndexBits)
     {
         Addr addr = pkt->getAddr();
         regAddr = addr >> (numBlkBits + numblkIndexBits);
@@ -47,11 +44,11 @@ namespace gem5
         // Shift right to remove the block offset bits
         Addr temp = addr >> numBlkBits;
         // Construct bitmask with 1's in the lower (z) bits from notes
-        int bitmask = (1 << numBlkIndexBits) - 1;
+        int bitmask = (1 << numblkIndexBits) - 1;
         // AND the bitmask with the shifted address to get the block index
         int blkIndex = temp & bitmask;
 
-        regAddr = getRegDBITag(pkt);
+        regAddr = getRegDBITag(pkt, numBlkBits, numblkIndexBits);
 
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt, numSetBits, numBlkBits, numblkIndexBits);
@@ -60,7 +57,7 @@ namespace gem5
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
 
         // Iterate through the inner vector of DBI entries using an iterator
-        for (vector<DBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
+        for (vector<RDBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
         {
             RDBIEntry &entry = *i;
             if (entry.regTag == regAddr)
@@ -80,8 +77,6 @@ namespace gem5
             }
         }
 
-        // If no matching DBI entry was found, return an empty DBI entry
-        return RDBIEntry();
     }
 
     void
@@ -94,11 +89,11 @@ namespace gem5
         // Shift right to remove the block offset bits
         Addr temp = addr >> numBlkBits;
         // Construct bitmask with 1's in the lower (z) bits from notes
-        int bitmask = (1 << numBlkIndexBits) - 1;
+        int bitmask = (1 << numblkIndexBits) - 1;
         // AND the bitmask with the shifted address to get the block index
         int blkIndex = temp & bitmask;
 
-        regAddr = getRegDBITag(pkt);
+        regAddr = getRegDBITag(pkt, numBlkBits, numblkIndexBits);
 
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt, numSetBits, numBlkBits, numblkIndexBits);
@@ -107,7 +102,7 @@ namespace gem5
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
 
         // Iterate through the inner vector of DBI entries using an iterator
-        for (vector<DBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
+        for (vector<RDBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
         {
             RDBIEntry &entry = *i;
             if (entry.regTag == regAddr)
@@ -133,11 +128,11 @@ namespace gem5
         // Shift right to remove the block offset bits
         Addr temp = addr >> numBlkBits;
         // Construct bitmask with 1's in the lower (z) bits from notes
-        int bitmask = (1 << numBlkIndexBits) - 1;
+        int bitmask = (1 << numblkIndexBits) - 1;
         // AND the bitmask with the shifted address to get the block index
         int blkIndex = temp & bitmask;
 
-        regAddr = getRegDBITag(pkt);
+        regAddr = getRegDBITag(pkt, numBlkBits, numblkIndexBits);
 
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt, numSetBits, numBlkBits, numblkIndexBits);
@@ -146,7 +141,7 @@ namespace gem5
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
 
         // Iterate through the inner vector of DBI entries using an iterator
-        for (vector<DBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
+        for (vector<RDBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
         {
             RDBIEntry &entry = *i;
             if (entry.regTag == regAddr)
@@ -163,7 +158,7 @@ namespace gem5
             {
                 // If there wasn't a match for the regTag, iterate over the generated index and
                 // check if there is an invalid entry at the rDBIIndex
-                for (vector<DBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
+                for (vector<RDBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
                 {
                     RDBIEntry &entry = *i;
                     if (entry.validBit == 0)

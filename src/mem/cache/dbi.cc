@@ -14,12 +14,18 @@
 #include "mem/cache/tags/base.hh"
 #include "mem/cache/write_queue_entry.hh"
 #include "mem/cache/rdbi/rdbi.hh"
+#include "mem/cache/rdbi/rdbi_entry.hh"
 #include "params/DBICache.hh"
+#include "mem/packet.hh"
+
 
 using namespace std;
 
+
 namespace gem5
 {
+    
+    
     DBICache::DBICache(const DBICacheParams &p)
         : Cache(p),
           alpha(p.alpha),
@@ -28,7 +34,9 @@ namespace gem5
           cacheSize(p.size),
           blkSize(p.blkSize)
     {
-
+        rdbi = new RDBI(numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+                        numBlockSizeBits(blkSize),
+                        numBlockIndexBits(blkEntry));
         DPRINTF(DBICache, "Hey, I am a DBICache object");
     }
 
@@ -62,8 +70,8 @@ namespace gem5
     unsigned int
     DBICache::numDBISetsBits(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry, unsigned int dbiAssoc)
     {
-        unsigned int numDBISets = numDBISets(cacheSize, blkSize, alpha, blkEntry, dbiAssoc);
-        return log2(numDBISets) + 1;
+        unsigned int _numDBISets = numDBISets(cacheSize, blkSize, alpha, blkEntry, dbiAssoc);
+        return log2(_numDBISets) + 1;
     }
 
     unsigned int
@@ -128,10 +136,10 @@ namespace gem5
         if (overwrite_mem)
         {
             std::memcpy(blk_data, &overwrite_val, pkt->getSize());
-            setBlkCoherenceBits(blk, CacheBlk::DirtyBit);
-            rdbi->setDirtyBit(pkt->getAddr(), numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc), numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry));
+            
+            rdbi->setDirtyBit(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc), numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry));
 
-            if (rdbi->isDirty(pkt->getAddr(), numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc), numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry)))
+            if (rdbi->isDirty(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc), numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry)))
             {
                 cout << pkt->getAddr() << endl;
             }
@@ -164,11 +172,11 @@ namespace gem5
                            pkt->cmd == MemCmd::SCUpgradeFailReq);
                     assert(!pkt->hasSharers());
 
-                    if (rdbi->isDirty(pkt->getAddr(), numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+                    if (rdbi->isDirty(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
                                       numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry)))
                     {
                         pkt->setCacheResponding();
-                        rdbi->clearDirtyBit(PacketPtr pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+                        rdbi->clearDirtyBit(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
                                             numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry));
                     }
                 }
@@ -177,14 +185,14 @@ namespace gem5
                          pkt->cmd != MemCmd::ReadCleanReq)
                 {
 
-                    if (rdbi.isBlkSet((PacketPtr pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
-                                       numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry))))
+                    if (rdbi->isDirty(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+                                       numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry)))
                     {
                         cout << pkt->getAddr() << endl;
                         if (!deferred_response)
                         {
                             pkt->setCacheResponding();
-                            rdbi->clearDirtyBit(PacketPtr pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+                            rdbi->clearDirtyBit(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
                                                 numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry));
                         }
                         else
@@ -276,10 +284,10 @@ namespace gem5
                         // blk->setCoherenceBits(CacheBlk::DirtyBit);
                         // setBlkCoherenceBits(pkt->getAddr(), CacheBlk::DirtyBit);
                         // setBlkCoherenceBits(blk, CacheBlk::DirtyBit);
-                        rdbi->setDirtyBit(pkt->getAddr(), numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
-                                          numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry), dbiAssoc);
+                        rdbi->setDirtyBit(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+                                          numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry));
 
-                        if (rdbi->isDirty(pkt->getAddr(), numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+                        if (rdbi->isDirty(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
                                           numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry)))
                         {
                             cout << pkt->getAddr() << endl;
@@ -552,7 +560,7 @@ namespace gem5
         // blk->setCoherenceBits(CacheBlk::ReadableBit);
         // setBlkCoherenceBits(pkt->getAddr(), CacheBlk::DirtyBit);
 
-        rdbi->setDirtyBit(pkt->getAddr(), numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+        rdbi->setDirtyBit(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
                           numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry));
 
         // sanity check for whole-line writes, which should always be
@@ -586,7 +594,7 @@ namespace gem5
 
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
                 // setBlkCoherenceBits(pkt->getAddr(), CacheBlk::DirtyBit);
-                rdbi->setDirtyBit(pkt->getAddr(), numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+                rdbi->setDirtyBit(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
                                   numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry));
 
                 // insertIntoToyStore(pkt->getAddr(), true);
@@ -595,7 +603,7 @@ namespace gem5
                 //     cout << pkt->getAddr() << endl;
                 // }
 
-                if (rdbi->isDirty(pkt->getAddr(), numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
+                if (rdbi->isDirty(pkt, numDBISetsBits(cacheSize, blkSize, alpha, blkEntry, dbiAssoc),
                                   numBlockSizeBits(blkSize), numBlockIndexBits(blkEntry)))
                 {
                     cout << pkt->getAddr() << endl;
