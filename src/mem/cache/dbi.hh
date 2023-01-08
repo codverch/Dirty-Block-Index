@@ -18,24 +18,18 @@ namespace gem5
 
     class DBICache : public Cache
     {
+
+    protected:
+        RDBI *rdbi;
+
         uint32_t numBlksInCache;
         uint32_t numBlksInDBI;
+        uint32_t numBlksInRegion;
         uint32_t numDBIEntries;
         uint32_t numDBISets;
         uint32_t numDBISetsBits;
         uint32_t numBlockSizeBits;
         uint32_t numBlockIndexBits;
-
-    protected:
-        RDBI *rdbi;
-
-        unsigned int numBlksInCache(unsigned int cacheSize, unsigned int blkSize);
-        unsigned int numBlksInDBI(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha);
-        unsigned int numDBIEntries(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry);
-        unsigned int numDBISets(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry, unsigned int dbiAssoc);
-        unsigned int numDBISetsBits(unsigned int cacheSize, unsigned int blkSize, unsigned int alpha, unsigned int blkEntry, unsigned int dbiAssoc);
-        unsigned int numBlockSizeBits(unsigned int blkSize);
-        unsigned int numBlockIndexBits(unsigned int blkEntry);
 
         void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
@@ -49,6 +43,7 @@ namespace gem5
                              PacketList &writebacks, bool allocate);
 
     public:
+        // Also, don't keep these as public
         // Alpha needs to be re-defined as type ALPHA
         float alpha;
         unsigned int dbiAssoc;
