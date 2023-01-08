@@ -27,24 +27,21 @@ namespace gem5
         unsigned int Assoc;
         unsigned int regAddr;
         unsigned int rDBIIndex;
-        int blkIndexInBitset;
+        unsigned int blkIndexInBitset;
 
-        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits);
+        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc);
 
-        int getblkIndexInBitset(PacketPtr pkt);
+        unsigned int getblkIndexInBitset(PacketPtr pkt);
 
         Addr getRegDBITag(PacketPtr pkt);
 
         int getRDBIEntryIndex(PacketPtr pkt);
 
-        bool isDirty(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                     unsigned int numblkIndexBits, PacketList &writebacks);
+        bool isDirty(PacketPtr pkt);
 
-        void clearDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                           unsigned int numblkIndexBits, PacketList &writebacks);
+        void clearDirtyBit(PacketPtr pkt, PacketList &writebacks);
 
-        void setDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                         unsigned int numblkIndexBits, PacketList &writebacks);
+        void setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks);
     };
 }
 
