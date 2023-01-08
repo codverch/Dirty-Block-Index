@@ -40,9 +40,7 @@ namespace gem5
         numBlockSizeBits = log2(blkSize);
         numBlockIndexBits = log2(numBlksInRegion);
 
-        rdbi = new RDBI(numDBISetsBits,
-                        numBlockSizeBits,
-                        numBlockIndexBits);
+        rdbi = new RDBI(numDBISetsBits, numBlockSizeBits, numBlockIndexBits, dbiAssoc);
         DPRINTF(DBICache, "Hey, I am a DBICache object");
     }
 

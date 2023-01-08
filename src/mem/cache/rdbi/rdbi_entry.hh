@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include "base/types.hh"
+#include "mem/cache/cache_blk.hh"
 
 using namespace std;
 
@@ -26,7 +27,6 @@ namespace gem5
             blkPtrs = vector<CacheBlk *>(numBlksPerRegion, nullptr);
         }
     };
-
 }
 
 #endif // _MEM_CACHE_REGION_DBI_RDBI_ENTRY_HH_

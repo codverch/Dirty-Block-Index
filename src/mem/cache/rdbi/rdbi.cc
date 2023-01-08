@@ -7,52 +7,53 @@ using namespace std;
 namespace gem5
 {
 
-    RDBI::RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits)
+    RDBI::RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc)
     {
         numSetBits = _numSetBits;
         numBlkBits = _numBlkBits;
         numblkIndexBits = _numblkIndexBits;
-
+        Assoc = _assoc;
         rDBIStore = vector<vector<RDBIEntry>>(numSets, vector<RDBIEntry>(assoc, RDBIEntry(numBlksPerRegion)));
     }
 
     Addr
-    RDBI::getRegDBITag(PacketPtr pkt, unsigned int numBlkBits,
-                               unsigned int numblkIndexBits)
+    RDBI::getRegDBITag(PacketPtr pkt)
     {
         Addr addr = pkt->getAddr();
         regAddr = addr >> (numBlkBits + numblkIndexBits);
         return regAddr;
     }
 
-    unsigned int
-    RDBI::getRDBIEntryIndex(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                            unsigned int numblkIndexBits)
+    int
+    RDBI::getRDBIEntryIndex(PacketPtr pkt)
     {
-        Addr addr = pkt->getAddr();
-        regAddr = addr >> (numBlkBits + numblkIndexBits);
+        regAddr = getRegDBITag(pkt);
         int rDBIIndex = regAddr & ((1 << numSetBits) - 1);
 
         return rDBIIndex;
+    }
+
+    int
+    RDBI::getblkIndexInBitset(PacketPtr pkt)
+    {
+        Addr addr = pkt->getAddr();
+        Addr temp = addr >> numBlkBits;
+        int bitmask = (1 << numblkIndexBits) - 1;
+        int blkIndexInBitset = temp & bitmask;
+
+        return blkIndexInBitset;
     }
 
     bool
     RDBI::isDirty(PacketPtr pkt)
     {
 
-        // Get the complete address
-        Addr addr = pkt->getAddr();
-        // Shift right to remove the block offset bits
-        Addr temp = addr >> numBlkBits;
-        // Construct bitmask with 1's in the lower (z) bits from notes
-        int bitmask = (1 << numblkIndexBits) - 1;
-        // AND the bitmask with the shifted address to get the block index
-        int blkIndex = temp & bitmask;
-
-        regAddr = getRegDBITag(pkt, numBlkBits, numblkIndexBits);
+        // Get the block index from the bitset
+        blkIndexInBitset = getblkIndexInBitset(pkt);
+        regAddr = getRegDBITag(pkt);
 
         // Identify the entry
-        rDBIIndex = getRDBIEntryIndex(pkt, numSetBits, numBlkBits, numblkIndexBits);
+        rDBIIndex = getRDBIEntryIndex(pkt);
 
         // Get the inner vector of DBI entries at the specified index location
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
@@ -71,7 +72,6 @@ namespace gem5
                 }
             }
         }
-
     }
 
     void
