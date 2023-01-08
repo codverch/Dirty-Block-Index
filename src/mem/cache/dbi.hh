@@ -18,6 +18,13 @@ namespace gem5
 
     class DBICache : public Cache
     {
+        uint32_t numBlksInCache;
+        uint32_t numBlksInDBI;
+        uint32_t numDBIEntries;
+        uint32_t numDBISets;
+        uint32_t numDBISetsBits;
+        uint32_t numBlockSizeBits;
+        uint32_t numBlockIndexBits;
 
     protected:
         RDBI *rdbi;
@@ -45,7 +52,7 @@ namespace gem5
         // Alpha needs to be re-defined as type ALPHA
         float alpha;
         unsigned int dbiAssoc;
-        unsigned int blkEntry;
+        unsigned int numBlksInRegion;
         unsigned int cacheSize;
         unsigned int blkSize;
 

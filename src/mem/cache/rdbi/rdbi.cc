@@ -12,6 +12,8 @@ namespace gem5
         numSetBits = _numSetBits;
         numBlkBits = _numBlkBits;
         numblkIndexBits = _numblkIndexBits;
+
+        rDBIStore = vector<vector<RDBIEntry>>(numSets, vector<RDBIEntry>(assoc, RDBIEntry(numBlksPerRegion)));
     }
 
     Addr
@@ -35,8 +37,7 @@ namespace gem5
     }
 
     bool
-    RDBI::isDirty(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                  unsigned int numblkIndexBits, PacketList &writebacks)
+    RDBI::isDirty(PacketPtr pkt)
     {
 
         // Get the complete address
@@ -65,25 +66,8 @@ namespace gem5
                 // If the entry is valid, return the dirty bit
                 if (entry.validBit == 1)
                 {
-
-                    // Do writeback if dirty bit is set and clear it after writeback
-                    if (entry.dirtyBits.test(blkIndex) == 1)
-                    {
-                        // Create a new packet for writeback
-                        PacketPtr wbPkt = new Packet(pkt->req, MemCmd::WritebackDirty);
-                        // Set the address of the packet to the address of the dirty block, by re-generating the packet address
-                        wbPkt->setAddr((entry.regTag << (numBlkBits + numblkIndexBits)) | (blkIndex << numBlkBits));
-                        // Add the packet to the writeback list
-                        writebacks.push_back(wbPkt);
-                        // Clear the dirty bit
-                        entry.dirtyBits.reset(blkIndex);
-                    }
-                }
-
-                else
-                {
-                    // If the entry is not valid, return false
-                    return false;
+                    // Check the entry's dirty bit from the bitset
+                    return entry.dirtyBits.test(blkIndex);
                 }
             }
         }
@@ -91,8 +75,7 @@ namespace gem5
     }
 
     void
-    RDBI::clearDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                        unsigned int numblkIndexBits, PacketList &writebacks)
+    RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
 
         // Get the complete address
@@ -121,7 +104,6 @@ namespace gem5
                 // If the entry is valid, return the dirty bit
                 if (entry.validBit == 1)
                 {
-                    // NEEDS TO DO WRITEBACK
                     // Check the entry's dirty bit from the bitset
                     entry.dirtyBits.reset(blkIndex);
                 }
@@ -130,8 +112,7 @@ namespace gem5
     }
 
     void
-    RDBI::setDirtyBit(PacketPtr pkt, unsigned int numSetBits, unsigned int numBlkBits,
-                      unsigned int numblkIndexBits, PacketList &writebacks)
+    RDBI::setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks)
     {
 
         // Get the complete address
@@ -182,29 +163,27 @@ namespace gem5
                         // Set the dirty bit at the block index
                         entry.dirtyBits.set(blkIndex);
                         // Break out of the loop
-                        break;
-                    }
-
-                    // If there wasn't an invalid entry, then we need to evict an entry and replace it, but at the same rDBIIndex
-                    else
-                    {
-                        // NEEDS TO DO WRITEBACK
-                        // Evict the entry at the rDBIIndex
-                        rDBIEntries.erase(i);
-                        // Create a new entry
-                        RDBIEntry newEntry;
-                        // Set the valid bit to 1
-                        newEntry.validBit = 1;
-                        // Set the regTag to the current regAddr
-                        newEntry.regTag = regAddr;
-                        // Set the dirty bit at the block index
-                        newEntry.dirtyBits.set(blkIndex);
-                        // Push the new entry into the rDBIEntries vector
-                        rDBIEntries.push_back(newEntry);
-                        // Break out of the loop
-                        break;
+                        entry.blkPtrs[blkIndex] = blkPtr;
+                        return;
                     }
                 }
+
+                // If there wasn't an invalid entry, then we need to evict an entry and replace it, but at the same rDBIIndex
+                // NEEDS TO DO WRITEBACK
+                // Evict the entry at the rDBIIndex
+                rDBIEntries.erase(i);
+                // Create a new entry
+                RDBIEntry newEntry;
+                // Set the valid bit to 1
+                newEntry.validBit = 1;
+                // Set the regTag to the current regAddr
+                newEntry.regTag = regAddr;
+                // Set the dirty bit at the block index
+                newEntry.dirtyBits.set(blkIndex);
+                // Push the new entry into the rDBIEntries vector
+                rDBIEntries.push_back(newEntry);
+                // Break out of the loop
+                break;
             }
         }
     }

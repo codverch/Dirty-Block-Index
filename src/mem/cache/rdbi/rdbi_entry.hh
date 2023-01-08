@@ -14,11 +14,17 @@ namespace gem5
     {
     public:
         int validBit;
-        unsigned int regTag;
-        bitset<64> dirtyBits;
+        Addr regTag;
+        bitset<128> dirtyBits;
+        vector<CacheBlk *> blkPtrs;
 
-        RDBIEntry() = default;
-        RDBIEntry(int validBit, unsigned int regTag, bitset<64> dirtyBits) : validBit(validBit), regTag(regTag), dirtyBits(dirtyBits) {}
+        RDBIEntry(int numBlksPerRegion)
+        {
+            validBit = 0;
+            regTag = 0;
+            dirtyBits = bitset<128>(0);
+            blkPtrs = vector<CacheBlk *>(numBlksPerRegion, nullptr);
+        }
     };
 
 }
