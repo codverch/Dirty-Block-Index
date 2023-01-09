@@ -44,7 +44,7 @@ namespace gem5
 
         void setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks);
 
-        void evictDBIEntry(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks);
+        void evictDBIEntry(PacketList &writebacks, int rDBIIndex);
     };
 }
 
