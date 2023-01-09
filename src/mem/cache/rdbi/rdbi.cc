@@ -1,19 +1,23 @@
 
 #include "mem/cache/rdbi/rdbi.hh"
 #include "mem/cache/rdbi/rdbi_entry.hh"
+#include "base/statistics.hh"
+#include "mem/cache/base.hh"
 
 using namespace std;
 
 namespace gem5
 {
+    CacheStats stats;
 
-    RDBI::RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc)
+    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion)
     {
-        numSetBits = _numSetBits;
+        numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
         numblkIndexBits = _numblkIndexBits;
         Assoc = _assoc;
-        rDBIStore = vector<vector<RDBIEntry>>(numSets, vector<RDBIEntry>(assoc, RDBIEntry(numBlksPerRegion)));
+        numBlksInRegion = _numBlksInRegion;
+        rDBIStore = vector<vector<RDBIEntry>>(_numSets, vector<RDBIEntry>(_assoc, RDBIEntry(numBlksInRegion)));
     }
 
     Addr
@@ -27,13 +31,13 @@ namespace gem5
     int
     RDBI::getRDBIEntryIndex(PacketPtr pkt)
     {
+
         regAddr = getRegDBITag(pkt);
         int rDBIIndex = regAddr & ((1 << numSetBits) - 1);
-
         return rDBIIndex;
     }
 
-    int
+    unsigned int
     RDBI::getblkIndexInBitset(PacketPtr pkt)
     {
         Addr addr = pkt->getAddr();
@@ -51,7 +55,6 @@ namespace gem5
         // Get the block index from the bitset
         blkIndexInBitset = getblkIndexInBitset(pkt);
         regAddr = getRegDBITag(pkt);
-
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt);
 
@@ -64,11 +67,11 @@ namespace gem5
             RDBIEntry &entry = *i;
             if (entry.regTag == regAddr)
             {
-                // If the entry is valid, return the dirty bit
+                // If the entry is valid, check if the dirty bit is set
                 if (entry.validBit == 1)
                 {
                     // Check the entry's dirty bit from the bitset
-                    return entry.dirtyBits.test(blkIndex);
+                    return entry.dirtyBits.test(blkIndexInBitset);
                 }
             }
         }
@@ -78,19 +81,11 @@ namespace gem5
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
 
-        // Get the complete address
-        Addr addr = pkt->getAddr();
-        // Shift right to remove the block offset bits
-        Addr temp = addr >> numBlkBits;
-        // Construct bitmask with 1's in the lower (z) bits from notes
-        int bitmask = (1 << numblkIndexBits) - 1;
-        // AND the bitmask with the shifted address to get the block index
-        int blkIndex = temp & bitmask;
-
-        regAddr = getRegDBITag(pkt, numBlkBits, numblkIndexBits);
-
+        // Get the block index from the bitset
+        blkIndexInBitset = getblkIndexInBitset(pkt);
+        regAddr = getRegDBITag(pkt);
         // Identify the entry
-        rDBIIndex = getRDBIEntryIndex(pkt, numSetBits, numBlkBits, numblkIndexBits);
+        rDBIIndex = getRDBIEntryIndex(pkt);
 
         // Get the inner vector of DBI entries at the specified index location
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
@@ -101,11 +96,15 @@ namespace gem5
             RDBIEntry &entry = *i;
             if (entry.regTag == regAddr)
             {
-                // If the entry is valid, return the dirty bit
+                // If the entry is valid, clear the dirty bit
                 if (entry.validBit == 1)
                 {
                     // Check the entry's dirty bit from the bitset
-                    entry.dirtyBits.reset(blkIndex);
+                    entry.dirtyBits.reset(blkIndexInBitset);
+                    if (entry.dirtyBits.none())
+                    {
+                        entry.validBit = 0;
+                    }
                 }
             }
         }
@@ -114,20 +113,11 @@ namespace gem5
     void
     RDBI::setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks)
     {
-
-        // Get the complete address
-        Addr addr = pkt->getAddr();
-        // Shift right to remove the block offset bits
-        Addr temp = addr >> numBlkBits;
-        // Construct bitmask with 1's in the lower (z) bits from notes
-        int bitmask = (1 << numblkIndexBits) - 1;
-        // AND the bitmask with the shifted address to get the block index
-        int blkIndex = temp & bitmask;
-
-        regAddr = getRegDBITag(pkt, numBlkBits, numblkIndexBits);
-
+        // Get the block index from the bitset
+        blkIndexInBitset = getblkIndexInBitset(pkt);
+        regAddr = getRegDBITag(pkt);
         // Identify the entry
-        rDBIIndex = getRDBIEntryIndex(pkt, numSetBits, numBlkBits, numblkIndexBits);
+        rDBIIndex = getRDBIEntryIndex(pkt);
 
         // Get the inner vector of DBI entries at the specified index location
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
@@ -138,12 +128,11 @@ namespace gem5
             RDBIEntry &entry = *i;
             if (entry.regTag == regAddr)
             {
-                // If the entry is valid, return the dirty bit
+                // If the entry is valid
                 if (entry.validBit == 1)
                 {
-
-                    // Check the entry's dirty bit from the bitset
-                    entry.dirtyBits.set(blkIndex);
+                    // Set the entry's dirty bit from the bitset
+                    entry.dirtyBits.set(blkIndexInBitset);
                 }
             }
 
@@ -161,29 +150,79 @@ namespace gem5
                         // Set the regTag to the current regAddr
                         entry.regTag = regAddr;
                         // Set the dirty bit at the block index
-                        entry.dirtyBits.set(blkIndex);
+                        entry.dirtyBits.set(blkIndexInBitset);
                         // Break out of the loop
-                        entry.blkPtrs[blkIndex] = blkPtr;
+                        entry.blkPtrs[blkIndexInBitset] = blkPtr;
                         return;
                     }
                 }
 
-                // If there wasn't an invalid entry, then we need to evict an entry and replace it, but at the same rDBIIndex
-                // NEEDS TO DO WRITEBACK
-                // Evict the entry at the rDBIIndex
-                rDBIEntries.erase(i);
-                // Create a new entry
-                RDBIEntry newEntry;
-                // Set the valid bit to 1
-                newEntry.validBit = 1;
-                // Set the regTag to the current regAddr
-                newEntry.regTag = regAddr;
-                // Set the dirty bit at the block index
-                newEntry.dirtyBits.set(blkIndex);
-                // Push the new entry into the rDBIEntries vector
-                rDBIEntries.push_back(newEntry);
-                // Break out of the loop
-                break;
+                // If there is no invalid entry, do writeback by creating a new packet and appending it to the PacketList.
+                // Then, evict the RDBIEntry at the random index and set the new entry's valid bit to 1
+                // Call the evictDBIEntry function that takes a pointer to the rDBIEntries at rDBIIndex
+                evictDBIEntry(writebacks, rDBIEntries);
+
+                // Over-write the values at the current DBIEntry, since writebacks are already done
+                entry.validBit = 1;
+                entry.regTag = regAddr;
+                entry.dirtyBits.set(blkIndexInBitset);
+                entry.blkPtrs[blkIndexInBitset] = blkPtr;
+            }
+        }
+    }
+
+    void
+    RDBI::evictDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries)
+    {
+        // 1. Determine the index of the RDBIEntry to be evicted
+        // 2. Iterate through the RDBIEntries at the generated index and check if the rowtag matches with
+        // any of the DBIEntries
+        // 3. If there is a match, iterate over the bitset field of the RDBIEntry and check if
+        // any of the dirtyBit is set
+        // 4. If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
+        // 5. Re-generate the cache block address from the rowTag
+        // 6. Create a new packet and set the address to the cache block address
+        // 7. Append the packet to the PacketList
+
+        int randomIndex = rand() % Assoc;
+        RDBIEntry &entry = rDBIEntries[randomIndex];
+
+        // Iterate over the bitset within the DBIEntry
+
+        // Iterate over the bitset field of the RDBIEntry and check if
+        // any of the dirtyBit is set
+        for (int i = 0; i < numBlksInRegion; i++)
+        {
+            if (entry.dirtyBits[i] == 1)
+            {
+                // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
+                CacheBlk *blk = entry.blkPtrs[i];
+
+                stats.writebacks[Request::wbRequestorId]++;
+
+                // Re-generate the cache block address from the rowTag
+                Addr addr = (entry.regTag << numBlkBits) | (i << numBlkBits);
+
+                RequestPtr req = std::make_shared<Request>(
+                    addr, blkSize, 0, Request::wbRequestorId);
+
+                if (blk->isSecure())
+                    req->setFlags(Request::SECURE);
+
+                req->taskId(blk->getTaskId());
+                // Create a new packet and set the address to the cache block address
+                PacketPtr wbPkt = new Packet(req, MemCmd::WritebackDirty);
+                wbPkt->setAddr(addr);
+
+                pkt->allocate();
+                pkt->setDataFromBlock(blk->data, blkSize);
+
+                if (compressor)
+                {
+                    pkt->payloadDelay = compressor->getDecompressionLatency(blk);
+                }
+                // Append the packet to the PacketList
+                writebacks.push_back(wbPkt);
             }
         }
     }

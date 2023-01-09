@@ -13,22 +13,34 @@ using namespace std;
 
 namespace gem5
 {
+    // The DBI augmented cache will take certain parameters.
     struct DBICacheParams;
+    // A class named RDBI, which stands for region-level DBI,
+    // is responsible for maintaining the dirty bit for a region in memory.
     class RDBI;
 
     class DBICache : public Cache
     {
 
     protected:
+        // The RDBI object is responsible for maintaining the dirty bit for a region in memory.
         RDBI *rdbi;
 
+        // The total number of blocks contained within the cache.
         uint32_t numBlksInCache;
+        // The total number of blocks contained within the DBI.
         uint32_t numBlksInDBI;
+        // The total number of blocks contained within a region.
         uint32_t numBlksInRegion;
+        // The total number of regions tracked by the DBI i.e., RDBI entries.
         uint32_t numDBIEntries;
+        // The total number of sets in the DBI.
         uint32_t numDBISets;
+        // The number of bits required to represent the number of sets in the DBI.
         uint32_t numDBISetsBits;
+        // The number of bits required to represent the cache block size
         uint32_t numBlockSizeBits;
+        // The number of bits required to index into a set in the DBI.
         uint32_t numBlockIndexBits;
 
         void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
@@ -46,11 +58,13 @@ namespace gem5
         // Also, don't keep these as public
         // Alpha needs to be re-defined as type ALPHA
         float alpha;
+        // The associativity of DBI, or the number of DBI entries contained within a set.
         unsigned int dbiAssoc;
-        unsigned int numBlksInRegion;
+        // The size of the DBI augmented cache.
         unsigned int cacheSize;
+        // The cache block size of DBI augmented cache.
         unsigned int blkSize;
-
+        // A constructor for the DBI augmented cache.
         DBICache(const DBICacheParams &p);
     };
 }

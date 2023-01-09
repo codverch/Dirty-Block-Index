@@ -36,11 +36,11 @@ namespace gem5
         numBlksInDBI = numBlksInCache * alpha;
         numDBIEntries = numBlksInDBI / numBlksInRegion;
         numDBISets = numDBIEntries / dbiAssoc;
-        numDBISetsBits = log2(numDBISets);
+        //  numDBISetsBits = log2(numDBISets);
         numBlockSizeBits = log2(blkSize);
         numBlockIndexBits = log2(numBlksInRegion);
 
-        rdbi = new RDBI(numDBISetsBits, numBlockSizeBits, numBlockIndexBits, dbiAssoc);
+        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion);
         DPRINTF(DBICache, "Hey, I am a DBICache object");
     }
 
@@ -245,7 +245,7 @@ namespace gem5
 
                         rdbi->setDirtyBit(pkt, blk, writebacks);
 
-                        do_writebacks(writebacks);
+                        // do_writebacks(writebacks); Edited by Vivek
 
                         if (rdbi->isDirty(pkt))
                         {

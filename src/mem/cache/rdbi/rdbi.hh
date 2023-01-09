@@ -9,6 +9,7 @@
 #include "mem/cache/rdbi/rdbi_entry.hh"
 #include "mem/cache/dbi.hh"
 #include "mem/cache/cache.hh"
+#include "mem/cache/base.hh"
 
 using namespace std;
 
@@ -20,6 +21,7 @@ namespace gem5
 
     public:
         vector<vector<RDBIEntry>> rDBIStore;
+        
 
         unsigned int numSetBits;
         unsigned int numBlkBits;
@@ -44,7 +46,8 @@ namespace gem5
 
         void setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks);
 
-        void evictDBIEntry(PacketList &writebacks, int *rDBIIndex);
+        // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
+        void evictDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
     };
 }
 
