@@ -27,9 +27,10 @@ namespace gem5
         unsigned int Assoc;
         unsigned int regAddr;
         unsigned int rDBIIndex;
+        unsigned int numBlksInRegion;
         unsigned int blkIndexInBitset;
 
-        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc);
+        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion);
 
         unsigned int getblkIndexInBitset(PacketPtr pkt);
 
@@ -42,6 +43,8 @@ namespace gem5
         void clearDirtyBit(PacketPtr pkt, PacketList &writebacks);
 
         void setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks);
+
+        void evictDBIEntry(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks);
     };
 }
 
