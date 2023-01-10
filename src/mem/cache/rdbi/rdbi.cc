@@ -2,21 +2,20 @@
 #include "mem/cache/rdbi/rdbi.hh"
 #include "mem/cache/rdbi/rdbi_entry.hh"
 #include "base/statistics.hh"
-#include "mem/cache/base.hh"
 
 using namespace std;
 
 namespace gem5
 {
-    CacheStats stats;
 
-    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion)
+    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize)
     {
         numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
         numblkIndexBits = _numblkIndexBits;
         Assoc = _assoc;
         numBlksInRegion = _numBlksInRegion;
+        blkSize = _blkSize;
         rDBIStore = vector<vector<RDBIEntry>>(_numSets, vector<RDBIEntry>(_assoc, RDBIEntry(numBlksInRegion)));
     }
 
@@ -160,7 +159,7 @@ namespace gem5
                 // If there is no invalid entry, do writeback by creating a new packet and appending it to the PacketList.
                 // Then, evict the RDBIEntry at the random index and set the new entry's valid bit to 1
                 // Call the evictDBIEntry function that takes a pointer to the rDBIEntries at rDBIIndex
-                evictDBIEntry(writebacks, rDBIEntries);
+                evictDBIEntry(pkt, writebacks, rDBIEntries);
 
                 // Over-write the values at the current DBIEntry, since writebacks are already done
                 entry.validBit = 1;
@@ -172,7 +171,7 @@ namespace gem5
     }
 
     void
-    RDBI::evictDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries)
+    RDBI::evictDBIEntry(PacketPtr pkt, PacketList &writebacks, vector<RDBIEntry> &rDBIEntries)
     {
         // 1. Determine the index of the RDBIEntry to be evicted
         // 2. Iterate through the RDBIEntries at the generated index and check if the rowtag matches with
@@ -198,7 +197,7 @@ namespace gem5
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                 CacheBlk *blk = entry.blkPtrs[i];
 
-                stats.writebacks[Request::wbRequestorId]++;
+                // stats.writebacks[Request::wbRequestorId]++;
 
                 // Re-generate the cache block address from the rowTag
                 Addr addr = (entry.regTag << numBlkBits) | (i << numBlkBits);
@@ -217,10 +216,10 @@ namespace gem5
                 pkt->allocate();
                 pkt->setDataFromBlock(blk->data, blkSize);
 
-                if (compressor)
-                {
-                    pkt->payloadDelay = compressor->getDecompressionLatency(blk);
-                }
+                // if (compressor)
+                // {
+                //     pkt->payloadDelay = compressor->getDecompressionLatency(blk);
+                // }
                 // Append the packet to the PacketList
                 writebacks.push_back(wbPkt);
             }
