@@ -41,6 +41,7 @@ namespace gem5
         // Cache block size
         unsigned int blkSize;
 
+    public:
         // Constructor
         RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize);
 
