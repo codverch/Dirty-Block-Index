@@ -2,13 +2,16 @@
 #include "mem/cache/rdbi/rdbi.hh"
 #include "mem/cache/rdbi/rdbi_entry.hh"
 #include "base/statistics.hh"
+#include "mem/cache/dbi.hh"
+
 
 using namespace std;
 
 namespace gem5
 {
 
-    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize)
+    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, BaseCache::CacheStats &stats) : _stats(stats)
+    
     {
         numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
@@ -72,8 +75,12 @@ namespace gem5
                     // Check the entry's dirty bit from the bitset
                     return entry.dirtyBits.test(blkIndexInBitset);
                 }
+
+                else 
+                    return false;
             }
         }
+        return false;
     }
 
     void
@@ -179,9 +186,8 @@ namespace gem5
         // 3. If there is a match, iterate over the bitset field of the RDBIEntry and check if
         // any of the dirtyBit is set
         // 4. If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
-        // 5. Re-generate the cache block address from the rowTag
-        // 6. Create a new packet and set the address to the cache block address
-        // 7. Append the packet to the PacketList
+        // 5. Re-generate the cache block address from the rowTag  
+
 
         int randomIndex = rand() % Assoc;
         RDBIEntry &entry = rDBIEntries[randomIndex];
@@ -197,7 +203,7 @@ namespace gem5
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                 CacheBlk *blk = entry.blkPtrs[i];
 
-                // stats.writebacks[Request::wbRequestorId]++;
+                _stats.writebacks[Request::wbRequestorId]++;
 
                 // Re-generate the cache block address from the rowTag
                 Addr addr = (entry.regTag << numBlkBits) | (i << numBlkBits);

@@ -7,7 +7,7 @@
 #include "mem/cache/cache.hh"
 #include "mem/packet.hh"
 #include "mem/cache/rdbi/rdbi.hh"
-#include "mem/cache/cache.hh"
+#include "mem/cache/base.hh"
 
 using namespace std;
 
@@ -25,6 +25,18 @@ namespace gem5
     protected:
         // The RDBI object is responsible for maintaining the dirty bit for a region in memory.
         RDBI *rdbi;
+
+        // The size of the DBI augmented cache.
+        unsigned int cacheSize;
+
+        // Also, don't keep these as public
+        // Alpha needs to be re-defined as type ALPHA
+        float alpha;
+
+        // The associativity of DBI, or the number of DBI entries contained within a set.
+        unsigned int dbiAssoc;
+        // The cache block size of DBI augmented cache.
+        unsigned int blkSize;
 
         // The total number of blocks contained within the cache.
         uint32_t numBlksInCache;
@@ -55,17 +67,9 @@ namespace gem5
                              PacketList &writebacks, bool allocate);
 
     public:
-        // Also, don't keep these as public
-        // Alpha needs to be re-defined as type ALPHA
-        float alpha;
-        // The associativity of DBI, or the number of DBI entries contained within a set.
-        unsigned int dbiAssoc;
-        // The size of the DBI augmented cache.
-        unsigned int cacheSize;
-        // The cache block size of DBI augmented cache.
-        unsigned int blkSize;
         // A constructor for the DBI augmented cache.
         DBICache(const DBICacheParams &p);
+        BaseCache::CacheStats cache_stats;
     };
 }
 

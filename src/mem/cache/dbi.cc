@@ -18,6 +18,7 @@
 #include "params/DBICache.hh"
 #include "mem/packet.hh"
 #include "mem/cache/cache.hh"
+#include "mem/cache/base.hh"
 
 using namespace std;
 
@@ -26,11 +27,13 @@ namespace gem5
 
     DBICache::DBICache(const DBICacheParams &p)
         : Cache(p),
+          cacheSize(p.size),
           alpha(p.alpha),
           dbiAssoc(p.dbi_assoc),
+          blkSize(p.blkSize),
           numBlksInRegion(p.blk_per_dbi_entry),
-          cacheSize(p.size),
-          blkSize(p.blkSize)
+          cache_stats(*this)
+
     {
         numBlksInCache = cacheSize / blkSize;
         numBlksInDBI = numBlksInCache * alpha;
@@ -39,8 +42,7 @@ namespace gem5
         //  numDBISetsBits = log2(numDBISets);
         numBlockSizeBits = log2(blkSize);
         numBlockIndexBits = log2(numBlksInRegion);
-
-        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize);
+        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize, cache_stats);
         DPRINTF(DBICache, "Hey, I am a DBICache object");
     }
 
