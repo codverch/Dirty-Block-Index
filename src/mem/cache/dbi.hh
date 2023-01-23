@@ -69,7 +69,7 @@ namespace gem5
     public:
         // A constructor for the DBI augmented cache.
         DBICache(const DBICacheParams &p);
-        BaseCache::CacheStats cache_stats;
+        // BaseCache::CacheStats *cache_stats;
     };
 }
 

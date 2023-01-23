@@ -31,10 +31,10 @@ namespace gem5
           alpha(p.alpha),
           dbiAssoc(p.dbi_assoc),
           blkSize(p.blkSize),
-          numBlksInRegion(p.blk_per_dbi_entry),
-          cache_stats(*this)
+          numBlksInRegion(p.blk_per_dbi_entry)
 
     {
+        cout << "Hey, I am a DBICache component" << endl;
         numBlksInCache = cacheSize / blkSize;
         numBlksInDBI = numBlksInCache * alpha;
         numDBIEntries = numBlksInDBI / numBlksInRegion;
@@ -42,7 +42,7 @@ namespace gem5
         //  numDBISetsBits = log2(numDBISets);
         numBlockSizeBits = log2(blkSize);
         numBlockIndexBits = log2(numBlksInRegion);
-        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize, cache_stats);
+        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize);
         DPRINTF(DBICache, "Hey, I am a DBICache object");
     }
 

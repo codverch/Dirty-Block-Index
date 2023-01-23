@@ -1,0 +1,15 @@
+Global frequency set at 1000000000000 ticks per second
+Hey, I am a DBICache component
+Hey, I am a RDBI component
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 22.0.0.2
+gem5 compiled Jan 23 2023 13:29:44
+gem5 started Jan 23 2023 14:02:51
+gem5 executing on v100-gpu-4, pid 26389
+command line: ./build/X86/gem5.opt configs/learning_gem5/test_dbi/three_level.py configs/learning_gem5/test_dbi/test -n 10 -t 1
+
+Beginning simulation!
+
+The time taken is 0.001000 milliseconds

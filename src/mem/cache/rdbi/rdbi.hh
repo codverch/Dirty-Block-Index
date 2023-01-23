@@ -42,11 +42,11 @@ namespace gem5
         // Cache block size
         unsigned int blkSize;
 
-        BaseCache::CacheStats &_stats;
+        // BaseCache::CacheStats &_stats;
 
     public:
         // Constructor
-        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, BaseCache::CacheStats &stats);
+        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize);
 
         // Get the cache block index from the bitset
         unsigned int getblkIndexInBitset(PacketPtr pkt);

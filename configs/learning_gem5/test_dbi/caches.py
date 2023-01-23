@@ -84,7 +84,7 @@ class L2Cache(Cache):
     """Simple L2 Cache with default values"""
 
     # Default parameters
-    size = '256kB'
+    size = '4MB'
     assoc = 8
     tag_latency = 2
     data_latency = 6
@@ -136,13 +136,15 @@ class L2Cache(Cache):
 class L3Cache(DBICache):
     """Simple L2 Cache with default values"""
     # Default parameters
-    size = '4096kB'
+    size = '8MB'
+    tag_latency = 10
+    data_latency = 30
+    assoc = 8
     blkSize = '64'
+    assoc = 8
     alpha = 0.5
     dbi_assoc = 2
     blk_per_dbi_entry = 64
-    tag_latency = 10
-    data_latency = 30
     response_latency = 20
     mshrs = 20
     tgts_per_mshr = 12

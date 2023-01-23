@@ -1,34 +1,38 @@
+/*Aim: This program performs addition of two arrays and stores the result in the third. However, during every computation a new cacheline is brought in. */
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <string.h>
-#include <time.h>
+#include <stdlib.h> // for malloc(), and rand()
+#include <getopt.h> // for getopt()
+#include <time.h>   // for clock()
+#include <string.h> // for strcmp()
 
 int main(int argc, char *argv[])
 {
-    int *arr_1, *arr_2, *arr_3;
-    int opt, ch, size, iter = 0, j;
+    // Sum of two arrays: three pointers
+    int *a1, *a2, *a3;
+    // Declaring two variables - for the command line input
+    int s = 0, j = 0; // s - size of the arrays, j - for index
+    // char i[10]; // i = the error to be injected
+
+    // Declaring a choice variable to figure-out which error needs to be injected
+    int ch, size, iter = 0; // iter - iterations
+
+    // To measure the performance
+
     clock_t start, end;
+
     double cpu_time_used, time_taken;
 
-    while ((opt = getopt(argc, argv, ":n:i:t") != -1))
+    // Get the command-line arguments n and i
+    while ((s = getopt(argc, argv, ":n:t")) != -1) // Where, t - number of iterations
     {
-        switch (opt)
+        switch (s)
         {
+
         case 'n':
             if (optarg != NULL)
                 size = atoi(optarg);
-        case 'i':
-            if (strcmp(argv[4], "bo") == 0) // Buffer - Overflow
-                ch = 1;
-            else if (strcmp(argv[4], "uaf") == 0) // Use - After - Free
-                ch = 2;
-            else if (strcmp(argv[4], "df") == 0) // Double - Free
-                ch = 3;
-            else if (strcmp(argv[4], "u") == 0) // Unallocated - Memory
-                ch = 4;
-            else
-                printf("We do not support injecting this error currently\n");
+
         case 't':
             iter = atoi(argv[6]);
             break;
@@ -38,84 +42,35 @@ int main(int argc, char *argv[])
         }
     }
 
-    arr_1 = (int *)malloc(16 * size * sizeof(int));
-    arr_2 = (int *)malloc(16 * size * sizeof(int));
-    arr_3 = (int *)malloc(16 * size * sizeof(int));
+    // Allocate memory in the heap region to the arrays
+
+    a1 = (int *)malloc(size * sizeof(int));
+    a2 = (int *)malloc(size * sizeof(int));
+    a3 = (int *)malloc(size * sizeof(int));
+
+    // Assign values to the arrays - random values between 0 and 99
 
     for (j = 0; j < size; j++)
-        arr_1[j] = rand() % 100;
+        a1[j] = rand() % 100;
 
     for (j = 0; j < size; j++)
-        arr_2[j] = rand() % 100;
+        a2[j] = rand() % 100;
 
-    // Run one iteration of the computation before measuring the computation - why??
-    for (j = 0; j < size; j++)
+    for (int i = 0; i < size; i++)
     {
-        *(arr_3 + j * 16) = *(arr_1 + j * 16) + *(arr_2 + j * 16);
+        a3[i] = a1[i] + a2[i];
     }
 
-    start = clock();
-    while (iter != 0)
+    printf("The result of the addition is:\n");
+    for (int i = 0; i < size; i++)
     {
-        for (j = 0; j < size; j++)
-        {
-            *(arr_3 + j * 16) = *(arr_1 + j * 16) + *(arr_2 + j * 16);
-            //*(arr_3 + j) = *(arr_1 + j) + *(arr_2 + j);
-        }
-
-        iter--;
+        printf("%d ", a3[i]);
     }
-    end = clock();
+    printf("\n");
 
-    cpu_time_used = ((double)end - start) / CLOCKS_PER_SEC;
-    time_taken = cpu_time_used * 1000;
-    printf("\nThe time taken is %lf milliseconds\n", time_taken);
-
-    if (ch == 1) // Buffer - Overflow
-    {
-        printf("Introducing buffer overflow - Accessing a location beyond the range");
-        *(arr_3 + opt + 1) = 4;
-        printf("\nThe value written is: %d\n", *(arr_3 + opt + 1));
-    }
-
-    else if (ch == 2) // Use - After - Free
-    {
-        printf("\nBefore freeing: %d\n", *(arr_3 + 1));
-
-        // Free the memory locations and then try to access it
-        free(arr_1);
-        free(arr_2);
-        free(arr_3);
-
-        printf("After freeing: %d\n", *(arr_3 + 1));
-
-        // Writing to a memory location that has been freed
-        *(arr_3 + 1) = 4;
-        printf("New value: %d\n", *(arr_3 + 1));
-    }
-
-    else if (ch == 3) // Double - Free
-    {
-        // Free the memory twice : to introduce double-free-error
-        free(arr_1);
-        free(arr_2);
-        free(arr_3);
-
-        free(arr_1);
-        free(arr_2);
-        free(arr_3);
-
-        // Occurs in multi-threaded programs
-    }
-
-    else
-    {
-        printf(" To be filled \n");
-    }
-
-    free(arr_1);
-    free(arr_2);
-    free(arr_3);
+    free(a1);
+    free(a2);
+    free(a3);
 
     return 0;
 }

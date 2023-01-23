@@ -10,9 +10,10 @@ using namespace std;
 namespace gem5
 {
 
-    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, BaseCache::CacheStats &stats) : _stats(stats)
-    
+    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize)
+
     {
+        cout << "Hey, I am a RDBI component" << endl;
         numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
         numblkIndexBits = _numblkIndexBits;
@@ -35,7 +36,9 @@ namespace gem5
     {
 
         regAddr = getRegDBITag(pkt);
-        int rDBIIndex = regAddr & ((1 << numSetBits) - 1);
+        // int rDBIIndex = regAddr & ((1 << numSetBits) - 1);
+        int rDBIIndex = (regAddr >> numblkIndexBits) & ((1 << numSetBits) - 1);
+
         return rDBIIndex;
     }
 
@@ -203,7 +206,7 @@ namespace gem5
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                 CacheBlk *blk = entry.blkPtrs[i];
 
-                _stats.writebacks[Request::wbRequestorId]++;
+                //_stats.writebacks[Request::wbRequestorId]++;
 
                 // Re-generate the cache block address from the rowTag
                 Addr addr = (entry.regTag << numBlkBits) | (i << numBlkBits);
