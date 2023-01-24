@@ -7,6 +7,7 @@ line options from each individual class.
 import m5
 from m5.objects import Cache
 from m5.objects import DBICache
+from m5.objects import *
 
 # Add the common scripts to our path
 m5.util.addToPath('../../')
@@ -80,14 +81,19 @@ class L1DCache(L1Cache):
         """Connect this cache's port to a CPU dcache port"""
         self.cpu_side = cpu.dcache_port
 
-class L2Cache(Cache):
+class L2Cache(DBICache):
     """Simple L2 Cache with default values"""
 
     # Default parameters
-    size = '4MB'
+    size = '256kB'
     assoc = 8
     tag_latency = 2
     data_latency = 6
+    blkSize = '64'
+    assoc = 8
+    alpha = 0.5
+    dbi_assoc = 1
+    blk_per_dbi_entry = 128
     response_latency = 20
     mshrs = 20
     tgts_per_mshr = 12
@@ -133,18 +139,15 @@ class L2Cache(Cache):
         self.size = options.l2_size
 
 
-class L3Cache(DBICache):
-    """Simple L2 Cache with default values"""
+    
+class L3Cache(Cache):
+    """Simple L3 Cache with default values"""
+
     # Default parameters
-    size = '8MB'
-    tag_latency = 10
-    data_latency = 30
+    size = '1MB'
     assoc = 8
-    blkSize = '64'
-    assoc = 8
-    alpha = 0.5
-    dbi_assoc = 2
-    blk_per_dbi_entry = 64
+    tag_latency = 20
+    data_latency = 20
     response_latency = 20
     mshrs = 20
     tgts_per_mshr = 12
@@ -162,6 +165,6 @@ class L3Cache(DBICache):
 
     def connectMemSideBus(self, bus):
         self.mem_side = bus.cpu_side_ports
-        
-    
 
+
+        
