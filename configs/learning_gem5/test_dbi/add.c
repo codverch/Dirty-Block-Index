@@ -1,30 +1,19 @@
-/*Aim: This program performs addition of two arrays and stores the result in the third. However, during every computation a new cacheline is brought in. */
-
 #include <stdio.h>
-#include <stdlib.h> // for malloc(), and rand()
-#include <getopt.h> // for getopt()
-#include <time.h>   // for clock()
-#include <string.h> // for strcmp()
+#include <stdlib.h>
+#include <getopt.h>
+#include <time.h>
+#include <string.h>
 
 int main(int argc, char *argv[])
 {
-    // Sum of two arrays: three pointers
+
     int *a1, *a2, *a3;
-    // Declaring two variables - for the command line input
-    int s = 0, j = 0; // s - size of the arrays, j - for index
-    // char i[10]; // i = the error to be injected
 
-    // Declaring a choice variable to figure-out which error needs to be injected
-    int ch, size, iter = 0; // iter - iterations
+    int s = 0, j = 0;
 
-    // To measure the performance
+    int size, iter;
 
-    clock_t start, end;
-
-    double cpu_time_used, time_taken;
-
-    // Get the command-line arguments n and i
-    while ((s = getopt(argc, argv, ":n:t")) != -1) // Where, t - number of iterations
+    while ((s = getopt(argc, argv, ":n:t")) != -1)
     {
         switch (s)
         {
@@ -34,7 +23,7 @@ int main(int argc, char *argv[])
                 size = atoi(optarg);
 
         case 't':
-            iter = atoi(argv[6]);
+            iter = atoi(argv[4]);
             break;
 
         default:
@@ -49,24 +38,26 @@ int main(int argc, char *argv[])
     a3 = (int *)malloc(size * sizeof(int));
 
     // Assign values to the arrays - random values between 0 and 99
-
+    srand(33);
     for (j = 0; j < size; j++)
         a1[j] = rand() % 100;
-
+    srand(33);
     for (j = 0; j < size; j++)
         a2[j] = rand() % 100;
 
-    for (int i = 0; i < size; i++)
+    while (iter != 0)
     {
-        a3[i] = a1[i] + a2[i];
+        for (int i = 0; i < size; i++)
+        {
+            a3[i] = a1[i] + a2[i];
+        }
+
+        iter--;
     }
 
-    printf("The result of the addition is:\n");
-    for (int i = 0; i < size; i++)
-    {
-        printf("%d ", a3[i]);
-    }
-    printf("\n");
+    printf("%d\n", a1[0]);
+    printf("%d\n", a2[0]);
+    printf("%d\n", a3[0]);
 
     free(a1);
     free(a2);
