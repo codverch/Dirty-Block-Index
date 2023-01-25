@@ -45,6 +45,11 @@ int main(int argc, char *argv[])
     for (j = 0; j < size; j++)
         a2[j] = rand() % 100;
 
+    for (int i = 0; i < size; i++)
+    {
+        a3[i] = a1[i] + a2[i];
+    }
+
     while (iter != 0)
     {
         for (int i = 0; i < size; i++)
@@ -55,8 +60,6 @@ int main(int argc, char *argv[])
         iter--;
     }
 
-    printf("%d\n", a1[0]);
-    printf("%d\n", a2[0]);
     printf("%d\n", a3[0]);
 
     free(a1);

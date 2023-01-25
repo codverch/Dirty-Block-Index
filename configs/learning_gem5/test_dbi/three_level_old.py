@@ -1,7 +1,7 @@
+
 # import the m5 (gem5) library created when gem5 is built
 import m5
 import sys
-import os
 # import all of the SimObjects
 from m5.objects import *
 
@@ -21,15 +21,10 @@ isa = str(m5.defines.buildEnv['TARGET_ISA']).lower()
 # Default to running 'hello', use the compiled ISA to find the binary
 # grab the specific path to the binary
 thispath = os.path.dirname(os.path.realpath(__file__))
-benchmark = "../parsec-benchmark/parsec-benchmark/pkgs/apps/blackscholes/inst/x86-linux.gcc/bin/blackschole"
-input_file = "input.txt"
-output_file = "output.txt"
-
+default_binary = sys.argv[1]
 
 # Binary to execute
-SimpleOpts.add_option("-benchmark", nargs='?', default=benchmark)
-SimpleOpts.add_option("-input", nargs='?', default=input_file)
-SimpleOpts.add_option("-output", nargs='?', default=output_file)
+SimpleOpts.add_option("binary", nargs='?', default=default_binary)
 
 # Finalize the arguments and grab the args so we can pass it on to our objects
 args = SimpleOpts.parse_args()
@@ -101,7 +96,7 @@ system.mem_ctrl.dram = DDR3_1600_8x8()
 system.mem_ctrl.dram.range = system.mem_ranges[0]
 system.mem_ctrl.port = system.membus.mem_side_ports
 
-system.workload = SEWorkload.init_compatible(benchmark)
+system.workload = SEWorkload.init_compatible(args.binary)
 
 # Create a process for a simple "Addition of arrays" application
 process = Process()
