@@ -1,3 +1,4 @@
+# Need to test with SPEC CPU 2017 and PARSEC
 # import the m5 (gem5) library created when gem5 is built
 import m5
 import sys
