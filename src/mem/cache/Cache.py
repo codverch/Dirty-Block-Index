@@ -175,6 +175,7 @@ class DBICache(Cache):
     alpha = Param.Float("Alpha value for the DBI") # Needs to be defined of type Alpha
     dbi_assoc = Param.Unsigned("Associativity of the DBI")
     blk_per_dbi_entry = Param.Unsigned("Number of cache blocks per DBI entry")
+    aggr_writeback = Param.Bool("Use aggressive writeback mechanism")
       
     # Parameters to DBI from the parent class
     size = Param.MemorySize("DBI cache size") 

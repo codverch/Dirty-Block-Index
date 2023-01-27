@@ -10,7 +10,7 @@ using namespace std;
 namespace gem5
 {
 
-    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize)
+    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback)
 
     {
         cout << "Hey, I am a RDBI component" << endl;
@@ -20,6 +20,7 @@ namespace gem5
         Assoc = _assoc;
         numBlksInRegion = _numBlksInRegion;
         blkSize = _blkSize;
+        useAggressiveWriteback = _useAggressiveWriteback;
         rDBIStore = vector<vector<RDBIEntry>>(_numSets, vector<RDBIEntry>(_assoc, RDBIEntry(numBlksInRegion)));
     }
 
@@ -100,6 +101,7 @@ namespace gem5
                 return false;
         }
 
+        // If a valid RDBI entry is not found, return false
         else
             return false;
     }
@@ -113,15 +115,21 @@ namespace gem5
         // Check if a valid RDBI entry is found
         if (entry != NULL)
         {
-            // If the entry is valid, clear the dirty bit from the bitset
+            // If the entry is valid
             if (entry->validBit == 1)
             {
-                entry->dirtyBits.reset(blkIndexInBitset);
-                // If the dirty bit is cleared, check if the bitset is empty
-                if (entry->dirtyBits.none())
+                // If the useAggressiveWriteback flag is set, writeback the entire region
+                // Then clear the dirty bits from the bitset
+                if (useAggressiveWriteback)
                 {
-                    // If the bitset is empty, clear the valid bit
-                    entry->validBit = 0;
+                    writebackRDBIEntry(writebacks, entry);
+                    entry->dirtyBits.reset();
+                }
+
+                // Else, clear the dirty bit from the bitset
+                else
+                {
+                    entry->dirtyBits.reset(blkIndexInBitset);
                 }
             }
         }
@@ -213,6 +221,16 @@ namespace gem5
         // Get the RDBIEntry to be evicted
         RDBIEntry *entry = pickRDBIEntry(rDBIEntries);
 
+        // Generate writebacks for all the dirty cache blocks in the region
+        // Invalidate the RDBIEntry
+        writebackRDBIEntry(writebacks, entry);
+        entry->validBit = 0;
+    }
+
+    void
+    RDBI::writebackRDBIEntry(PacketList &writebacks, RDBIEntry *entry)
+    {
+
         // Iterate over the bitset field of the RDBIEntry and check if any of the dirtyBit is set
         // If a dirty bit is set, fetch the corresponding cache block pointer from the blkPtrs field
         // Re-generate the cache block address from the rowTag
@@ -224,7 +242,7 @@ namespace gem5
 
         for (int i = 0; i < numBlksInRegion; i++)
         {
-            if (entry->dirtyBits[i] == 1)
+            if (entry->dirtyBits.test(i))
             {
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                 CacheBlk *blk = entry->blkPtrs[i];
@@ -258,8 +276,5 @@ namespace gem5
                 writebacks.push_back(wbPkt);
             }
         }
-
-        // Mark the RDBIEntry as invalid
-        entry->validBit = 0;
     }
 }

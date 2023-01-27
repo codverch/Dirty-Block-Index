@@ -55,6 +55,9 @@ namespace gem5
         // The number of bits required to index into a set in the DBI.
         uint32_t numBlockIndexBits;
 
+        // Use aggressive writeback mechanism.
+        bool useAggressiveWriteback;
+
         void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                             bool deferred_response = false,

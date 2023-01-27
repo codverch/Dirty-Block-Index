@@ -41,12 +41,14 @@ namespace gem5
         unsigned int blkIndexInBitset;
         // Cache block size
         unsigned int blkSize;
+        // Use aggressive writeback mechanism
+        bool useAggressiveWriteback;
 
         // BaseCache::CacheStats &_stats;
 
     public:
         // Constructor
-        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize);
+        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback);
 
         // Get the cache block index from the bitset
         unsigned int getblkIndexInBitset(PacketPtr pkt);
@@ -77,6 +79,9 @@ namespace gem5
 
         // Create a new RDBI entry
         void createRDBIEntry(PacketList &writebacks, PacketPtr pkt, CacheBlk *blkPtr);
+
+        // Writeback the dirty cache blocks in the RDBI entry
+        void writebackRDBIEntry(PacketList &writebacks, RDBIEntry *rDBIEntry);
 
         // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
         void evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);

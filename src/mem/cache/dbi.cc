@@ -31,7 +31,8 @@ namespace gem5
           alpha(p.alpha),
           dbiAssoc(p.dbi_assoc),
           blkSize(p.blkSize),
-          numBlksInRegion(p.blk_per_dbi_entry)
+          numBlksInRegion(p.blk_per_dbi_entry),
+          useAggressiveWriteback(p.aggr_writeback)
 
     {
         cout << "Hey, I am a DBICache component + Deepanjali" << endl;
@@ -42,7 +43,7 @@ namespace gem5
         //  numDBISetsBits = log2(numDBISets);
         numBlockSizeBits = log2(blkSize);
         numBlockIndexBits = log2(numBlksInRegion);
-        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize);
+        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize, useAggressiveWriteback);
         DPRINTF(DBICache, "Hey, I am a DBICache object");
     }
 
