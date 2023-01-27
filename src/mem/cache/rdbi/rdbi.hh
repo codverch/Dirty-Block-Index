@@ -61,10 +61,10 @@ namespace gem5
         RDBIEntry *getRDBIEntry(PacketPtr pkt);
 
         // Pick a replacement RDBI entry, by calling the RDBI replacement policy
-        RDBIEntry *pickRDBIEntry(PacketPtr pkt);
+        RDBIEntry *pickRDBIEntry(vector<RDBIEntry> &rDBIEntries);
 
         // Random replacement policy
-        RDBIEntry *randomRDBIEntry(PacketPtr pkt);
+        RDBIEntry *randomReplacementPolicy(vector<RDBIEntry> &rDBIEntries);
 
         // Check if the cache block is dirty
         bool isDirty(PacketPtr pkt);
@@ -79,7 +79,7 @@ namespace gem5
         void createRDBIEntry(PacketList &writebacks, PacketPtr pkt, CacheBlk *blkPtr);
 
         // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
-        void evictRDBIEntry(PacketPtr pkt, PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
+        void evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
     };
 }
 

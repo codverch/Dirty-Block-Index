@@ -74,11 +74,10 @@ namespace gem5
             {
                 return &entry;
             }
-
-            // Else return a null pointer
-            else
-                return NULL;
         }
+
+        // Else return a null pointer
+        return nullptr;
     }
 
     bool
@@ -91,10 +90,10 @@ namespace gem5
         if (entry != NULL)
         {
             // If the entry is valid, check if the dirty bit is set
-            if (entry.validBit == 1)
+            if (entry->validBit == 1)
             {
                 // Check the entry's dirty bit from the bitset
-                return entry.dirtyBits.test(blkIndexInBitset);
+                return entry->dirtyBits.test(blkIndexInBitset);
             }
 
             else
@@ -115,14 +114,14 @@ namespace gem5
         if (entry != NULL)
         {
             // If the entry is valid, clear the dirty bit from the bitset
-            if (entry.validBit == 1)
+            if (entry->validBit == 1)
             {
-                entry.dirtyBits.reset(blkIndexInBitset);
+                entry->dirtyBits.reset(blkIndexInBitset);
                 // If the dirty bit is cleared, check if the bitset is empty
-                if (entry.dirtyBits.none())
+                if (entry->dirtyBits.none())
                 {
                     // If the bitset is empty, clear the valid bit
-                    entry.validBit = 0;
+                    entry->validBit = 0;
                 }
             }
         }
@@ -138,11 +137,11 @@ namespace gem5
         if (entry != NULL)
         {
             // If the entry is valid, set the dirty bit from the bitset
-            if (entry.validBit == 1)
+            if (entry->validBit == 1)
             {
-                entry.dirtyBits.set(blkIndexInBitset);
+                entry->dirtyBits.set(blkIndexInBitset);
                 // Get the block pointer
-                entry.blkPtrs[blkIndexInBitset] = blkPtr;
+                entry->blkPtrs[blkIndexInBitset] = blkPtr;
             }
         }
 
@@ -191,14 +190,14 @@ namespace gem5
     }
 
     RDBIEntry *
-    RDBI::pickRDBIEntry(PacketPtr pkt)
+    RDBI::pickRDBIEntry(vector<RDBIEntry> &rDBIEntries)
     {
-        // Call the random replacement policy to pick an entry
-        randomReplacementPolicy(pkt);
+        // Return the RDBIEntry returned by the replacement policy
+        return randomReplacementPolicy(rDBIEntries);
     }
 
     RDBIEntry *
-    RDBI::randomRDBIEntry(PacketPtr pkt)
+    RDBI::randomReplacementPolicy(vector<RDBIEntry> &rDBIEntries)
     {
         // Generate a random index within the range of the associativity of the set
         int randomIndex = rand() % Assoc;
@@ -212,7 +211,7 @@ namespace gem5
     {
 
         // Get the RDBIEntry to be evicted
-        RDBIEntry *entry = pickRDBIEntry(pkt);
+        RDBIEntry *entry = pickRDBIEntry(rDBIEntries);
 
         // Iterate over the bitset field of the RDBIEntry and check if any of the dirtyBit is set
         // If a dirty bit is set, fetch the corresponding cache block pointer from the blkPtrs field
@@ -225,15 +224,15 @@ namespace gem5
 
         for (int i = 0; i < numBlksInRegion; i++)
         {
-            if (entry.dirtyBits[i] == 1)
+            if (entry->dirtyBits[i] == 1)
             {
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
-                CacheBlk *blk = entry.blkPtrs[i];
+                CacheBlk *blk = entry->blkPtrs[i];
 
                 //_stats.writebacks[Request::wbRequestorId]++;
 
                 // Re-generate the cache block address from the rowTag
-                Addr addr = (entry.regTag << numBlkBits) | (i << numBlkBits);
+                Addr addr = (entry->regTag << numBlkBits) | (i << numBlkBits);
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);
@@ -261,6 +260,6 @@ namespace gem5
         }
 
         // Mark the RDBIEntry as invalid
-        entry.validBit = 0;
+        entry->validBit = 0;
     }
 }

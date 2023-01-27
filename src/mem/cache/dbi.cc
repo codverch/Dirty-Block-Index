@@ -34,7 +34,7 @@ namespace gem5
           numBlksInRegion(p.blk_per_dbi_entry)
 
     {
-        cout << "Hey, I am a DBICache component" << endl;
+        cout << "Hey, I am a DBICache component + Deepanjali" << endl;
         numBlksInCache = cacheSize / blkSize;
         numBlksInDBI = numBlksInCache * alpha;
         numDBIEntries = numBlksInDBI / numBlksInRegion;
