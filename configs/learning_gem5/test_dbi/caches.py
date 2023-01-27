@@ -94,6 +94,7 @@ class L2Cache(DBICache):
     alpha = 0.5
     dbi_assoc = 1
     blk_per_dbi_entry = 128
+    aggr_writeback = False
     response_latency = 20
     mshrs = 20
     tgts_per_mshr = 12
@@ -166,5 +167,3 @@ class L3Cache(Cache):
     def connectMemSideBus(self, bus):
         self.mem_side = bus.cpu_side_ports
 
-
-        
