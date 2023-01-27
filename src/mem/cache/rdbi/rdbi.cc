@@ -181,7 +181,7 @@ namespace gem5
     }
 
     void
-    RDBI::evictDBIEntry(PacketPtr pkt, PacketList &writebacks, vector<RDBIEntry> &rDBIEntries)
+    RDBI::evictDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries)
     {
         // 1. Determine the index of the RDBIEntry to be evicted
         // 2. Iterate through the RDBIEntries at the generated index and check if the rowtag matches with
@@ -222,8 +222,8 @@ namespace gem5
                 PacketPtr wbPkt = new Packet(req, MemCmd::WritebackDirty);
                 wbPkt->setAddr(addr);
 
-                pkt->allocate();
-                pkt->setDataFromBlock(blk->data, blkSize);
+                wbPkt->allocate();
+                wbPkt->setDataFromBlock(blk->data, blkSize);
 
                 // if (compressor)
                 // {
