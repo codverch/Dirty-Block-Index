@@ -57,6 +57,15 @@ namespace gem5
         // Calculate the set index of the RDBI entry
         int getRDBIEntryIndex(PacketPtr pkt);
 
+        // Return the DBIEntry if there is a regTag match
+        RDBIEntry *getRDBIEntry(PacketPtr pkt);
+
+        // Pick a replacement RDBI entry, by calling the RDBI replacement policy
+        RDBIEntry *pickRDBIEntry(PacketPtr pkt);
+
+        // Random replacement policy
+        RDBIEntry *randomRDBIEntry(PacketPtr pkt);
+
         // Check if the cache block is dirty
         bool isDirty(PacketPtr pkt);
 
@@ -66,8 +75,11 @@ namespace gem5
         // Set the dirty bit of the cache block
         void setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks);
 
+        // Create a new RDBI entry
+        void createRDBIEntry(PacketList &writebacks, PacketPtr pkt, CacheBlk *blkPtr);
+
         // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
-        void evictDBIEntry(PacketPtr pkt, PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
+        void evictRDBIEntry(PacketPtr pkt, PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
     };
 }
 
