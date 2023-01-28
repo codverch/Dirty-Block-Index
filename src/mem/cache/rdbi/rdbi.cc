@@ -13,7 +13,7 @@ namespace gem5
     RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback)
 
     {
-        cout << "Hey, I am a RDBI component" << endl;
+        cout << "Hey, I am a RDBI component + Deepanjali" << endl;
         numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
         numblkIndexBits = _numblkIndexBits;

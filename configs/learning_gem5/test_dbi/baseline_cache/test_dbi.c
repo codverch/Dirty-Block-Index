@@ -9,16 +9,16 @@ int main(int argc, char *argv[])
     int *arr;
 
     // Command line arguments
-    int size, iter, opt;
+    int k_blocks, iter, opt;
 
-    while ((opt = getopt(argc, argv, ":n:t")) != -1)
+    while ((opt = getopt(argc, argv, ":k:t")) != -1)
     {
         switch (opt)
         {
 
-        case 'n':
+        case 'k':
             if (optarg != NULL)
-                size = atoi(optarg);
+                k_blocks = atoi(optarg);
 
         case 't':
             iter = atoi(argv[4]);
@@ -30,32 +30,21 @@ int main(int argc, char *argv[])
     }
 
     // Allocate memory for the array
-    arr = (int *)malloc(size * sizeof(int));
+    arr = (int *)malloc(4000000 * sizeof(int));
 
     // Every DRAM row contains 64 cache blocks, and each cache block is 64 bytes
     // Each cache block can store 16 integers
     // So, the number of integers that can be stored in a DRAM row is 1024
 
     // Initialize the array with random values from 0 to 99
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < 4000000; i++)
         arr[i] = rand() % 100;
 
-    // Print the array
-    for (int i = 0; i < size; i++)
-        printf("%d ", arr[i]);
-
-    printf("\n");
-
-    // Access the first element of every DRAM row and write 0 to it
-    for (int i = 0; i < iter; i++)
-        for (int j = 0; j < size; j += 1024)
-            arr[j] = 0;
-
-    // Print the array, print a new line after every 1024 elements
-    for (int i = 0; i < size; i++)
-    {
-        printf("%d ", arr[i]);
-        if ((i + 1) % 1024 == 0)
-            printf("\n");
-    }
+    // Choose a random DRAM row and write to k blocks in that row
+    int row = rand() % 4000;
+    int start = row * 1024;
+    int end = start + k_blocks * 16;
+    // Write to the array
+    for (int i = start; i < end; i++)
+        arr[i] = 0;
 }

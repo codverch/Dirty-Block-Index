@@ -5,57 +5,63 @@
 
 int main(int argc, char *argv[])
 {
-    // An array on n elements
+    // An array of 4 million integer elements
     int *arr;
 
     // Command line arguments
-    int size, iter, opt;
+    int k_blocks = 1, iter = 1, opt;
 
-    while ((opt = getopt(argc, argv, ":n:t")) != -1)
+    while ((opt = getopt(argc, argv, ":k:t")) != -1)
     {
+
         switch (opt)
         {
 
-        case 'n':
+        case 'k':
             if (optarg != NULL)
-                size = atoi(optarg);
+                k_blocks = atoi(argv[2]);
 
         case 't':
             iter = atoi(argv[4]);
-            break;
-
-        default:
             break;
         }
     }
 
     // Allocate memory for the array
-    arr = (int *)malloc(size * sizeof(int));
+    arr = (int *)malloc(4000000 * sizeof(int));
 
     // Every DRAM row contains 64 cache blocks, and each cache block is 64 bytes
     // Each cache block can store 16 integers
     // So, the number of integers that can be stored in a DRAM row is 1024
 
-    // Initialize the array with random values from 0 to 99
-    for (int i = 0; i < size; i++)
-        arr[i] = rand() % 100;
+    // Initialize the array with zeroes
+    for (int i = 0; i < 4000000; i++)
+        arr[i] = 0;
 
-    // Print the array
-    for (int i = 0; i < size; i++)
-        printf("%d ", arr[i]);
+    // For t iterations, : choose a random region => write to k cache blocks within the region;
 
-    printf("\n");
-
-    // Access the first element of every DRAM row and write 0 to it
-    for (int i = 0; i < iter; i++)
-        for (int j = 0; j < size; j += 1024)
-            arr[j] = 0;
-
-    // Print the array, print a new line after every 1024 elements
-    for (int i = 0; i < size; i++)
+    int i = 0;
+    while (i < iter)
     {
-        printf("%d ", arr[i]);
-        if ((i + 1) % 1024 == 0)
-            printf("\n");
+        // Choose a random DRAM row
+        int row = rand() % 4000;
+
+        // Choose a random start index within the row
+        int start = row * 1024 + rand() % 1024;
+
+        // Choose an end index based on the number of blocks to be written
+        int end = start + k_blocks * 16;
+
+        // Write 1 to the array for iter times
+        for (int j = start; j < end; j++)
+            if (j < 4000000)
+                arr[j] = 1;
+            else
+                break;
+
+        i++;
     }
+
+    // Free the memory
+    free(arr);
 }
