@@ -54,3 +54,7 @@ class L3Cache(DBICache):
     aggr_writeback = True
 
 ```
+
+## Contributing
+
+We are open to contributions via forks, issues, pull requests, or emails. Your input is highly valued by us. Our objective is to integrate DBICache as a replacement for the conventional cache in gem5, to facilitate further research in computer architecture.
