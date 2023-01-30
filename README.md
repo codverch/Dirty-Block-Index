@@ -18,3 +18,39 @@ To install gem5 with DBICache support:
  
 ```
 **Note:** Install gem5 dependencies as instructed on http://www.gem5.org/
+
+## Usage
+
+To use DBICache in gem5, you need to follow these steps:
+
+1. Import DBICache in the `caches.py` cache configuration file.
+2. Replace the last level cache with DBICache.
+3. Set parameters for DBICache: block size, DBI size, DBI associativity, number of cache blocks per region, and aggressive writeback choice.
+
+``` python
+For example:
+
+# Import the DBICache
+from m5.objects import DBICache
+
+# Set DBICachce parameters
+class L3Cache(DBICache):
+    """DBI augmented L3 Cache with default values"""
+
+    # DBICache parameters
+    size = '1MB'
+    assoc = 8
+    tag_latency = 20
+    data_latency = 20
+    response_latency = 20
+    mshrs = 20
+    tgts_per_mshr = 12
+    
+    # DBI parameters
+    blkSize = '64'
+    alpha = 0.5
+    dbi_assoc = 2
+    blk_per_dbi_entry = 128
+    aggr_writeback = True
+
+```

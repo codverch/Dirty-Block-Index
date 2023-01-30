@@ -136,21 +136,23 @@ class L2Cache(Cache):
 
     
 class L3Cache(DBICache):
-    """Simple L3 Cache with default values"""
+    """DBI augmented L3 Cache with default values"""
 
-    # Default parameters
+    # DBICache parameters
     size = '1MB'
     assoc = 8
     tag_latency = 20
     data_latency = 20
+    response_latency = 20
+    mshrs = 20
+    tgts_per_mshr = 12
+    
+    # DBI parameters
     blkSize = '64'
     alpha = 0.5
     dbi_assoc = 2
     blk_per_dbi_entry = 128
-    aggr_writeback = False
-    response_latency = 20
-    mshrs = 20
-    tgts_per_mshr = 12
+    aggr_writeback = True
 
     SimpleOpts.add_option('--l3_size', help="L3 cache size. Default: %s" % size) 
 
