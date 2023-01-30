@@ -43,25 +43,27 @@ int main(int argc, char *argv[])
     int i = 0;
     while (i < iter)
     {
-        // Choose a random DRAM row
-        int row = rand() % 4000;
+        // Write to one element each in random k cache blocks
 
-        // Choose a random start index within the row
-        int start = row * 1024 + rand() % 1024;
+        for (int j = 1; j <= k_blocks; j++)
+        {
+            // Choose a random DRAM row
+            int row_id = rand() % 4000;
 
-        // Choose an end index based on the number of blocks to be written
-        int end = start + (k_blocks * 16 <= (4000000 - start)) ? k_blocks * 16 : 4000000 - start;
+            // Choose a random cache block within the DRAM row
+            int block_id = rand() % 64;
 
-        // Write 1 to the array for iter times
-        for (int j = start; j < end; j++)
-            if (j < 4000000)
-                arr[j] = 1;
+            int d = row_id * 1024 + block_id * 16;
+
+            if (d < 4000000)
+                arr[row_id * 1024 + block_id * 16] = 1;
+
             else
-                break;
+            break;
+        }
 
         i++;
     }
 
-    // Free the memory
     free(arr);
 }

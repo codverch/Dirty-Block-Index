@@ -38,17 +38,6 @@ int main(int argc, char *argv[])
     for (int i = 0; i < 4000000; i++)
         arr[i] = 0;
 
-    // Print the array, but only 1 cache block per row for readability
-    for (int i = 0; i < 4000; i++)
-    {
-        for (int j = 0; j < 64; j++)
-        {
-            printf("%d ", arr[i * 1024 + j * 16]);
-        }
-
-        printf(" ... ");
-    }
-
     // For t iterations, : choose a random region => write to k cache blocks within the region;
 
     int i = 0;
@@ -74,19 +63,6 @@ int main(int argc, char *argv[])
         }
 
         i++;
-    }
-
-    // Print the array, but only 1 cache block per row for readability
-    printf(("After writing to %d cache blocks in %d iterations:"));
-
-    for (int i = 0; i < 4000; i++)
-    {
-        for (int j = 0; j < 64; j++)
-        {
-            printf("%d ", arr[i * 1024 + j * 16]);
-        }
-
-        printf(" ... ");
     }
 
     free(arr);
