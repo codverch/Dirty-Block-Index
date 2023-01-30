@@ -5,3 +5,13 @@ The Dirty Block Index(DBI) has been implemented as a separate structure to decou
 This gem5 implementation is based on the paper by Seshadri, Vivek, et al. titled "The Dirty-Block Index" which was published in ACM SIGARCH Computer Architecture News, volume 42 issue 3, pages 157-168 in 2014: https://dl.acm.org/doi/abs/10.1145/2678373.2665697
 
 
+## Installation
+---
+To install gem5 with DBICache support:
+
+```
+\# Clone repository
+\$ git clone https://github.com/codverch/Dirty-Block-Index.git ./gem5
+
+```
+
