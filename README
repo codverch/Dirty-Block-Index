@@ -1,4 +1,4 @@
-# The Dirty Block Index: Featuring Aggressive Writeback Optimization
+#The Dirty Block Index: Featuring Aggressive Writeback Optimization
 
 The Dirty Block Index(DBI) has been implemented as a separate structure to decouple the dirty bits from the cache tag store. This was accomplished by creating a new cache named the DBICache and integrating it with the DBI.
 
