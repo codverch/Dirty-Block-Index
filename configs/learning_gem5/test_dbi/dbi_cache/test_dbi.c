@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
         int start = row * 1024 + rand() % 1024;
 
         // Choose an end index based on the number of blocks to be written
-        int end = start + k_blocks * 16;
+        int end = start + (k_blocks * 16 <= (4000000 - start)) ? k_blocks * 16 : 4000000 - start;
 
         // Write 1 to the array for iter times
         for (int j = start; j < end; j++)
