@@ -33,7 +33,7 @@ For example:
 # Import the DBICache
 from m5.objects import DBICache
 
-# Set DBICachce parameters
+# Set DBICache parameters
 class L3Cache(DBICache):
     """DBI augmented L3 Cache with default values"""
 
