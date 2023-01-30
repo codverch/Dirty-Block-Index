@@ -6,11 +6,12 @@ This gem5 implementation is based on the paper by Seshadri, Vivek, et al. titled
 
 
 ## Installation
----
+
 To install gem5 with DBICache support:
 
 ```
- # Clone repository
+ <span style="color: gray"># Clone repository</span>
+
  $ git clone https://github.com/codverch/Dirty-Block-Index.git ./gem5
 
 ```
