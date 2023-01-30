@@ -12,6 +12,9 @@ To install gem5 with DBICache support:
 ```
  # Clone repository
  $ git clone https://github.com/codverch/Dirty-Block-Index.git ./gem5
-
+ $ cd gem5
+ # Install the dependencies required for gem5(http://www.gem5.org/)
+ $ scons build/X86/gem5.opt -j$(nproc)
+ 
 ```
-
+**Note:** To build gem5, follow the instructions on http://www.gem5.org/ to install the required dependencies.
