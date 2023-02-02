@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Print the values of the command line arguments
+
     // Allocate memory for the array
     arr = (int *)malloc(4000000 * sizeof(int));
 
@@ -65,5 +67,17 @@ int main(int argc, char *argv[])
         i++;
     }
 
+    // Compute the sum of elements of the array and print it
+
     free(arr);
 }
+
+// 1. Move the benchmark code to a separate folder, (test-benchmark/test.c)
+// 2. Use srand() to initialize the random number generator
+// 3. Print command line arguments
+// 3. Fix the optarg != NULL check
+// 4. Fix the number of elements: 4096*1024
+// 5. Move the row ID randomization outside the inner loop
+// 6. Remove the if check for limit(inner loop)
+// 7. Use -03 optimization flag, while compiling the benchmark
+// 8. Sum of array and print it
