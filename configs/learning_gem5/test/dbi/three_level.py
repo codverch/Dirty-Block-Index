@@ -119,7 +119,8 @@ parser.add_argument("--l2_size",
                     help="L2 cache size. Default: 256kB.")
 parser.add_argument("--l3_size",
                     help="L2 cache size. Default: 4096kB.")
-parser.add_argument("-k", "--nums", type=int, help="number of elements in each array", default="2")
+parser.add_argument("-n", "--nums", type=int, help="number of elements in each array", default="1")
+parser.add_argument("-k", "--nums", type=int, help="number of random blocks to choose", default="1")
 parser.add_argument("-t", "--iterations", type=int, help="number of iterations", default="1")
 
 options = parser.parse_args()

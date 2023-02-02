@@ -16,6 +16,7 @@ from common import SimpleOpts
 # Some specific options for caches
 # For all options see src/mem/cache/BaseCache.py
 
+SimpleOpts.add_option('-n', help=" ")
 SimpleOpts.add_option('-k', help=" " )  
 SimpleOpts.add_option('-t', help=" " )
 
