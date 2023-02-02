@@ -120,13 +120,13 @@ parser.add_argument("--l2_size",
 parser.add_argument("--l3_size",
                     help="L2 cache size. Default: 4096kB.")
 parser.add_argument("-n", "--nums", type=int, help="number of elements in each array", default="1")
-parser.add_argument("-k", "--nums", type=int, help="number of random blocks to choose", default="1")
+parser.add_argument("-k", "--blocks", type=int, help="number of random blocks to choose", default="4")
 parser.add_argument("-t", "--iterations", type=int, help="number of iterations", default="1")
 
 options = parser.parse_args()
 
 # cmd is a list which begins with the executable (like argv)
-process.cmd = [args.binary, '-n', options.nums, '-t', options.iterations]
+process.cmd = [args.binary, '-n', options.nums, '-k', options.blocks, '-t', options.iterations]
 
 # set up the root SimObject and start the simulation
 root = Root(full_system = False, system = system)
