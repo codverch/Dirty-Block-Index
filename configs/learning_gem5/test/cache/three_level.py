@@ -126,7 +126,7 @@ parser.add_argument("-t", "--iterations", type=int, help="number of iterations",
 options = parser.parse_args()
 
 # cmd is a list which begins with the executable (like argv)
-process.cmd = [args.binary, '-n', options.nums, '-t', options.iterations]
+process.cmd = [args.binary, '-n', options.nums, '-k', options.blocks, '-t', options.iterations]
 
 # set up the root SimObject and start the simulation
 root = Root(full_system = False, system = system)
