@@ -277,4 +277,31 @@ namespace gem5
             }
         }
     }
+
+    RDBI::RDBIStats::RDBIStats(RDBI &r)
+        : statistics::Group(&r), rdbi(r),
+
+          ADD_STAT(numRDBIEntries, statistics::units::Count::get(),
+                   "Number of RDBI entries"),
+          cmd(MemCmd::NUM_MEM_CMDS)
+    {
+        for (int i = 0; i < MemCmd::NUM_MEM_CMDS; i++)
+        {
+            cmd[i] = new statistics::Counter(&rdbi, MemCmd::toString(MemCmd(i)));
+        }
+    }
+
+    void
+    RDBI::RDBIStats::regStats()
+    {
+        using namespace statistics;
+        ADD_STAT(numRDBIEntries, statistics::units::Count::get(),
+                 "Number of RDBI entries");
+        for (int i = 0; i < MemCmd::NUM_MEM_CMDS; i++)
+        {
+            cmd[i] = new statistics::Counter(&rdbi, MemCmd::toString(MemCmd(i)));
+            // Print "Deepanjali", just to check if the stats are being printed
+            std::cout << "Deepanjali" << std::endl;
+        }
+    }
 }

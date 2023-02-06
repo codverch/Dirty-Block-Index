@@ -6,6 +6,7 @@
 
 #include "base/types.hh"
 #include "mem/packet.hh"
+#include "base/statistics.hh"
 #include "mem/cache/rdbi/rdbi_entry.hh"
 #include "mem/cache/dbi.hh"
 #include "mem/cache/cache.hh"
@@ -85,6 +86,21 @@ namespace gem5
 
         // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
         void evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
+
+        // Structure to capture the statistics of the RDBI
+        struct RDBIStats : public statistics::Group
+        {
+            RDBIStats(RDBI &r);
+
+            // Call the function to record the statistics
+            void regStats() override;
+
+            const RDBI &rdbi;
+
+            // Number of RDBI entries
+            statistics::Scalar numRDBIEntries;
+
+        } stats;
     };
 }
 

@@ -48,6 +48,7 @@ class L1ICache(L1Cache):
 
     # Set the default size
     size = '32kB'
+    replacement_policy = RandomRP()
 
     SimpleOpts.add_option('--l1i_size',
                           help="L1 instruction cache size. Default: %s" % size)
@@ -67,6 +68,7 @@ class L1DCache(L1Cache):
 
     # Set the default size
     size = '32kB'
+    replacement_policy = RandomRP()
 
     SimpleOpts.add_option('--l1d_size',
                           help="L1 data cache size. Default: %s" % size)
@@ -147,6 +149,8 @@ class L3Cache(Cache):
     response_latency = 20
     mshrs = 20
     tgts_per_mshr = 12
+    replacement_policy = RandomRP()
+    
 
     SimpleOpts.add_option('--l3_size', help="L3 cache size. Default: %s" % size) 
 
