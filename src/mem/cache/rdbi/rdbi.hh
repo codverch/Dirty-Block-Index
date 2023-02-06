@@ -6,6 +6,7 @@
 
 #include "base/types.hh"
 #include "mem/packet.hh"
+#include "base/statistics.hh"
 #include "mem/cache/rdbi/rdbi_entry.hh"
 #include "mem/cache/dbi.hh"
 #include "mem/cache/cache.hh"

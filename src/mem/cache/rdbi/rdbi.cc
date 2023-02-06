@@ -278,3 +278,4 @@ namespace gem5
         }
     }
 }
+

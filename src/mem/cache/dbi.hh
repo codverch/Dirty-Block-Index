@@ -5,6 +5,7 @@
 
 #include "base/types.hh"
 #include "mem/cache/cache.hh"
+#include "base/statistics.hh"
 #include "mem/packet.hh"
 #include "mem/cache/rdbi/rdbi.hh"
 #include "mem/cache/base.hh"
@@ -58,7 +59,12 @@ namespace gem5
         // Use aggressive writeback mechanism.
         bool useAggressiveWriteback;
 
-        void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
+        // A structure called RDBIStats inheriting from statistics, group to
+        // keep track of the statistics of the DBI.Specifically, number of
+        // valid DBI entries at the end of the simulation.
+
+        void
+        cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                             bool deferred_response = false,
                             bool pending_downgrade = false) override;
@@ -73,6 +79,39 @@ namespace gem5
         // A constructor for the DBI augmented cache.
         DBICache(const DBICacheParams &p);
         // BaseCache::CacheStats *cache_stats;
+
+        System *system;
+
+        struct RDBICmdStats : public statistics::Group
+        {
+            RDBICmdStats(DBICache &c, const std::string &name);
+
+            // Callback to register stats from parent
+            void regStatsParent();
+
+            const DBICache &cache;
+            // The number of DBI read commands issued.
+            statistics::Scalar numDBIReads;
+            // The number of DBI write commands issued.
+            statistics::Scalar numDBIWrites;
+        };
+
+        struct RDBIStats : public statistics::Group
+        {
+            RDBIStats(DBICache &c);
+
+            void regStats() override;
+            RDBICmdStats &cmdStats(const PacketPtr p)
+            {
+                return *cmd[p->cmdToIndex()];
+            }
+
+            // The number of valid DBI entries at the end of the simulation.
+            statistics::Scalar validDBIEntries;
+
+            /** Per-command statistics */
+            std::vector<std::unique_ptr<RDBIStats>> cmd;
+        } stats;
     };
 }
 
