@@ -38,8 +38,7 @@ namespace gem5
         unsigned int rDBIIndex;
         // Number of cache blocks per region
         unsigned int numBlksInRegion;
-        // Cache block index in the bitset
-        unsigned int blkIndexInBitset;
+
         // Cache block size
         unsigned int blkSize;
         // Use aggressive writeback mechanism

@@ -93,6 +93,8 @@ namespace gem5
             // If the entry is valid, check if the dirty bit is set
             if (entry->validBit == 1)
             {
+                // Compute the cache block index from the bitset
+                blkIndexInBitset = getblkIndexInBitset(pkt);
                 // Check the entry's dirty bit from the bitset
                 return entry->dirtyBits.test(blkIndexInBitset);
             }
@@ -118,18 +120,24 @@ namespace gem5
             // If the entry is valid
             if (entry->validBit == 1)
             {
+                // Compute the cache block index from the bitset
+                blkIndexInBitset = getblkIndexInBitset(pkt);
+
+                // Clear the dirty bit from the bitset
+                entry->dirtyBits.reset(blkIndexInBitset);
+
                 // If the useAggressiveWriteback flag is set, writeback the entire region
-                // Then clear the dirty bits from the bitset
+                // Then invalidate the entry
                 if (useAggressiveWriteback)
                 {
                     writebackRDBIEntry(writebacks, entry);
-                    entry->dirtyBits.reset();
+                    entry->validBit = 0;
                 }
 
-                // Else, clear the dirty bit from the bitset
-                else
+                // Else, if the dirty bitset is empty, invalidate the entry
+                else if (entry->dirtyBits.none())
                 {
-                    entry->dirtyBits.reset(blkIndexInBitset);
+                    entry->validBit = 0;
                 }
             }
         }

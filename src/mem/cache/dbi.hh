@@ -78,28 +78,6 @@ namespace gem5
     public:
         // A constructor for the DBI augmented cache.
         DBICache(const DBICacheParams &p);
-
-        struct DBICacheStats : public statistics::Group
-        {
-            // Add a variable to keep track of the number of entries in the DBI.
-            uint32_t numDBIEntries;
-
-            // Constructor for the DBIStats.Pass a DBICache object to the constructor.
-            DBICacheStats(DBICache *dbi)
-                : statistics::Group(dbi),
-                  numDBIEntries(0)
-            {
-            }
-
-            // Override the print method to display the number of entries in the DBI.
-            void print()
-            {
-                std::cout << "Num DBI entries: " << numDBIEntries << std::endl;
-            }
-        };
-
-        // Stats for the DBI augmented cache.
-        DBICacheStats dbistats;
     };
 }
 
