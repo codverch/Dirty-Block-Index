@@ -1,9 +1,7 @@
-
 #include "mem/cache/rdbi/rdbi.hh"
 #include "mem/cache/rdbi/rdbi_entry.hh"
 #include "base/statistics.hh"
 #include "mem/cache/dbi.hh"
-
 
 using namespace std;
 
@@ -58,7 +56,7 @@ namespace gem5
     RDBI::getRDBIEntry(PacketPtr pkt)
     {
         // Get the block index from the bitset
-        blkIndexInBitset = getblkIndexInBitset(pkt);
+        int blkIndexInBitset = getblkIndexInBitset(pkt);
         regAddr = getRegDBITag(pkt);
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt);
@@ -94,7 +92,7 @@ namespace gem5
             if (entry->validBit == 1)
             {
                 // Compute the cache block index from the bitset
-                blkIndexInBitset = getblkIndexInBitset(pkt);
+                int blkIndexInBitset = getblkIndexInBitset(pkt);
                 // Check the entry's dirty bit from the bitset
                 return entry->dirtyBits.test(blkIndexInBitset);
             }
@@ -121,7 +119,7 @@ namespace gem5
             if (entry->validBit == 1)
             {
                 // Compute the cache block index from the bitset
-                blkIndexInBitset = getblkIndexInBitset(pkt);
+                int blkIndexInBitset = getblkIndexInBitset(pkt);
 
                 // Clear the dirty bit from the bitset
                 entry->dirtyBits.reset(blkIndexInBitset);
@@ -148,6 +146,7 @@ namespace gem5
     {
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
+        int blkIndexInBitset = getblkIndexInBitset(pkt);
 
         // Check if a valid RDBI entry is found
         if (entry != NULL)
@@ -179,6 +178,9 @@ namespace gem5
 
         // Get the index of the RDBI entry
         rDBIIndex = getRDBIEntryIndex(pkt);
+
+        // Get the block index from the bitset
+        int blkIndexInBitset = getblkIndexInBitset(pkt);
 
         // Get the inner vector of DBI entries at the specified index location
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
@@ -286,4 +288,3 @@ namespace gem5
         }
     }
 }
-
