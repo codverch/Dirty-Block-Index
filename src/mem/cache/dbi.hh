@@ -5,6 +5,7 @@
 
 #include "base/types.hh"
 #include "mem/cache/cache.hh"
+#include "base/statistics.hh"
 #include "mem/packet.hh"
 #include "mem/cache/rdbi/rdbi.hh"
 #include "mem/cache/base.hh"
@@ -58,7 +59,12 @@ namespace gem5
         // Use aggressive writeback mechanism.
         bool useAggressiveWriteback;
 
-        void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
+        // A structure called RDBIStats inheriting from statistics, group to
+        // keep track of the statistics of the DBI.Specifically, number of
+        // valid DBI entries at the end of the simulation.
+
+        void
+        cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                             bool deferred_response = false,
                             bool pending_downgrade = false) override;
@@ -72,7 +78,6 @@ namespace gem5
     public:
         // A constructor for the DBI augmented cache.
         DBICache(const DBICacheParams &p);
-        // BaseCache::CacheStats *cache_stats;
     };
 }
 

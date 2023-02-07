@@ -175,5 +175,9 @@ class L3Cache(DBICache):
         self.cpu_side = bus.mem_side_ports
 
     def connectMemSideBus(self, bus):
+<<<<<<< HEAD
         self.mem_side = bus.cpu_side_ports
 
+=======
+        self.mem_side = bus.cpu_side_ports
+>>>>>>> test

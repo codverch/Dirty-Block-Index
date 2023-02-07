@@ -77,4 +77,9 @@ int main(int argc, char *argv[])
 
     // Free the memory
     free(arr);
+<<<<<<< HEAD
 }
+=======
+}
+
+>>>>>>> test
