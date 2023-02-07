@@ -78,40 +78,28 @@ namespace gem5
     public:
         // A constructor for the DBI augmented cache.
         DBICache(const DBICacheParams &p);
-        // BaseCache::CacheStats *cache_stats;
 
-        System *system;
-
-        struct RDBICmdStats : public statistics::Group
+        struct DBICacheStats : public statistics::Group
         {
-            RDBICmdStats(DBICache &c, const std::string &name);
+            // Add a variable to keep track of the number of entries in the DBI.
+            uint32_t numDBIEntries;
 
-            // Callback to register stats from parent
-            void regStatsParent();
-
-            const DBICache &cache;
-            // The number of DBI read commands issued.
-            statistics::Scalar numDBIReads;
-            // The number of DBI write commands issued.
-            statistics::Scalar numDBIWrites;
-        };
-
-        struct RDBIStats : public statistics::Group
-        {
-            RDBIStats(DBICache &c);
-
-            void regStats() override;
-            RDBICmdStats &cmdStats(const PacketPtr p)
+            // Constructor for the DBIStats.Pass a DBICache object to the constructor.
+            DBICacheStats(DBICache *dbi)
+                : statistics::Group(dbi),
+                  numDBIEntries(0)
             {
-                return *cmd[p->cmdToIndex()];
             }
 
-            // The number of valid DBI entries at the end of the simulation.
-            statistics::Scalar validDBIEntries;
+            // Override the print method to display the number of entries in the DBI.
+            void print()
+            {
+                std::cout << "Num DBI entries: " << numDBIEntries << std::endl;
+            }
+        };
 
-            /** Per-command statistics */
-            std::vector<std::unique_ptr<RDBIStats>> cmd;
-        } stats;
+        // Stats for the DBI augmented cache.
+        DBICacheStats dbistats;
     };
 }
 

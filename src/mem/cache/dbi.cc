@@ -32,7 +32,7 @@ namespace gem5
           dbiAssoc(p.dbi_assoc),
           blkSize(p.blkSize),
           numBlksInRegion(p.blk_per_dbi_entry),
-          useAggressiveWriteback(p.aggr_writeback)
+          useAggressiveWriteback(p.aggr_writeback), dbistats(this)
 
     {
         cout << "Hey, I am a DBICache component + Deepanjali" << endl;
@@ -50,6 +50,7 @@ namespace gem5
     void
     DBICache::cmpAndSwap(CacheBlk *blk, PacketPtr pkt)
     {
+        ++dbistats.numDBIEntries; // Deepanjali
         assert(pkt->isRequest());
 
         uint64_t overwrite_val;
@@ -118,6 +119,7 @@ namespace gem5
     DBICache::satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                              bool deferred_response, bool pending_downgrade)
     {
+        ++dbistats.numDBIEntries; // Deepanjali
         BaseCache::satisfyRequest(pkt, blk);
 
         PacketList writebacks;
@@ -173,6 +175,7 @@ namespace gem5
     void
     DBICache::serviceMSHRTargets(MSHR *mshr, const PacketPtr pkt, CacheBlk *blk)
     {
+        ++dbistats.numDBIEntries; // Deepanjali
         QueueEntry::Target *initial_tgt = mshr->getTarget();
         // First offset for critical word first calculations
         const int initial_offset = initial_tgt->pkt->getOffset(blkSize);
@@ -477,6 +480,7 @@ namespace gem5
     DBICache::handleFill(PacketPtr pkt, CacheBlk *blk, PacketList &writebacks,
                          bool allocate)
     {
+        ++dbistats.numDBIEntries; // Deepanjali
         assert(pkt->isResponse());
         Addr addr = pkt->getAddr();
         bool is_secure = pkt->isSecure();
@@ -592,66 +596,6 @@ namespace gem5
                           pkt->payloadDelay);
 
         return blk;
-    }
-
-    DBICache::RDBICmdStats::RDBICmdStats(DBICache &c, const std::string &name)
-        : statistics::Group(&c, name.c_str()), cache(c),
-          ADD_STAT(numDBIReads, stats::units::Count::get(),
-                   "Number of DBI reads"),
-          ADD_STAT(numDBIWrites, stats::units::Count::get(),
-                   "Number of DBI writes"),
-    {
-    }
-
-    void
-    DBICache::RDBICmdStats::regStatsParent()
-    {
-        using namespace statistics;
-
-        statistics::Group::regStats();
-        System *system = cache.system;
-        const auto max_requestors = system->maxRequestors();
-
-        // Number of total RDBI Reads
-        numDBIReads
-            .init(max_requestors)
-            .flags(nozero)
-            .name("numDBIReads")
-            .desc("Number of DBI reads")
-            .prereq(numDBIReads);
-
-        for (int i = 0; i < max_requestors; i++)
-        {
-            numDBIReads.subname(i, system->getRequestorName(i));
-        }
-
-        // Number of total RDBI Writes
-        numDBIWrites
-            .init(max_requestors)
-            .flags(nozero)
-            .name("numDBIWrites")
-            .desc("Number of DBI writes")
-            .prereq(numDBIWrites);
-
-        for (int i = 0; i < max_requestors; i++)
-        {
-            numDBIWrites.subname(i, system->getRequestorName(i));
-        }
-
-        // Print "Deepanjali"  just to check if the statistics are being
-        // registered
-        std::cout << "Deepanjali" << std::endl;
-    }
-
-    DBICache::RDBIStats::RDBIStats(DBICache &c, const std::string &name)
-        : statistics::Group(&c, name.c_str()), cache(c),
-          ADD_STAT(numDBIReads, stats::units::Count::get(),
-                   "Number of DBI reads"),
-          ADD_STAT(numDBIWrites, stats::units::Count::get(),
-                   "Number of DBI writes"),
-    {
-        for (int idx = 0; idx < MemCmd::NUM_MEM_CMDS; ++idx)
-            cmd[idx].reset(new RDBICmdStats(c, MemCmd::cmdName(idx)));
     }
 
 } // namespace gem5
