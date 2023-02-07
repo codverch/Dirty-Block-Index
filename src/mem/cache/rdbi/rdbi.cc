@@ -55,8 +55,7 @@ namespace gem5
     RDBIEntry *
     RDBI::getRDBIEntry(PacketPtr pkt)
     {
-        // Get the block index from the bitset
-        int blkIndexInBitset = getblkIndexInBitset(pkt);
+
         regAddr = getRegDBITag(pkt);
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt);

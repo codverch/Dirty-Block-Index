@@ -32,7 +32,7 @@ namespace gem5
           dbiAssoc(p.dbi_assoc),
           blkSize(p.blkSize),
           numBlksInRegion(p.blk_per_dbi_entry),
-          useAggressiveWriteback(p.aggr_writeback), dbistats(this)
+          useAggressiveWriteback(p.aggr_writeback)
 
     {
         cout << "Hey, I am a DBICache component + Deepanjali" << endl;
@@ -50,7 +50,7 @@ namespace gem5
     void
     DBICache::cmpAndSwap(CacheBlk *blk, PacketPtr pkt)
     {
-        ++dbistats.numDBIEntries; // Deepanjali
+
         assert(pkt->isRequest());
 
         uint64_t overwrite_val;
@@ -119,7 +119,7 @@ namespace gem5
     DBICache::satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                              bool deferred_response, bool pending_downgrade)
     {
-        ++dbistats.numDBIEntries; // Deepanjali
+
         BaseCache::satisfyRequest(pkt, blk);
 
         PacketList writebacks;
@@ -175,7 +175,7 @@ namespace gem5
     void
     DBICache::serviceMSHRTargets(MSHR *mshr, const PacketPtr pkt, CacheBlk *blk)
     {
-        ++dbistats.numDBIEntries; // Deepanjali
+
         QueueEntry::Target *initial_tgt = mshr->getTarget();
         // First offset for critical word first calculations
         const int initial_offset = initial_tgt->pkt->getOffset(blkSize);
@@ -480,7 +480,7 @@ namespace gem5
     DBICache::handleFill(PacketPtr pkt, CacheBlk *blk, PacketList &writebacks,
                          bool allocate)
     {
-        ++dbistats.numDBIEntries; // Deepanjali
+
         assert(pkt->isResponse());
         Addr addr = pkt->getAddr();
         bool is_secure = pkt->isSecure();
