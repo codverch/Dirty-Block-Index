@@ -30,6 +30,8 @@ class L1Cache(Cache):
     response_latency = 2
     mshrs = 4
     tgts_per_mshr = 20
+    # Random replacement policy
+    replacement_policy = RandomRP()
 
     def __init__(self, options=None):
         super(L1Cache, self).__init__()
@@ -158,8 +160,8 @@ class L3Cache(DBICache):
     
     # DBI parameters
     blkSize = '64'
-    alpha = 0.5
-    dbi_assoc = 2
+    alpha = 1
+    dbi_assoc = 8
     blk_per_dbi_entry = 64
     aggr_writeback = True
 
