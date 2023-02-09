@@ -1,19 +1,16 @@
-import pandas as pd
+filenames = [
+    'm5out/=dbicache_lru_k_4_1_mil.txt',
+    'm5out/=dbicache_lru_k_4_2_mil.txt',
+    'm5out/=dbicache_lru_k_4_3_mil.txt',
+    'm5out/=dbicache_lru_k_4_4_mil.txt',
+    'm5out/=dbicache_lru_k_4_5_mil.txt'
+]
 
-# Create an empty dataframe
-data = pd.DataFrame(columns=["simSeconds"])
 
-# Loop through the text files
-for file_num in range(1, n+1):
-    file_name = "m5out/=new_dbi_test_k_4_1_mil.txt".format(file_num)
-    with open(file_name) as f:
-        lines = f.readlines()
-    simSeconds = None
-    for line in lines:
-        if "sim_seconds" in line:
-            simSeconds = float(line.split()[1])
-    # Add the extracted data to the dataframe
-    data = data.append({"simSeconds": simSeconds}, ignore_index=True)
-
-# Save the dataframe to an Excel file
-data.to_excel("output.xlsx", index=False)
+for filename in filenames:
+    with open(filename) as f:
+        for line in f:
+            if 'simSeconds' in line:
+                sim_seconds = float(line.split()[1])
+                print("simSeconds in {}: {}".format(filename, sim_seconds))
+                break
