@@ -34,6 +34,7 @@ line options from each individual class.
 
 import m5
 from m5.objects import Cache
+from m5.objects import DBICache
 
 # Add the common scripts to our path
 m5.util.addToPath('../../')
@@ -52,7 +53,7 @@ class L1Cache(Cache):
     response_latency = 2
     mshrs = 4
     tgts_per_mshr = 20
-    blk_size = 64
+   # blk_size = 64
 
     def __init__(self, options=None):
         super(L1Cache, self).__init__()
@@ -72,7 +73,7 @@ class L1ICache(L1Cache):
 
     # Set the default size
     size = '16kB'
-    blk_size=64
+ #   blk_size=64
 
     SimpleOpts.add_option('--l1i_size',
                           help="L1 instruction cache size. Default: %s" % size)
@@ -92,7 +93,7 @@ class L1DCache(L1Cache):
 
     # Set the default size
     size = '64kB'
-    blk_size=64
+ #   blk_size=64
 
     SimpleOpts.add_option('--l1d_size',
                           help="L1 data cache size. Default: %s" % size)
@@ -107,11 +108,11 @@ class L1DCache(L1Cache):
         """Connect this cache's port to a CPU dcache port"""
         self.cpu_side = cpu.dcache_port
 
-class L2Cache(Cache):
+class L2Cache(DBICache):
     """Simple L2 Cache with default values"""
 
     # Default parameters
-    size = '256kB'
+    size = '4MB'
     assoc = 8
     tag_latency = 20
     data_latency = 20

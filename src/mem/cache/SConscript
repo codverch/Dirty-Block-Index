@@ -29,7 +29,7 @@
 Import('*')
 
 SimObject('Cache.py', sim_objects=[
-    'WriteAllocator', 'BaseCache', 'Cache', 'NoncoherentCache'],
+    'WriteAllocator', 'BaseCache', 'Cache', 'NoncoherentCache',  'DBICache'],
     enums=['Clusivity'])
 
 
@@ -41,6 +41,7 @@ Source('mshr_queue.cc')
 Source('noncoherent_cache.cc')
 Source('write_queue.cc')
 Source('write_queue_entry.cc')
+Source('dbi.cc')
 
 
 
@@ -54,12 +55,16 @@ DebugFlag('CacheVerbose')
 DebugFlag('HWPrefetch')
 DebugFlag('MSHR')
 DebugFlag('HWPrefetchQueue')
+DebugFlag('DBICache')
 
 
 
 # CacheTags is so outrageously verbose, printing the cache's entire tag
 # array on each timing access, that you should probably have to ask for
 # it explicitly even above and beyond CacheAll.
-CompoundFlag('CacheAll', ['Cache', 'CacheComp', 'CachePort', 'CacheRepl',
-                          'CacheVerbose', 'HWPrefetch', 'MSHR'])
 
+# CacheTags is so outrageously verbose, printing the cache's entire tag
+# array on each timing access, that you should probably have to ask for
+# it explicitly even above and beyond CacheAll.
+CompoundFlag('CacheAll', ['Cache', 'CacheComp', 'CachePort', 'CacheRepl',
+                          'CacheVerbose', 'HWPrefetch', 'MSHR', 'DBICache'])

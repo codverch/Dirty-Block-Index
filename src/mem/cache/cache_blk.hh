@@ -399,9 +399,10 @@ class CacheBlk : public TaggedEntry
           default:    s = 'T'; break; // @TODO add other types
         }
         return csprintf("state: %x (%c) writable: %d readable: %d "
-            "dirty: %d prefetched: %d | %s", coherence, s,
-            isSet(WritableBit), isSet(ReadableBit), isSet(DirtyBit),
-            wasPrefetched(), TaggedEntry::print());
+                        "dirty: %d prefetched: %d | %s",
+                        coherence, s,
+                        isSet(WritableBit), isSet(ReadableBit), isSet(DirtyBit),
+                        wasPrefetched(), TaggedEntry::print());
     }
 
     /**

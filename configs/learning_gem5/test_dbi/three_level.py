@@ -1,6 +1,7 @@
 
 # import the m5 (gem5) library created when gem5 is built
 import m5
+import sys
 # import all of the SimObjects
 from m5.objects import *
 
@@ -9,11 +10,10 @@ m5.util.addToPath('../../')
 
 # import the caches which we made
 from caches import *
-from cache import *
+
 # import the SimpleOpts module
 from common import SimpleOpts
 
-import sys
 
 # get ISA for the default binary to run. This is mostly for simple testing
 isa = str(m5.defines.buildEnv['TARGET_ISA']).lower()
@@ -21,16 +21,13 @@ isa = str(m5.defines.buildEnv['TARGET_ISA']).lower()
 # Default to running 'hello', use the compiled ISA to find the binary
 # grab the specific path to the binary
 thispath = os.path.dirname(os.path.realpath(__file__))
-default_binary = sys.argv[1]
+binary = os.path.join(thispath, '../../../../../spec-installations/benchspec/CPU/505.mcf_r/build/build_base_mytest-m64.0000/mcf_r')
 
-# Binary to execute
-SimpleOpts.add_option("binary", nargs='?', default=default_binary)
 
-# Finalize the arguments and grab the args so we can pass it on to our objects
-args = SimpleOpts.parse_args()
 
 # create the system we are going to simulate
 system = System()
+
 
 # Set the clock frequency of the system (and all of its children)
 system.clk_domain = SrcClockDomain()
@@ -39,14 +36,15 @@ system.clk_domain.voltage_domain = VoltageDomain()
 
 # Set up the system
 system.mem_mode = 'timing'               # Use timing accesses
-system.mem_ranges = [AddrRange('512MB')] # Create an address range
+system.mem_ranges = [AddrRange('8192MB')] # Create an address range
 
 # Create a simple CPU
 system.cpu = TimingSimpleCPU()
 
+
 # Create an L1 instruction and data cache
-system.cpu.icache = L1ICache(args)
-system.cpu.dcache = L1DCache(args)
+system.cpu.icache = L1ICache()
+system.cpu.dcache = L1DCache()
 
 # Connect the instruction and data caches to the CPU
 system.cpu.icache.connectCPU(system.cpu)
@@ -56,16 +54,17 @@ system.cpu.dcache.connectCPU(system.cpu)
 system.l2bus = L2XBar() # L2 bus
 system.l3bus = L2XBar()
 
+
 # Hook the CPU ports up to the l2bus
 system.cpu.icache.connectBus(system.l2bus)
 system.cpu.dcache.connectBus(system.l2bus)
 
 # Create an L2 cache and connect it to the l2bus
-system.l2cache = L2Cache(args)
+system.l2cache = L2Cache()
 system.l2cache.connectCPUSideBus(system.l2bus)
 
 # Create an L3 cache and connect it to the l2 cache on the CPU side 
-system.l3cache = L3Cache(args)
+system.l3cache = L3Cache()
 system.l3cache.connectCPUSideBus(system.l3bus)
 # Create a memory bus
 system.membus = SystemXBar()
@@ -94,15 +93,12 @@ system.mem_ctrl.dram = DDR3_1600_8x8()
 system.mem_ctrl.dram.range = system.mem_ranges[0]
 system.mem_ctrl.port = system.membus.mem_side_ports
 
-system.workload = SEWorkload.init_compatible(args.binary)
+system.workload = SEWorkload.init_compatible(binary)
+
 
 # Create a process for a simple "Addition of arrays" application
 process = Process()
 # Set the command
-import sys
-
-
-
 
 # Set the cpu to use the process as its workload and create thread contexts
 system.cpu.workload = process
@@ -110,24 +106,9 @@ system.cpu.createThreads()
 
 import argparse
 
-parser = argparse.ArgumentParser(description='A simple system with 3-level cache.')
-parser.add_argument("binary", default="", nargs="?", type=str,
-                    help="Path to the binary to execute.")
-parser.add_argument("--l1i_size",
-                    help=f"L1 instruction cache size. Default: 16kB.")
-parser.add_argument("--l1d_size",
-                    help="L1 data cache size. Default: Default: 64kB.")
-parser.add_argument("--l2_size",
-                    help="L2 cache size. Default: 256kB.")
-parser.add_argument("--l3_size",
-                    help="L2 cache size. Default: 4096kB.")
-parser.add_argument("-n", "--nums", type=int, help="number of elements in each array", default="2")
-parser.add_argument("-t", "--iterations", type=int, help="number of iterations", default="1")
-
-options = parser.parse_args()
 
 # cmd is a list which begins with the executable (like argv)
-process.cmd = [args.binary, '-n', options.nums, '-i', "bo", '-t', options.iterations]
+process.cmd = [binary]
 
 # set up the root SimObject and start the simulation
 root = Root(full_system = False, system = system)

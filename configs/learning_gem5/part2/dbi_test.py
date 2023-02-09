@@ -9,7 +9,7 @@ m5.util.addToPath('../../')
 
 # import the caches which we made
 from caches import *
-from cache import *
+
 # import the SimpleOpts module
 from common import SimpleOpts
 

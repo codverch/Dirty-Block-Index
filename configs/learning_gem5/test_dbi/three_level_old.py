@@ -1,6 +1,7 @@
 
 # import the m5 (gem5) library created when gem5 is built
 import m5
+import sys
 # import all of the SimObjects
 from m5.objects import *
 
@@ -9,11 +10,10 @@ m5.util.addToPath('../../')
 
 # import the caches which we made
 from caches import *
-from cache import *
+
 # import the SimpleOpts module
 from common import SimpleOpts
 
-import sys
 
 # get ISA for the default binary to run. This is mostly for simple testing
 isa = str(m5.defines.buildEnv['TARGET_ISA']).lower()
@@ -39,10 +39,11 @@ system.clk_domain.voltage_domain = VoltageDomain()
 
 # Set up the system
 system.mem_mode = 'timing'               # Use timing accesses
-system.mem_ranges = [AddrRange('512MB')] # Create an address range
+system.mem_ranges = [AddrRange('8192MB')] # Create an address range
 
 # Create a simple CPU
 system.cpu = TimingSimpleCPU()
+
 
 # Create an L1 instruction and data cache
 system.cpu.icache = L1ICache(args)
@@ -55,6 +56,7 @@ system.cpu.dcache.connectCPU(system.cpu)
 # Create a memory bus, a coherent crossbar, in this case
 system.l2bus = L2XBar() # L2 bus
 system.l3bus = L2XBar()
+
 
 # Hook the CPU ports up to the l2bus
 system.cpu.icache.connectBus(system.l2bus)
@@ -99,10 +101,6 @@ system.workload = SEWorkload.init_compatible(args.binary)
 # Create a process for a simple "Addition of arrays" application
 process = Process()
 # Set the command
-import sys
-
-
-
 
 # Set the cpu to use the process as its workload and create thread contexts
 system.cpu.workload = process
@@ -127,7 +125,7 @@ parser.add_argument("-t", "--iterations", type=int, help="number of iterations",
 options = parser.parse_args()
 
 # cmd is a list which begins with the executable (like argv)
-process.cmd = [args.binary, '-n', options.nums, '-i', "bo", '-t', options.iterations]
+process.cmd = [args.binary, '-n', options.nums, '-t', options.iterations]
 
 # set up the root SimObject and start the simulation
 root = Root(full_system = False, system = system)

@@ -166,14 +166,22 @@ class NoncoherentCache(BaseCache):
     # writebacks would be unnecessary traffic to the main memory.
     writeback_clean = False
     
-    # DBI is last-level cache with the capability to store the dirty bits 
-    # of cacheblocks corresponding to a single row of DRAM in a separate structure
-    
-class DBICache(NoncoherentCache):
+class DBICache(Cache):
     type = 'DBICache'
-    cxx_header = 'mem/cache/dbi_cache.hh'
+    cxx_header = 'mem/cache/dbi.hh'
     cxx_class = 'gem5::DBICache'
     
+    # Parameters to DBI 
+    alpha = Param.Float("Alpha value for the DBI") # Needs to be defined of type Alpha
+    dbi_assoc = Param.Unsigned("Associativity of the DBI")
+    blk_per_dbi_entry = Param.Unsigned("Number of cache blocks per DBI entry")
+      
+    # Parameters to DBI from the parent class
+    size = Param.MemorySize("DBI cache size") 
+    blkSize = Param.MemorySize("Cache block size")
+
     
 
+
+    
 

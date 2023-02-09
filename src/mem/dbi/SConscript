@@ -1,5 +1,0 @@
-Import('*')
-
-SimObject('DirtyBlockIndex.py', sim_objects=['DirtyBlockIndex'])
-Source('dirty_block_index.cc')
-DebugFlag('DirtyBlockIndex', "Still Learning")
