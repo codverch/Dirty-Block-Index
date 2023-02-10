@@ -310,17 +310,16 @@ namespace gem5
         System *system = cache.system;
         const auto max_requestors = system->maxRequestors();
 
-        // Add this object to the statistics object
-        ADD_STAT(writebacksGenerated, statistics::units::Count::get(),
-                 "Number of writebacks generated");
+        // // Add this object to the statistics object
+        // ADD_STAT(writebacksGenerated, statistics::units::Count::get(), "Number of writebacks generated");
 
         // Writeback statistics
         writebacksGenerated
             .flags(total | nozero | nonan);
         for (int i = 0; i < max_requestors; i++)
         {
-            writebacksGenerated.name("writebacks_generated", i);
-            writebacksGenerated.name(system->getRequestorName(i));
+
+            writebacksGenerated.subname(system->getRequestorName(i));
         }
     }
 
@@ -336,6 +335,7 @@ namespace gem5
     RDBI::RDBIStats::print()
     {
         std::cout << "RDBI Stats:" << std::endl;
-        std::cout << "Writebacks Generated: " << writebacksGenerated << std::endl;
+        // Print the number of writebacksGenerated
+        std::cout << "Number of writebacks generated: " << writebacksGenerated << std::endl;
     }
 }
