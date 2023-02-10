@@ -12,6 +12,12 @@
 #include "mem/cache/cache.hh"
 #include "mem/cache/base.hh"
 
+// Header file to add custom statistics
+#include "sim/stat_control.hh"
+#include "sim/stats.hh"
+#include "base/statistics.hh"
+#include "base/stats/types.hh"
+
 using namespace std;
 
 namespace gem5
@@ -22,7 +28,8 @@ namespace gem5
 
     protected:
         // RDBI store
-        vector<vector<RDBIEntry>> rDBIStore;
+        vector<vector<RDBIEntry>>
+            rDBIStore;
 
         // Number of bits required to store the number of sets in RDBI
         unsigned int numSetBits;
@@ -85,6 +92,32 @@ namespace gem5
 
         // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
         void evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
+
+        // Class to create custom statistics
+        class RDBIStats : public statistics::Group
+        {
+
+        public:
+            // Track the number of writebacks generated
+            statistics::units::Count writebacksGenerated;
+
+            const BaseCache &cache;
+
+            // Constructor
+            RDBIStats(const std::string &name, Group *parent);
+
+            // Add the custom statistics to the statistics database
+            void regStatsFromP();
+
+            // Increment the writebacks generated
+            void incrementWritebacksGenerated();
+
+            // Print the statistics
+            void print();
+
+            // Destructor
+            ~RDBIStats();
+        };
     };
 }
 

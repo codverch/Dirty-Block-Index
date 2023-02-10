@@ -171,6 +171,7 @@ class L3Cache(DBICache):
     def __init__(self, opts=None):
          super(L3Cache, self).__init__()
          if not opts or not opts.l3_size:
+             
             return
          self.size = opts.l3_size
 
