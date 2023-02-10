@@ -53,7 +53,35 @@ namespace gem5
 
         // BaseCache::CacheStats &_stats;
 
-    public:
+        public:
+        // Class to create custom statistics
+        class RDBIStats : public statistics::Group
+        {
+
+        public:
+            // Track the number of writebacks generated
+            statistics::Scalar writebacksGenerated;
+
+            const BaseCache &cache;
+
+            // Constructor
+            RDBIStats(const std::string &name, Group *parent);
+
+            // Add the custom statistics to the statistics database
+            void regStatsFromP();
+
+            // Increment the writebacks generated
+            void incrementWritebacksGenerated();
+
+            // Print the statistics
+            void print();
+
+            // Destructor
+            ~RDBIStats();
+        };
+
+        // Pointer to the RDBIStats class
+        RDBIStats *stats;
         // Constructor
         RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback);
 
@@ -92,32 +120,6 @@ namespace gem5
 
         // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
         void evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
-
-        // Class to create custom statistics
-        class RDBIStats : public statistics::Group
-        {
-
-        public:
-            // Track the number of writebacks generated
-            statistics::units::Count writebacksGenerated;
-
-            const BaseCache &cache;
-
-            // Constructor
-            RDBIStats(const std::string &name, Group *parent);
-
-            // Add the custom statistics to the statistics database
-            void regStatsFromP();
-
-            // Increment the writebacks generated
-            void incrementWritebacksGenerated();
-
-            // Print the statistics
-            void print();
-
-            // Destructor
-            ~RDBIStats();
-        };
     };
 }
 

@@ -19,9 +19,10 @@ namespace gem5
         Group *parent = new Group(nullptr, "Deepanjali's group");
         RDBIStats *stats = new RDBIStats("Custom stats component, yay!", parent);
         stats->regStatsFromP();
-        // Initialize the writebacksGenerate stat
-        stats->writebacksGenerated = statistics::units::Count(0);
-
+        // Fiure out a way to initialise the writebacksGenerated stats since the default constructor of count is private
+        stats->writebacksGenerated = 0;
+        // Store the stats object as an instance variable
+        this->stats = stats;
         numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
         numblkIndexBits = _numblkIndexBits;
@@ -294,8 +295,7 @@ namespace gem5
                 // Append the packet to the PacketList
                 writebacks.push_back(wbPkt);
 
-                // Stats
-                stats.writebacksGenerated.inc();
+                stats->writebacksGenerated++;
             }
         }
     }
@@ -319,7 +319,8 @@ namespace gem5
             .flags(total | nozero | nonan);
         for (int i = 0; i < max_requestors; i++)
         {
-            writebacksGenerated.subname(i, system->getRequestorName(i));
+            writebacksGenerated.name("writebacks_generated", i);
+            writebacksGenerated.name(system->getRequestorName(i));
         }
     }
 
@@ -327,7 +328,7 @@ namespace gem5
     void
     RDBI::RDBIStats::incrementWritebacksGenerated()
     {
-        stats.writebacksGenerated++;
+        writebacksGenerated++;
     }
 
     // Print the RDBIStats
@@ -335,6 +336,6 @@ namespace gem5
     RDBI::RDBIStats::print()
     {
         std::cout << "RDBI Stats:" << std::endl;
-        std::cout << "Writebacks Generated: " << stats.writebacksGenerated << std::endl;
+        std::cout << "Writebacks Generated: " << writebacksGenerated << std::endl;
     }
 }
