@@ -294,48 +294,15 @@ namespace gem5
 
                 // Append the packet to the PacketList
                 writebacks.push_back(wbPkt);
-
-                stats->writebacksGenerated++;
+                numWritebacksGenerated++;
             }
         }
     }
 
-    // Add the custom stats to the statistics object
-    void
-    RDBI::RDBIStats::regStatsFromP()
+    // Return the number of writebacks generated due to aggressive writeback
+    unsigned int
+    RDBI::getNumWritebacksGenerated()
     {
-        using namespace statistics;
-
-        statistics::Group::regStats();
-        System *system = cache.system;
-        const auto max_requestors = system->maxRequestors();
-
-        // // Add this object to the statistics object
-        // ADD_STAT(writebacksGenerated, statistics::units::Count::get(), "Number of writebacks generated");
-
-        // Writeback statistics
-        writebacksGenerated
-            .flags(total | nozero | nonan);
-        for (int i = 0; i < max_requestors; i++)
-        {
-
-            writebacksGenerated.subname(system->getRequestorName(i));
-        }
-    }
-
-    // Increment the writeback counter (Of RDBIStats class defined in rdbi.hh)
-    void
-    RDBI::RDBIStats::incrementWritebacksGenerated()
-    {
-        writebacksGenerated++;
-    }
-
-    // Print the RDBIStats
-    void
-    RDBI::RDBIStats::print()
-    {
-        std::cout << "RDBI Stats:" << std::endl;
-        // Print the number of writebacksGenerated
-        std::cout << "Number of writebacks generated: " << writebacksGenerated << std::endl;
+        return numWritebacksGenerated;
     }
 }

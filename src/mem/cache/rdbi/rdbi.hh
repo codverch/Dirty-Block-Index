@@ -45,43 +45,15 @@ namespace gem5
         unsigned int rDBIIndex;
         // Number of cache blocks per region
         unsigned int numBlksInRegion;
-
         // Cache block size
         unsigned int blkSize;
         // Use aggressive writeback mechanism
         bool useAggressiveWriteback;
 
-        // BaseCache::CacheStats &_stats;
+        // Number of writebacks generated due to aggressive writeback
+        unsigned int numWritebacksGenerated;
 
-        public:
-        // Class to create custom statistics
-        class RDBIStats : public statistics::Group
-        {
-
-        public:
-            // Track the number of writebacks generated
-            statistics::Scalar writebacksGenerated;
-
-            const BaseCache &cache;
-
-            // Constructor
-            RDBIStats(const std::string &name, Group *parent);
-
-            // Add the custom statistics to the statistics database
-            void regStatsFromP();
-
-            // Increment the writebacks generated
-            void incrementWritebacksGenerated();
-
-            // Print the statistics
-            void print();
-
-            // Destructor
-            ~RDBIStats();
-        };
-
-        // Pointer to the RDBIStats class
-        RDBIStats *stats;
+    public:
         // Constructor
         RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback);
 
@@ -120,6 +92,10 @@ namespace gem5
 
         // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
         void evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
+
+        // Return the number of writebacks generated due to aggressive writeback
+        unsigned int getNumWritebacksGenerated();
+        
     };
 }
 

@@ -78,6 +78,38 @@ namespace gem5
     public:
         // A constructor for the DBI augmented cache.
         DBICache(const DBICacheParams &p);
+
+        // Structure to keep track of the stats for different cache commands
+        struct DBICmdStats : public statistics::Group
+        {
+            DBICmdStats(DBICache &c, const std::string &name);
+
+            void regStatsFromParentDBI();
+
+            // Create an object of DBICache
+            const DBICache &dbiCache;
+        };
+
+        // Structure to keep track of the stats for the DBICache
+        struct DBICacheStats : public statistics::Group
+        {
+            // Constructor for DBICacheStats
+            DBICacheStats(DBICache &c);
+
+            // Override the regStats() from the parent
+            void regStats() override;
+
+            DBICmdStats &cmdStats(const PacketPtr p)
+            {
+                return *cmd[p->cmdToIndex()];
+            }
+
+            // Create an object of DBICache
+            const DBICache &dbiCache;
+
+            /** Number of blocks written back due to aggressive writebacks */
+            statistics::Vector agrWritebacks;
+        } dbistats;
     };
 }
 
