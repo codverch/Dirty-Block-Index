@@ -32,7 +32,8 @@ namespace gem5
           dbiAssoc(p.dbi_assoc),
           blkSize(p.blkSize),
           numBlksInRegion(p.blk_per_dbi_entry),
-          useAggressiveWriteback(p.aggr_writeback)
+          useAggressiveWriteback(p.aggr_writeback),
+          dbistats(*this)
 
     {
         cout << "Hey, I am a DBICache component + Deepanjali" << endl;
@@ -599,7 +600,7 @@ namespace gem5
     }
 
     DBICache::DBICmdStats::DBICmdStats(DBICache &c, const std::string &name)
-        : statistics::Group(&c, name.c_str()), dbiCache(c),
+        : statistics::Group(&c, name.c_str()), dbiCache(c)
 
     {
     }
@@ -610,8 +611,6 @@ namespace gem5
         using namespace statistics;
 
         statistics::Group::regStats();
-        System *system = dbiCache.system;
-        const auto max_requestors = system->maxRequestors();
     }
 
     DBICache::DBICacheStats::DBICacheStats(DBICache &c)
@@ -649,14 +648,14 @@ namespace gem5
 #define SUM_NON_DEMAND(s)                                    \
     (cmd[MemCmd::SoftPFReq]->s + cmd[MemCmd::HardPFReq]->s + \
      cmd[MemCmd::SoftPFExReq]->s)
-    }
 
-    agrWritebacksGenerated
-        .init(max_requestors)
-        .flags(total | nozero | nonan);
-    for (int i = 0; i < max_requestors; i++)
-    {
-        agrWritebacksGenerated.subname(i, system->getRequestorName(i));
+        agrWritebacks
+            .init(max_requestors)
+            .flags(total | nozero | nonan);
+        for (int i = 0; i < max_requestors; i++)
+        {
+            agrWritebacks.subname(i, system->getRequestorName(i));
+        }
     }
 }
 

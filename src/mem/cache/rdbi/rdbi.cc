@@ -13,16 +13,6 @@ namespace gem5
 
     {
         cout << "Hey, I am a RDBI component" << endl;
-        // Create a new group using this constructor : "Group(Group *parent, const char *name = nullptr);"
-        // The parent group is the root group
-        // The name of the group is "Deepanjali's group"
-        Group *parent = new Group(nullptr, "Deepanjali's group");
-        RDBIStats *stats = new RDBIStats("Custom stats component, yay!", parent);
-        stats->regStatsFromP();
-        // Fiure out a way to initialise the writebacksGenerated stats since the default constructor of count is private
-        stats->writebacksGenerated = 0;
-        // Store the stats object as an instance variable
-        this->stats = stats;
         numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
         numblkIndexBits = _numblkIndexBits;

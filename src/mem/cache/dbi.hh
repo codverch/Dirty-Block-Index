@@ -76,9 +76,6 @@ namespace gem5
                              PacketList &writebacks, bool allocate);
 
     public:
-        // A constructor for the DBI augmented cache.
-        DBICache(const DBICacheParams &p);
-
         // Structure to keep track of the stats for different cache commands
         struct DBICmdStats : public statistics::Group
         {
@@ -109,7 +106,14 @@ namespace gem5
 
             /** Number of blocks written back due to aggressive writebacks */
             statistics::Vector agrWritebacks;
+
+            /** Per-command statistics i.e., stats for different cache commands */
+            std::vector<std::unique_ptr<DBICmdStats>> cmd;
+
         } dbistats;
+
+        // A constructor for the DBI augmented cache.
+        DBICache(const DBICacheParams &p);
     };
 }
 
