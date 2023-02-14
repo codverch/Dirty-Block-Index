@@ -12,30 +12,12 @@ namespace gem5
 {
     class DBICache;
 
-    struct DBICmdStats : public statistics::Group
+    // Defining the a stat group
+    struct DBICacheStats : public Stats::Group
     {
-        DBICmdStats(DBICache &deepz, const std::string &name);
-
-        void regStatsFromParentDBI();
-
-        const DBICache &dbiCache;
+        DBICacheStats(Stats::Group *parent); // constructor
+        Stats::Vector writebacksGenerated;
     };
 
-    struct DBICacheStats : public statistics::Group
-    {
-        DBICacheStats(DBICache &deepz);
-
-        void regStats() override;
-
-        DBICmdStats &cmdStats(const PacketPtr p)
-        {
-            return *cmd[p->cmdToIndex()];
-        }
-
-        const DBICache &dbiCache;
-
-        statistics::Vector agrWritebacks;
-        std::vector<std::unique_ptr<DBICmdStats>> cmd;
-    };
 } // namespace gem5
 #endif // _MEM_CACHE_DBI_CACHE_STATS_HH_

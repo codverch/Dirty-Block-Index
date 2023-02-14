@@ -1,6 +1,7 @@
 
 #include <cmath>
 
+#include "base/stats/units.hh"
 #include "mem/cache/dbi.hh"
 #include "base/compiler.hh"
 #include "base/logging.hh"
@@ -34,7 +35,7 @@ namespace gem5
           blkSize(p.blkSize),
           numBlksInRegion(p.blk_per_dbi_entry),
           useAggressiveWriteback(p.aggr_writeback),
-          dbistats(*this)
+          dbistats(this)
 
     {
         cout << "Hey, I am a DBICache component + Deepanjali" << endl;

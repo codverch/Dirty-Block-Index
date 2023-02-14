@@ -296,7 +296,7 @@ namespace gem5
                 writebacks.push_back(wbPkt);
 
                 // Increment the number of writebacks generated.
-                dbiCacheStats->agrWritebacks[0]++; // Change the VECTOR TO SCALAR
+                dbiCacheStats->writebacksGenerated[0]++; // Change the VECTOR TO SCALAR
             }
         }
     }
