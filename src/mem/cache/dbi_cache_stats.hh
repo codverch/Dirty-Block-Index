@@ -14,7 +14,7 @@ namespace gem5
 
     struct DBICmdStats : public statistics::Group
     {
-        DBICmdStats(DBICache &c, const std::string &name);
+        DBICmdStats(DBICache &deepz, const std::string &name);
 
         void regStatsFromParentDBI();
 
@@ -23,7 +23,7 @@ namespace gem5
 
     struct DBICacheStats : public statistics::Group
     {
-        DBICacheStats(DBICache &c);
+        DBICacheStats(DBICache &deepz);
 
         void regStats() override;
 

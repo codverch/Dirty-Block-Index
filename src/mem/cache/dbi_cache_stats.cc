@@ -10,8 +10,8 @@ using namespace std;
 namespace gem5
 {
 
-    DBICmdStats::DBICmdStats(DBICache &c, const std::string &name)
-        : statistics::Group(&c, name.c_str()), dbiCache(c)
+    DBICmdStats::DBICmdStats(DBICache &deepz, const std::string &name)
+        : statistics::Group(&deepz, name.c_str()), dbiCache(deepz)
     {
     }
 
@@ -23,17 +23,17 @@ namespace gem5
         statistics::Group::regStats();
     }
 
-    DBICacheStats::DBICacheStats(DBICache &c)
-        : statistics::Group(&c), dbiCache(c),
+    DBICacheStats::DBICacheStats(DBICache &deepz)
+        : statistics::Group(&deepz, "random"), dbiCache(deepz),
 
           ADD_STAT(agrWritebacks, statistics::units::Count::get(),
-                   "Deepanjali + Number of writebacks generated due to aggressive writeback"),
+                   "dnjali + Number of writebacks generated due to aggressive writeback"),
           cmd(MemCmd::NUM_MEM_CMDS)
 
     {
         for (int idx = 0; idx < MemCmd::NUM_MEM_CMDS; ++idx)
         {
-            cmd[idx].reset(new DBICmdStats(c, MemCmd(idx).toString()));
+            cmd[idx].reset(new DBICmdStats(deepz, MemCmd(idx).toString()));
         }
     }
 
