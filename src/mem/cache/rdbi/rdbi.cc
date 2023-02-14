@@ -1,7 +1,16 @@
-#include "mem/cache/rdbi/rdbi.hh"
-#include "mem/cache/rdbi/rdbi_entry.hh"
+// Header file to add custom statistics
+#include "sim/stat_control.hh"
+#include "sim/stats.hh"
 #include "base/statistics.hh"
+#include "base/stats/types.hh"
+#include "base/types.hh"
+#include "mem/packet.hh"
+#include "mem/cache/cache.hh"
+#include "mem/cache/base.hh"
+#include "mem/cache/dbi_cache_stats.hh"
 #include "mem/cache/dbi.hh"
+#include "mem/cache/rdbi/rdbi_entry.hh"
+#include "mem/cache/rdbi/rdbi.hh"
 
 using namespace std;
 using namespace gem5::statistics;
@@ -9,7 +18,7 @@ using namespace gem5::statistics;
 namespace gem5
 {
 
-    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback)
+    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats)
 
     {
         cout << "Hey, I am a RDBI component" << endl;
@@ -21,6 +30,9 @@ namespace gem5
         blkSize = _blkSize;
         useAggressiveWriteback = _useAggressiveWriteback;
         rDBIStore = vector<vector<RDBIEntry>>(_numSets, vector<RDBIEntry>(_assoc, RDBIEntry(numBlksInRegion)));
+        // Statistics
+        numWritebacksGenerated = 0;
+        dbiCacheStats = &dbistats;
     }
 
     Addr

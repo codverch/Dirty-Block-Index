@@ -9,6 +9,7 @@
 #include "mem/packet.hh"
 #include "mem/cache/rdbi/rdbi.hh"
 #include "mem/cache/base.hh"
+#include "mem/cache/dbi_cache_stats.hh"
 
 using namespace std;
 
@@ -76,45 +77,10 @@ namespace gem5
                              PacketList &writebacks, bool allocate);
 
     public:
-        // Structure to keep track of the stats for different cache commands
-        struct DBICmdStats : public statistics::Group
-        {
-            DBICmdStats(DBICache &c, const std::string &name);
-
-            void regStatsFromParentDBI();
-
-            // Create an object of DBICache
-            const DBICache &dbiCache;
-        };
-
-        // Structure to keep track of the stats for the DBICache
-        struct DBICacheStats : public statistics::Group
-        {
-            // Constructor for DBICacheStats
-            DBICacheStats(DBICache &c);
-
-            // Override the regStats() from the parent
-            void regStats() override;
-
-            DBICmdStats &cmdStats(const PacketPtr p)
-            {
-                return *cmd[p->cmdToIndex()];
-            }
-
-            // Create an object of DBICache
-            const DBICache &dbiCache;
-
-            /** Number of blocks written back due to aggressive writebacks */
-            statistics::Vector agrWritebacks;
-
-            /** Per-command statistics i.e., stats for different cache commands */
-            std::vector<std::unique_ptr<DBICmdStats>> cmd;
-
-        } dbistats;
-
+        // Object of DBICacheStats
+        DBICacheStats dbistats;
         // A constructor for the DBI augmented cache.
         DBICache(const DBICacheParams &p);
     };
-}
-
+} // namespace gem5
 #endif // _MEM_CACHE_DBI_HH_

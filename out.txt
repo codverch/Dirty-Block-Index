@@ -1,17 +1,55 @@
-Global frequency set at 1000000000000 ticks per second
-      0: system.l2cache: Hey, I am a toy component. Glad to exist in 2022
-gem5 Simulator System.  https://www.gem5.org
-gem5 is copyrighted software; use the --copyright option for details.
-
-gem5 version 22.0.0.2
-gem5 compiled Dec 22 2022 13:08:25
-gem5 started Dec 22 2022 13:11:34
-gem5 executing on v100-gpu-4, pid 23828
-command line: build/X86/gem5.opt --debug-flag=Toy configs/learning_gem5/Toy/two_level.py configs/learning_gem5/Toy/add -n 1 -t 10
-
-Beginning simulation!
-
-The time taken is 0.002000 milliseconds
-Introducing buffer overflow - Accessing a location beyond the range
-The value written is: 4
-Exiting @ tick 865347000 because exiting with last active thread context
+scons: Reading SConscript files ...
+Mkdir("/home/gandiva/deepanjali/gem5/build/X86/gem5.build")
+Checking for linker -Wl,--as-needed support... (cached) yes
+Checking for compiler -Wno-free-nonheap-object support... (cached) yes
+Checking for compiler -gz support... (cached) yes
+Checking for linker -gz support... (cached) yes
+Info: Using Python config: python3-config
+Checking for C header file Python.h... (cached) yes
+Checking Python version... (cached) 3.8.9
+Checking for accept(0,0,0) in C++ library None... (cached) yes
+Checking for zlibVersion() in C++ library z... (cached) yes
+Checking for C library tcmalloc... (cached) yes
+Building in /home/gandiva/deepanjali/gem5/build/X86
+Using saved variables file(s) /home/gandiva/deepanjali/gem5/build/X86/gem5.build/variables
+Checking for C header file linux/if_tun.h... (cached) yes
+Checking for shm_open("/test", 0, 0) in C library None... (cached) no
+Checking for shm_open("/test", 0, 0) in C library rt... (cached) yes
+Checking for pkg-config package protobuf... (cached) yes
+Checking for GOOGLE_PROTOBUF_VERIFY_VERSION in C++ library protobuf... (cached) yes
+Checking for C header file linux/kvm.h... (cached) yes
+Checking for timer_create(CLOCK_MONOTONIC, NULL, NULL) in C library None... (cached) yes
+Checking size of struct kvm_xsave ... (cached) yes
+Checking for member exclude_host in struct perf_event_attr...(cached) yes
+Checking for C header file fenv.h... (cached) yes
+Checking for C header file png.h... (cached) no
+Warning: Header file <png.h> not found.
+         This host has no libpng library.
+         Disabling support for PNG framebuffers.
+Checking for clock_nanosleep(0,0,NULL,NULL) in C library None... (cached) yes
+Checking for C header file valgrind/valgrind.h... (cached) yes
+Warning: Deprecated namespaces are not supported by this compiler.
+         Please make sure to check the mailing list for deprecation
+         announcements.
+Checking for pkg-config package hdf5-serial... (cached) yes
+Checking for H5Fcreate("", 0, 0, 0) in C library hdf5... (cached) yes
+Checking for H5::H5File("", 0) in C++ library hdf5_cpp... (cached) yes
+Checking for char temp; backtrace_symbols_fd((void *)&temp, 0, 0) in C library None... (cached) yes
+Checking whether __i386__ is declared... (cached) no
+Checking whether __x86_64__ is declared... (cached) yes
+Checking for compiler -Wno-self-assign-overloaded support... (cached) yes
+Checking for compiler -Wno-free-nonheap-object support... (cached) yes
+scons: done reading SConscript files.
+scons: Building targets ...
+ [     CXX] X86/python/_m5/param_DBICache.cc -> .o
+ [     CXX] X86/mem/cache/dbi.cc -> .o
+ [     CXX] X86/mem/cache/rdbi/rdbi.cc -> .o
+ [VER TAGS]  -> X86/sim/tags.cc
+scons: building terminated because of errors.
+*** Summary of Warnings ***
+Warning: Header file <png.h> not found.
+         This host has no libpng library.
+         Disabling support for PNG framebuffers.
+Warning: Deprecated namespaces are not supported by this compiler.
+         Please make sure to check the mailing list for deprecation
+         announcements.

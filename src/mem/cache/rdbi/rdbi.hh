@@ -1,22 +1,21 @@
 #ifndef _MEM_CACHE_RDBI_RDBI_HH_
 #define _MEM_CACHE_RDBI_RDBI_HH_
 
-#include <cstdint>
-#include <vector>
+#include "base/types.hh"      // For Addr
+#include "base/statistics.hh" // For Stats::Group
+#include "base/stats/units.hh"
+#include "base/stats/group.hh"
+#include "mem/packet.hh"      // For PacketPtr and PacketList
+#include "mem/cache/base.hh"  // For CacheBlk
+#include "mem/cache/cache.hh" // For Cache::CacheStats
+#include "mem/cache/dbi_cache_stats.hh"
+#include "mem/cache/dbi.hh"             // For DBICache
+#include "mem/cache/rdbi/rdbi_entry.hh" // For RDBIEntry
+#include "sim/stats.hh"                 // For Stats::Scalar
+#include "sim/stat_control.hh"          // For SimStatControl
 
-#include "base/types.hh"
-#include "mem/packet.hh"
-#include "base/statistics.hh"
-#include "mem/cache/rdbi/rdbi_entry.hh"
-#include "mem/cache/dbi.hh"
-#include "mem/cache/cache.hh"
-#include "mem/cache/base.hh"
-
-// Header file to add custom statistics
-#include "sim/stat_control.hh"
-#include "sim/stats.hh"
-#include "base/statistics.hh"
-#include "base/stats/types.hh"
+#include <cstdint> // For uint64_t
+#include <vector>  // For std::vector
 
 using namespace std;
 
@@ -55,7 +54,10 @@ namespace gem5
 
     public:
         // Constructor
-        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback);
+        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats); // Updated the type of dbistats
+
+        // Variable to store instance of a structure, overcoming the invalid type error
+        DBICacheStats *dbiCacheStats;
 
         // Get the cache block index from the bitset
         unsigned int getblkIndexInBitset(PacketPtr pkt);
