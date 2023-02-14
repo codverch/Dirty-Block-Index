@@ -27,7 +27,7 @@ namespace gem5
         : statistics::Group(&c), dbiCache(c),
 
           ADD_STAT(agrWritebacks, statistics::units::Count::get(),
-                   "Number of writebacks generated due to aggressive writeback"),
+                   "Deepanjali + Number of writebacks generated due to aggressive writeback"),
           cmd(MemCmd::NUM_MEM_CMDS)
 
     {

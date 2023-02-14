@@ -49,9 +49,6 @@ namespace gem5
         // Use aggressive writeback mechanism
         bool useAggressiveWriteback;
 
-        // Number of writebacks generated due to aggressive writeback
-        unsigned int numWritebacksGenerated;
-
     public:
         // Constructor
         RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats); // Updated the type of dbistats
@@ -94,10 +91,6 @@ namespace gem5
 
         // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
         void evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
-
-        // Return the number of writebacks generated due to aggressive writeback
-        unsigned int getNumWritebacksGenerated();
-        
     };
 }
 

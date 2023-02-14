@@ -30,8 +30,6 @@ namespace gem5
         blkSize = _blkSize;
         useAggressiveWriteback = _useAggressiveWriteback;
         rDBIStore = vector<vector<RDBIEntry>>(_numSets, vector<RDBIEntry>(_assoc, RDBIEntry(numBlksInRegion)));
-        // Statistics
-        numWritebacksGenerated = 0;
         dbiCacheStats = &dbistats;
     }
 
@@ -296,15 +294,10 @@ namespace gem5
 
                 // Append the packet to the PacketList
                 writebacks.push_back(wbPkt);
-                numWritebacksGenerated++;
+
+                // Increment the number of writebacks generated.
+                dbiCacheStats->agrWritebacks[0]++; // Change the VECTOR TO SCALAR
             }
         }
-    }
-
-    // Return the number of writebacks generated due to aggressive writeback
-    unsigned int
-    RDBI::getNumWritebacksGenerated()
-    {
-        return numWritebacksGenerated;
     }
 }
