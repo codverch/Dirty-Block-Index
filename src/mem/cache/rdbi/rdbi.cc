@@ -21,6 +21,7 @@ namespace gem5
     RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats)
 
     {
+        dbiCacheStats = &dbistats;
         cout << "Hey, I am a RDBI component" << endl;
         numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
@@ -30,7 +31,6 @@ namespace gem5
         blkSize = _blkSize;
         useAggressiveWriteback = _useAggressiveWriteback;
         rDBIStore = vector<vector<RDBIEntry>>(_numSets, vector<RDBIEntry>(_assoc, RDBIEntry(numBlksInRegion)));
-        dbiCacheStats = &dbistats;
     }
 
     Addr
@@ -92,6 +92,7 @@ namespace gem5
     bool
     RDBI::isDirty(PacketPtr pkt)
     {
+        cout << "Deepanjali, I am being called from RDBI isdirty" << endl; // works
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
@@ -119,6 +120,9 @@ namespace gem5
     void
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
+        dbiCacheStats->writebacksGenerated++;
+        // Print the wriebacks generated
+        cout << "Deepanjali, I am being called from RDBI cleardirty" << endl;
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
@@ -154,6 +158,7 @@ namespace gem5
     void
     RDBI::setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks)
     {
+        cout << "Deepanjali, I am being called from RDBI setdirty" << endl;
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
         int blkIndexInBitset = getblkIndexInBitset(pkt);
@@ -264,6 +269,7 @@ namespace gem5
         {
             if (entry->dirtyBits.test(i))
             {
+                dbiCacheStats->writebacksGenerated++; // DEEPANJALi
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                 CacheBlk *blk = entry->blkPtrs[i];
 
@@ -295,8 +301,8 @@ namespace gem5
                 // Append the packet to the PacketList
                 writebacks.push_back(wbPkt);
 
-                // Increment the number of writebacks generated.
-                dbiCacheStats->writebacksGenerated[0]++; // Change the VECTOR TO SCALAR
+                // Increment the Scalar writebacks stat
+                dbiCacheStats->writebacksGenerated++;
             }
         }
     }

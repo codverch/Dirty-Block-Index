@@ -9,14 +9,22 @@ using namespace std;
 
 namespace gem5
 {
-    DBICacheStats::DBICacheStats(Stats::Group *parent)
+    // constructor
+    DBICacheStats::DBICacheStats(DBICache &d, Stats::Group *parent)
         : Stats::Group(parent), // initilizing the base class
           ADD_STAT(writebacksGenerated, "Number of DBI writebacks")
 
     {
         // Writebacks generated
         writebacksGenerated
-            .init(1)
             .flags(Stats::total);
+    }
+
+    // Print the stats
+    void
+    DBICacheStats::printDBICacheStats(DBICache &d)
+    {
+        cout << "DBI Cache Stats" << endl;
+        cout << "Writebacks generated: " << writebacksGenerated.value() << endl;
     }
 }

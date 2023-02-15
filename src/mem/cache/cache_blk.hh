@@ -228,7 +228,11 @@ class CacheBlk : public TaggedEntry
      *
      * @param bits The coherence bits to be cleared.
      */
-    void clearCoherenceBits(unsigned bits) { coherence &= ~bits; }
+    void clearCoherenceBits(unsigned bits)
+    {
+        cout << "Deepanjali, I am cacheblock's clearCoherenceBits function" << endl;
+        coherence &= ~bits;
+    }
 
     /**
      * Checks the given coherence bits are set.
@@ -238,6 +242,7 @@ class CacheBlk : public TaggedEntry
     bool
     isSet(unsigned bits) const
     {
+        cout << "Deepanjali, I am cacheblock's isSet function" << endl;
         return isValid() && (coherence & bits);
     }
 

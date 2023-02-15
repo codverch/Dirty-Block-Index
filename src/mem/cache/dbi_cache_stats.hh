@@ -15,8 +15,10 @@ namespace gem5
     // Defining the a stat group
     struct DBICacheStats : public Stats::Group
     {
-        DBICacheStats(Stats::Group *parent); // constructor
-        Stats::Vector writebacksGenerated;
+        DBICacheStats(DBICache &d, Stats::Group *parent); // constructor
+        Stats::Scalar writebacksGenerated;
+        // Print the stats
+        void printDBICacheStats(DBICache &d);
     };
 
 } // namespace gem5

@@ -35,7 +35,8 @@ namespace gem5
           blkSize(p.blkSize),
           numBlksInRegion(p.blk_per_dbi_entry),
           useAggressiveWriteback(p.aggr_writeback),
-          dbistats(this)
+          // Initialize the DBI cache stats
+          dbistats(*this, &stats)
 
     {
         cout << "Hey, I am a DBICache component + Deepanjali" << endl;
@@ -48,6 +49,7 @@ namespace gem5
         numBlockIndexBits = log2(numBlksInRegion);
         rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize, useAggressiveWriteback, dbistats);
         DPRINTF(DBICache, "Hey, I am a DBICache object");
+        dbistats.writebacksGenerated++;
     }
 
     void
@@ -105,10 +107,10 @@ namespace gem5
 
             rdbi->setDirtyBit(pkt, blk, writebacks);
 
-            if (rdbi->isDirty(pkt))
-            {
-                cout << pkt->getAddr() << endl;
-            }
+            // if (rdbi->isDirty(pkt))
+            // {
+            //     cout << pkt->getAddr() << endl;
+            // }
             if (ppDataUpdate->hasListeners())
             {
                 data_update.newData = std::vector<uint64_t>(blk->data,
@@ -126,8 +128,9 @@ namespace gem5
         BaseCache::satisfyRequest(pkt, blk);
 
         PacketList writebacks;
+        // rdbi->clearDirtyBit(pkt, writebacks); // FOR DEBUGGING - works
 
-            if (pkt->isRead())
+        if (pkt->isRead())
         {
             // determine if this read is from a (coherent) cache or not
             if (pkt->fromCache())
@@ -144,6 +147,10 @@ namespace gem5
                     if (rdbi->isDirty(pkt))
                     {
                         pkt->setCacheResponding();
+                        // dbistats.writebacksGenerated++; // FOR DEBUGGING
+                        // // Print the DBI cache stats
+                        // dbistats.printDBICacheStats(*this); // Does not print
+
                         rdbi->clearDirtyBit(pkt, writebacks);
                     }
                 }
@@ -154,11 +161,17 @@ namespace gem5
 
                     if (rdbi->isDirty(pkt))
                     {
-                        cout << pkt->getAddr() << endl;
+                        // cout << pkt->getAddr() << endl;
                         if (!deferred_response)
                         {
                             pkt->setCacheResponding();
+                            // dbistats.writebacksGenerated++; // FOR DEBUGGING
+                            // // Print the DBI cache stats
+                            // dbistats.printDBICacheStats(*this); // DOES NOT PRINT
                             rdbi->clearDirtyBit(pkt, writebacks);
+                            // dbistats.writebacksGenerated++; // FOR DEBUGGING
+                            // // Print the DBI cache stats
+                            // dbistats.printDBICacheStats(*this); // DOES NOT PRINT
                         }
                         else
                         {
@@ -255,11 +268,6 @@ namespace gem5
                         rdbi->setDirtyBit(pkt, blk, writebacks);
 
                         // do_writebacks(writebacks); Edited by Vivek
-
-                        if (rdbi->isDirty(pkt))
-                        {
-                            cout << pkt->getAddr() << endl;
-                        }
 
                         panic_if(isReadOnly, "Prefetch exclusive requests from "
                                              "read-only cache %s\n",
@@ -564,18 +572,7 @@ namespace gem5
                 // setBlkCoherenceBits(pkt->getAddr(), CacheBlk::DirtyBit);
                 rdbi->setDirtyBit(pkt, blk, writebacks);
 
-                // insertIntoToyStore(pkt->getAddr(), true);
-                // if (blk->isSet(CacheBlk::DirtyBit))
-                // {
-                //     cout << pkt->getAddr() << endl;
-                // }
-
-                if (rdbi->isDirty(pkt))
-                {
-                    cout << pkt->getAddr() << endl;
-                }
-
-                gem5_assert(!isReadOnly, "Should never see dirty snoop response "
+                            gem5_assert(!isReadOnly, "Should never see dirty snoop response "
                                          "in read-only cache %s\n",
                             name());
             }
