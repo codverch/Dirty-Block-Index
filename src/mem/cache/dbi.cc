@@ -78,47 +78,26 @@ namespace gem5
             // lookupLatency is the latency in case the request is uncacheable.
             lat = lookupLatency;
             return false;
+        }
 
-            // sanity check
-            assert(pkt->isRequest());
+        // Access block in the tags
+        Cycles tag_latency(0);
+        blk = tags->accessBlock(pkt, tag_latency);
 
-            gem5_assert(!(isReadOnly && pkt->isWrite()),
-                        "Should never see a write in a read-only cache %s\n",
-                        name());
+        DPRINTF(Cache, "%s for %s %s\n", __func__, pkt->print(),
+                blk ? "hit " + blk->print() : "miss");
 
-            // Access block in the tags
-            Cycles tag_latency(0);
-            blk = tags->accessBlock(pkt, tag_latency);
+        if (pkt->req->isCacheMaintenance())
+        {
 
-            DPRINTF(Cache, "%s for %s %s\n", __func__, pkt->print(),
-                    blk ? "hit " + blk->print() : "miss");
+            lat = calculateTagOnlyLatency(pkt->headerDelay, tag_latency);
 
-            if (pkt->req->isCacheMaintenance())
-            {
-                // A cache maintenance operation is always forwarded to the
-                // memory below even if the block is found in dirty state.
-
-                // We defer any changes to the state of the block until we
-                // create and mark as in service the mshr for the downstream
-                // packet.
-
-                // Calculate access latency on top of when the packet arrives. This
-                // takes into account the bus delay.
-                lat = calculateTagOnlyLatency(pkt->headerDelay, tag_latency);
-
-                return false;
-            }
+            return false;
+        }
 
             if (pkt->isEviction())
             {
-                // We check for presence of block in above caches before issuing
-                // Writeback or CleanEvict to write buffer. Therefore the only
-                // possible cases can be of a CleanEvict packet coming from above
-                // encountering a Writeback generated in this cache peer cache and
-                // waiting in the write buffer. Cases of upper level peer caches
-                // generating CleanEvict and Writeback or simply CleanEvict and
-                // CleanEvict almost simultaneously will be caught by snoops sent out
-                // by crossbar.
+
                 WriteQueueEntry *wb_entry = writeBuffer.findMatch(pkt->getAddr(),
                                                                   pkt->isSecure());
                 if (wb_entry)
@@ -317,7 +296,6 @@ namespace gem5
                 // TODO: the coherent cache can assert that the dirty bit is set
                 if (!pkt->writeThrough())
                 {
-                    //
 
                     rdbi->setDirtyBit(pkt, blk, writebacks);
                 }
@@ -381,75 +359,80 @@ namespace gem5
             }
 
             return false;
-        }
     }
 
     void
     DBICache::cmpAndSwap(CacheBlk *blk, PacketPtr pkt)
     {
+            // Set the cache block pointer
+            setCustomBlk(blk);
 
-        assert(pkt->isRequest());
+            // Set the packet pointer
+            setCustomPkt(pkt);
 
-        uint64_t overwrite_val;
-        bool overwrite_mem;
-        uint64_t condition_val64;
-        uint32_t condition_val32;
+            assert(pkt->isRequest());
 
-        int offset = pkt->getOffset(blkSize);
-        uint8_t *blk_data = blk->data + offset;
+            uint64_t overwrite_val;
+            bool overwrite_mem;
+            uint64_t condition_val64;
+            uint32_t condition_val32;
 
-        assert(sizeof(uint64_t) >= pkt->getSize());
+            int offset = pkt->getOffset(blkSize);
+            uint8_t *blk_data = blk->data + offset;
 
-        // Get a copy of the old block's contents for the probe before the update
-        DataUpdate data_update(regenerateBlkAddr(blk), blk->isSecure());
-        if (ppDataUpdate->hasListeners())
-        {
-            data_update.oldData = std::vector<uint64_t>(blk->data,
-                                                        blk->data + (blkSize / sizeof(uint64_t)));
-        }
+            assert(sizeof(uint64_t) >= pkt->getSize());
 
-        overwrite_mem = true;
-        // keep a copy of our possible write value, and copy what is at the
-        // memory address into the packet
-        pkt->writeData((uint8_t *)&overwrite_val);
-        pkt->setData(blk_data);
-
-        if (pkt->req->isCondSwap())
-        {
-            if (pkt->getSize() == sizeof(uint64_t))
-            {
-                condition_val64 = pkt->req->getExtraData();
-                overwrite_mem = !std::memcmp(&condition_val64, blk_data,
-                                             sizeof(uint64_t));
-            }
-            else if (pkt->getSize() == sizeof(uint32_t))
-            {
-                condition_val32 = (uint32_t)pkt->req->getExtraData();
-                overwrite_mem = !std::memcmp(&condition_val32, blk_data,
-                                             sizeof(uint32_t));
-            }
-            else
-                panic("Invalid size for conditional read/write\n");
-        }
-
-        PacketList writebacks;
-        if (overwrite_mem)
-        {
-            std::memcpy(blk_data, &overwrite_val, pkt->getSize());
-
-            rdbi->setDirtyBit(pkt, blk, writebacks);
-
-            // if (rdbi->isDirty(pkt))
-            // {
-            //     cout << pkt->getAddr() << endl;
-            // }
+            // Get a copy of the old block's contents for the probe before the update
+            DataUpdate data_update(regenerateBlkAddr(blk), blk->isSecure());
             if (ppDataUpdate->hasListeners())
             {
-                data_update.newData = std::vector<uint64_t>(blk->data,
+                data_update.oldData = std::vector<uint64_t>(blk->data,
                                                             blk->data + (blkSize / sizeof(uint64_t)));
-                ppDataUpdate->notify(data_update);
             }
-        }
+
+            overwrite_mem = true;
+            // keep a copy of our possible write value, and copy what is at the
+            // memory address into the packet
+            pkt->writeData((uint8_t *)&overwrite_val);
+            pkt->setData(blk_data);
+
+            if (pkt->req->isCondSwap())
+            {
+                if (pkt->getSize() == sizeof(uint64_t))
+                {
+                    condition_val64 = pkt->req->getExtraData();
+                    overwrite_mem = !std::memcmp(&condition_val64, blk_data,
+                                                 sizeof(uint64_t));
+                }
+                else if (pkt->getSize() == sizeof(uint32_t))
+                {
+                    condition_val32 = (uint32_t)pkt->req->getExtraData();
+                    overwrite_mem = !std::memcmp(&condition_val32, blk_data,
+                                                 sizeof(uint32_t));
+                }
+                else
+                    panic("Invalid size for conditional read/write\n");
+            }
+
+            PacketList writebacks;
+
+            if (overwrite_mem)
+            {
+                std::memcpy(blk_data, &overwrite_val, pkt->getSize());
+
+                rdbi->setDirtyBit(pkt, blk, writebacks);
+
+                // if (rdbi->isDirty(pkt))
+                // {
+                //     cout << pkt->getAddr() << endl;
+                // }
+                if (ppDataUpdate->hasListeners())
+                {
+                    data_update.newData = std::vector<uint64_t>(blk->data,
+                                                                blk->data + (blkSize / sizeof(uint64_t)));
+                    ppDataUpdate->notify(data_update);
+                }
+            }
     }
 
     void
@@ -457,57 +440,63 @@ namespace gem5
                              bool deferred_response, bool pending_downgrade)
     {
 
-        BaseCache::satisfyRequest(pkt, blk);
+            // Set the cache block pointer
+            setCustomBlk(blk);
 
-        PacketList writebacks;
-        // rdbi->clearDirtyBit(pkt, writebacks); // FOR DEBUGGING - works
+            // Set the packet pointer
+            setCustomPkt(pkt);
 
-        if (pkt->isRead())
-        {
-            // determine if this read is from a (coherent) cache or not
-            if (pkt->fromCache())
+            BaseCache::satisfyRequest(pkt, blk);
+            PacketList writebacks;
+
+            // rdbi->clearDirtyBit(pkt, writebacks); // FOR DEBUGGING - works
+
+            if (pkt->isRead())
             {
-                assert(pkt->getSize() == blkSize);
-
-                if (pkt->needsWritable())
+                // determine if this read is from a (coherent) cache or not
+                if (pkt->fromCache())
                 {
-                    // sanity check
-                    assert(pkt->cmd == MemCmd::ReadExReq ||
-                           pkt->cmd == MemCmd::SCUpgradeFailReq);
-                    assert(!pkt->hasSharers());
+                    assert(pkt->getSize() == blkSize);
 
-                    if (rdbi->isDirty(pkt))
+                    if (pkt->needsWritable())
                     {
-                        pkt->setCacheResponding();
-                        rdbi->clearDirtyBit(pkt, writebacks);
-                    }
-                }
-                else if (blk->isSet(CacheBlk::WritableBit) &&
-                         !pending_downgrade && !pkt->hasSharers() &&
-                         pkt->cmd != MemCmd::ReadCleanReq)
-                {
+                        // sanity check
+                        assert(pkt->cmd == MemCmd::ReadExReq ||
+                               pkt->cmd == MemCmd::SCUpgradeFailReq);
+                        assert(!pkt->hasSharers());
 
-                    if (rdbi->isDirty(pkt))
-                    {
-                        // cout << pkt->getAddr() << endl;
-                        if (!deferred_response)
+                        if (rdbi->isDirty(pkt))
                         {
                             pkt->setCacheResponding();
                             rdbi->clearDirtyBit(pkt, writebacks);
                         }
-                        else
+                    }
+                    else if (blk->isSet(CacheBlk::WritableBit) &&
+                             !pending_downgrade && !pkt->hasSharers() &&
+                             pkt->cmd != MemCmd::ReadCleanReq)
+                    {
+
+                        if (rdbi->isDirty(pkt))
                         {
-                            pkt->setHasSharers();
+                            // cout << pkt->getAddr() << endl;
+                            if (!deferred_response)
+                            {
+                                pkt->setCacheResponding();
+                                rdbi->clearDirtyBit(pkt, writebacks);
+                            }
+                            else
+                            {
+                                pkt->setHasSharers();
+                            }
                         }
                     }
-                }
-                else
-                {
-                    // otherwise only respond with a shared copy
-                    pkt->setHasSharers();
+                    else
+                    {
+                        // otherwise only respond with a shared copy
+                        pkt->setHasSharers();
+                    }
                 }
             }
-        }
     }
 
     void
@@ -809,109 +798,219 @@ namespace gem5
         }
     }
 
-        CacheBlk *
+    // CacheBlk *
+    // DBICache::handleFill(PacketPtr pkt, CacheBlk *blk, PacketList &writebacks, bool allocate)
+    // {
+    //     assert(pkt->isResponse());
+    //     Addr addr = pkt->getAddr();
+    //     bool is_secure = pkt->isSecure();
+    //     const bool has_old_data = blk && blk->isValid();
+    //     const std::string old_state = (debug::Cache && blk) ? blk->print() : "";
 
-        DBICache::handleFill(PacketPtr pkt, CacheBlk *blk, PacketList &writebacks, bool allocate)
+    //     // When handling a fill, we should have no writes to this line.
+    //     assert(addr == pkt->getBlockAddr(blkSize));
+    //     assert(!writeBuffer.findMatch(addr, is_secure));
+
+    //     if (!blk)
+    //     {
+    //         // better have read new data...
+    //         assert(pkt->hasData() || pkt->cmd == MemCmd::InvalidateResp);
+
+    //         // need to do a replacement if allocating, otherwise we stick
+    //         // with the temporary storage
+    //         blk = allocate ? allocateBlock(pkt, writebacks) : nullptr;
+
+    //         if (!blk)
+    //         {
+    //             // No replaceable block or a mostly exclusive
+    //             // cache... just use temporary storage to complete the
+    //             // current request and then get rid of it
+    //             blk = tempBlock;
+    //             tempBlock->insert(addr, is_secure);
+    //             DPRINTF(Cache, "using temp block for %#llx (%s)\n", addr,
+    //                     is_secure ? "s" : "ns");
+    //         }
+    //     }
+    //     else
+    //     {
+    //         // existing block... probably an upgrade
+    //         // don't clear block status... if block is already dirty we
+    //         // don't want to lose that
+    //     }
+
+    //     // Block is guaranteed to be valid at this point
+    //     assert(blk->isValid());
+    //     assert(blk->isSecure() == is_secure);
+    //     assert(regenerateBlkAddr(blk) == addr);
+
+    //     blk->setCoherenceBits(CacheBlk::ReadableBit);
+
+    //     // sanity check for whole-line writes, which should always be
+    //     // marked as writable as part of the fill, and then later marked
+    //     // dirty as part of satisfyRequest
+    //     if (pkt->cmd == MemCmd::InvalidateResp)
+    //     {
+    //         assert(!pkt->hasSharers());
+    //     }
+
+    //     // here we deal with setting the appropriate state of the line,
+    //     // and we start by looking at the hasSharers flag, and ignore the
+    //     // cacheResponding flag (normally signalling dirty data) if the
+    //     // packet has sharers, thus the line is never allocated as Owned
+    //     // (dirty but not writable), and always ends up being either
+    //     // Shared, Exclusive or Modified, see Packet::setCacheResponding
+    //     // for more details
+    //     if (!pkt->hasSharers())
+    //     {
+    //         // we could get a writable line from memory (rather than a
+    //         // cache) even in a read-only cache, note that we set this bit
+    //         // even for a read-only cache, possibly revisit this decision
+    //         blk->setCoherenceBits(CacheBlk::WritableBit);
+
+    //         // check if we got this via cache-to-cache transfer (i.e., from a
+    //         // cache that had the block in Modified or Owned state)
+    //         if (pkt->cacheResponding())
+    //         {
+    //             // we got the block in Modified state, and invalidated the
+    //             // owners copy
+    //             // blk->setCoherenceBits(CacheBlk::DirtyBit);
+    //             rdbi->setDirtyBit(pkt, blk, writebacks);
+
+    //             gem5_assert(!isReadOnly, "Should never see dirty snoop response "
+    //                                      "in read-only cache %s\n",
+    //                         name());
+    //         }
+    //     }
+
+    //     DPRINTF(Cache, "Block addr %#llx (%s) moving from %s to %s\n",
+    //             addr, is_secure ? "s" : "ns", old_state, blk->print());
+
+    //     // if we got new data, copy it in (checking for a read response
+    //     // and a response that has data is the same in the end)
+    //     if (pkt->isRead())
+    //     {
+    //         // sanity checks
+    //         assert(pkt->hasData());
+    //         assert(pkt->getSize() == blkSize);
+
+    //         updateBlockData(blk, pkt, has_old_data);
+    //     }
+    //     // The block will be ready when the payload arrives and the fill is done
+    //     blk->setWhenReady(clockEdge(fillLatency) + pkt->headerDelay +
+    //                       pkt->payloadDelay);
+
+    //     return blk;
+    // }
+
+        PacketPtr
+        DBICache::writebackBlk(CacheBlk *blk)
         {
-            assert(pkt->isResponse());
-            Addr addr = pkt->getAddr();
-            bool is_secure = pkt->isSecure();
-            const bool has_old_data = blk && blk->isValid();
-            const std::string old_state = (debug::Cache && blk) ? blk->print() : "";
+        gem5_assert(!isReadOnly || writebackClean,
+                    "Writeback from read-only cache");
+        assert(blk && blk->isValid() &&
+               (blk->isSet(CacheBlk::DirtyBit) || writebackClean));
 
-            // When handling a fill, we should have no writes to this line.
-            assert(addr == pkt->getBlockAddr(blkSize));
-            assert(!writeBuffer.findMatch(addr, is_secure));
+        stats.writebacks[Request::wbRequestorId]++;
 
-            if (!blk)
+        RequestPtr req = std::make_shared<Request>(
+            regenerateBlkAddr(blk), blkSize, 0, Request::wbRequestorId);
+
+        if (blk->isSecure())
+            req->setFlags(Request::SECURE);
+
+        req->taskId(blk->getTaskId());
+
+        PacketPtr pkt =
+            new Packet(req, blk->isSet(CacheBlk::DirtyBit) ? MemCmd::WritebackDirty : MemCmd::WritebackClean);
+
+        DPRINTF(Cache, "Create Writeback %s writable: %d, dirty: %d\n",
+                pkt->print(), blk->isSet(CacheBlk::WritableBit),
+                blk->isSet(CacheBlk::DirtyBit));
+
+        if (blk->isSet(CacheBlk::WritableBit))
+        {
+            // not asserting shared means we pass the block in modified
+            // state, mark our own block non-writeable
+            blk->clearCoherenceBits(CacheBlk::WritableBit);
+        }
+        else
+        {
+            // we are in the Owned state, tell the receiver
+            pkt->setHasSharers();
+        }
+
+        // make sure the block is not marked dirty
+        // blk->clearCoherenceBits(CacheBlk::DirtyBit);
+        PacketList writebacks; // Added by Deepanjali
+        rdbi->clearDirtyBit(pkt, writebacks);
+
+        pkt->allocate();
+        pkt->setDataFromBlock(blk->data, blkSize);
+
+        // When a block is compressed, it must first be decompressed before being
+        // sent for writeback.
+        if (compressor)
+        {
+            pkt->payloadDelay = compressor->getDecompressionLatency(blk);
+        }
+
+        return pkt;
+        }
+
+        // Whichever function is calling writebackVisitor, just put this entire code there instead
+
+        void
+        DBICache::writebackVisitor(CacheBlk &blk)
+        {
+            PacketPtr pkt = getCustomPkt();
+            // if (blk.isSet(CacheBlk::DirtyBit))
+            if (rdbi->isDirty(pkt))
             {
-                // better have read new data...
-                assert(pkt->hasData() || pkt->cmd == MemCmd::InvalidateResp);
+                assert(blk.isValid());
 
-                // need to do a replacement if allocating, otherwise we stick
-                // with the temporary storage
-                blk = allocate ? allocateBlock(pkt, writebacks) : nullptr;
+                RequestPtr request = std::make_shared<Request>(
+                    regenerateBlkAddr(&blk), blkSize, 0, Request::funcRequestorId);
 
-                if (!blk)
+                request->taskId(blk.getTaskId());
+                if (blk.isSecure())
                 {
-                    // No replaceable block or a mostly exclusive
-                    // cache... just use temporary storage to complete the
-                    // current request and then get rid of it
-                    blk = tempBlock;
-                    tempBlock->insert(addr, is_secure);
-                    DPRINTF(Cache, "using temp block for %#llx (%s)\n", addr,
-                            is_secure ? "s" : "ns");
+                    request->setFlags(Request::SECURE);
                 }
+
+                Packet packet(request, MemCmd::WriteReq);
+                packet.dataStatic(blk.data);
+
+                memSidePort.sendFunctional(&packet);
+
+                // blk.clearCoherenceBits(CacheBlk::DirtyBit);
+                PacketList writebacks; // Added by Deepanjali
+
+                rdbi->clearDirtyBit(pkt, writebacks);
             }
-            else
-            {
-                // existing block... probably an upgrade
-                // don't clear block status... if block is already dirty we
-                // don't want to lose that
-            }
+        }
 
-            // Block is guaranteed to be valid at this point
-            assert(blk->isValid());
-            assert(blk->isSecure() == is_secure);
-            assert(regenerateBlkAddr(blk) == addr);
+        PacketPtr
+        DBICache::getCustomPkt()
+        {
+        return customPkt;
+        }
 
-            blk->setCoherenceBits(CacheBlk::ReadableBit);
+        CacheBlk *
+        DBICache::getCustomBlk()
+        {
+        return customBlk;
+        }
 
-            // sanity check for whole-line writes, which should always be
-            // marked as writable as part of the fill, and then later marked
-            // dirty as part of satisfyRequest
-            if (pkt->cmd == MemCmd::InvalidateResp)
-            {
-                assert(!pkt->hasSharers());
-            }
+        void
+        DBICache::setCustomPkt(PacketPtr pkt)
+        {
+        customPkt = pkt;
+        }
 
-            // here we deal with setting the appropriate state of the line,
-            // and we start by looking at the hasSharers flag, and ignore the
-            // cacheResponding flag (normally signalling dirty data) if the
-            // packet has sharers, thus the line is never allocated as Owned
-            // (dirty but not writable), and always ends up being either
-            // Shared, Exclusive or Modified, see Packet::setCacheResponding
-            // for more details
-            if (!pkt->hasSharers())
-            {
-                // we could get a writable line from memory (rather than a
-                // cache) even in a read-only cache, note that we set this bit
-                // even for a read-only cache, possibly revisit this decision
-                blk->setCoherenceBits(CacheBlk::WritableBit);
-
-                // check if we got this via cache-to-cache transfer (i.e., from a
-                // cache that had the block in Modified or Owned state)
-                if (pkt->cacheResponding())
-                {
-                    // we got the block in Modified state, and invalidated the
-                    // owners copy
-                    // blk->setCoherenceBits(CacheBlk::DirtyBit);
-                    rdbi->setDirtyBit(pkt, blk, writebacks);
-
-                    gem5_assert(!isReadOnly, "Should never see dirty snoop response "
-                                             "in read-only cache %s\n",
-                                name());
-                }
-            }
-
-            DPRINTF(Cache, "Block addr %#llx (%s) moving from %s to %s\n",
-                    addr, is_secure ? "s" : "ns", old_state, blk->print());
-
-            // if we got new data, copy it in (checking for a read response
-            // and a response that has data is the same in the end)
-            if (pkt->isRead())
-            {
-                // sanity checks
-                assert(pkt->hasData());
-                assert(pkt->getSize() == blkSize);
-
-                updateBlockData(blk, pkt, has_old_data);
-            }
-            // The block will be ready when the payload arrives and the fill is done
-            blk->setWhenReady(clockEdge(fillLatency) + pkt->headerDelay +
-                              pkt->payloadDelay);
-
-            return blk;
+        void
+        DBICache::setCustomBlk(CacheBlk *blk)
+        {
+        customBlk = blk;
         }
 }
 

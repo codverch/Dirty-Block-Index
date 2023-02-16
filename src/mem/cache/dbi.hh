@@ -60,6 +60,22 @@ namespace gem5
         // Use aggressive writeback mechanism.
         bool useAggressiveWriteback;
 
+        PacketPtr customPkt;
+
+        CacheBlk *customBlk;
+
+        // Function to set the current PacketPtr
+        void setCustomPkt(PacketPtr pkt);
+
+        // Function to set the current CacheBlk
+        void setCustomBlk(CacheBlk *blk);
+
+        // Function to return the current PacketPtr
+        PacketPtr getCustomPkt();
+
+        // Function to return the current CacheBlk
+        CacheBlk *getCustomBlk();
+
         // A structure called RDBIStats inheriting from statistics, group to
         // keep track of the statistics of the DBI.Specifically, number of
         // valid DBI entries at the end of the simulation.
@@ -77,6 +93,10 @@ namespace gem5
 
         CacheBlk *handleFill(PacketPtr pkt, CacheBlk *blk,
                              PacketList &writebacks, bool allocate);
+
+        PacketPtr writebackBlk(CacheBlk *blk);
+
+        void writebackVisitor(CacheBlk &blk);
 
     public:
         // Object of DBICacheStats
