@@ -64,8 +64,10 @@ namespace gem5
         // keep track of the statistics of the DBI.Specifically, number of
         // valid DBI entries at the end of the simulation.
 
-        void
-        cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
+        bool access(PacketPtr pkt, CacheBlk *&blk, Cycles &lat,
+                    PacketList &writebacks);
+
+        void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                             bool deferred_response = false,
                             bool pending_downgrade = false) override;

@@ -32,7 +32,6 @@ class L1Cache(Cache):
     tgts_per_mshr = 20
     # Replacement policy: LRU
     replacement_policy = LRURP()
-    
 
     def __init__(self, options=None):
         super(L1Cache, self).__init__()
@@ -74,6 +73,8 @@ class L1DCache(L1Cache):
     # Set the default size
     size = '32kB'
     replacement_policy = LRURP()
+    
+     
 
 
     SimpleOpts.add_option('--l1d_size',
@@ -102,7 +103,7 @@ class L2Cache(Cache):
     tgts_per_mshr = 12
     # Random replacement policy
     replacement_policy = LRURP()
-
+    
     SimpleOpts.add_option('--l2_size', help="L2 cache size. Default: %s" % size)
 
     def __init__(self, opts=None):
@@ -180,3 +181,5 @@ class L3Cache(DBICache):
 
     def connectMemSideBus(self, bus):
         self.mem_side = bus.cpu_side_ports
+
+   

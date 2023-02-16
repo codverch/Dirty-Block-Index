@@ -78,6 +78,7 @@ namespace gem5
     Cache::satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                           bool deferred_response, bool pending_downgrade)
     {
+
         BaseCache::satisfyRequest(pkt, blk);
 
         if (pkt->isRead())
@@ -100,8 +101,9 @@ namespace gem5
                     if (blk->isSet(CacheBlk::DirtyBit))
                     {
                         pkt->setCacheResponding();
+
                         blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                    }
+                                        }
                 }
                 else if (blk->isSet(CacheBlk::WritableBit) &&
                          !pending_downgrade && !pkt->hasSharers() &&
@@ -141,8 +143,9 @@ namespace gem5
                             // the cache hierarchy through a cache,
                             // and first snoop upwards in all other
                             // branches
-                            blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                        }
+
+                                                        blk->clearCoherenceBits(CacheBlk::DirtyBit);
+                                                }
                         else
                         {
                             // if we're responding after our own miss,

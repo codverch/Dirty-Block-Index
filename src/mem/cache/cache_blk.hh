@@ -230,7 +230,7 @@ class CacheBlk : public TaggedEntry
      */
     void clearCoherenceBits(unsigned bits)
     {
-        cout << "Deepanjali, I am cacheblock's clearCoherenceBits function" << endl;
+
         coherence &= ~bits;
     }
 
@@ -242,7 +242,7 @@ class CacheBlk : public TaggedEntry
     bool
     isSet(unsigned bits) const
     {
-        cout << "Deepanjali, I am cacheblock's isSet function" << endl;
+
         return isValid() && (coherence & bits);
     }
 

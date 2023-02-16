@@ -92,12 +92,12 @@ namespace gem5
     bool
     RDBI::isDirty(PacketPtr pkt)
     {
-        cout << "Deepanjali, I am being called from RDBI isdirty" << endl; // works
-        // Get the RDBI entry
+        // cout << "Deepanjali, I am being called from RDBI isdirty" << endl; // works
+        //  Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
         // Check if a valid RDBI entry is found
-        if (entry != NULL)
+        if (entry)
         {
             // If the entry is valid, check if the dirty bit is set
             if (entry->validBit == 1)
