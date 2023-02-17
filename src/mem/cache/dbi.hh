@@ -88,6 +88,27 @@ namespace gem5
         // handleFill() from the BaseCache - redefining it here
         CacheBlk *handleFill(PacketPtr pkt, CacheBlk *blk, PacketList &writebacks,
                              bool allocate);
+        // Overriding the serviceMSHRTargets() from the BaseCache
+        void serviceMSHRTargets(MSHR *mshr, const PacketPtr pkt, CacheBlk *blk) override;
+
+        // writebackBlk() from the BaseCache - redefining it here
+        PacketPtr writebackBlk(CacheBlk *blk);
+
+        // writecleanBlk() from the BaseCache - redefining it here
+        PacketPtr writecleanBlk(CacheBlk *blk, Request::Flags dest, PacketId id);
+
+        // writebackVisitor() from the BaseCache - redefining it here
+        void writebackVisitor(CacheBlk &blk);
+
+        // cleanEvictBlk() from the cache - redefining it here
+        PacketPtr cleanEvictBlk(CacheBlk *blk);
+
+        // handleSnoop() from the cache - redefining it here
+        uint32_t handleSnoop(PacketPtr pkt, CacheBlk *blk, bool is_timing,
+                             bool is_deferred, bool pending_inval);
+
+        // evictBlock() from the cache - redefining it here
+        PacketPtr evictBlock(CacheBlk *blk);
 
     public:
         // Object of DBICacheStats
