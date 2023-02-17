@@ -21,6 +21,7 @@ namespace gem5
     RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats)
 
     {
+
         dbiCacheStats = &dbistats;
         cout << "Hey, I am a RDBI component" << endl;
         numSetBits = log2(_numSets);
