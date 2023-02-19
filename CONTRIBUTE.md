@@ -20,6 +20,12 @@ For example: Source('new-file-name.cc')
 
 DBI component: Contains a number DBI Entries `gem5/src/mem/cache/rdbi/rdbi_entry.hh`
 
+### Relevant file locations
+
+- `gem5/src/mem/cache/rdbi/rdbi.hh `
+- `gem5/src/mem/cache/rdbi/rdbi.cc`
+- `gem5/src/mem/cache/rdbi/SConscript`   
+
 The key functions are:
 
 1. `setDirtyBit()` - sets the dirty bit for a specific cache block.  
