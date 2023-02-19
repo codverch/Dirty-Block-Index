@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
+#include "mem/cache/dbi_cache_stats.hh"
 #include "base/types.hh"
 #include "mem/cache/cache.hh"
 #include "base/statistics.hh"
@@ -29,16 +30,13 @@ namespace gem5
 
         // The size of the DBI augmented cache.
         unsigned int cacheSize;
-
         // Also, don't keep these as public
         // Alpha needs to be re-defined as type ALPHA
         float alpha;
-
         // The associativity of DBI, or the number of DBI entries contained within a set.
         unsigned int dbiAssoc;
         // The cache block size of DBI augmented cache.
         unsigned int blkSize;
-
         // The total number of blocks contained within the cache.
         uint32_t numBlksInCache;
         // The total number of blocks contained within the DBI.
@@ -55,30 +53,65 @@ namespace gem5
         uint32_t numBlockSizeBits;
         // The number of bits required to index into a set in the DBI.
         uint32_t numBlockIndexBits;
-
         // Use aggressive writeback mechanism.
         bool useAggressiveWriteback;
 
-        // A structure called RDBIStats inheriting from statistics, group to
-        // keep track of the statistics of the DBI.Specifically, number of
-        // valid DBI entries at the end of the simulation.
+        PacketPtr customPkt;
+        CacheBlk *customBlk;
 
-        void
-        cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
+        // -----------------------------------------------------
+        // Functions to be implemented by the DBI augmented cache.
+
+        // Set the current PacketPtr
+        void setCustomPkt(PacketPtr pkt);
+
+        // Set the current CacheBlk
+        void setCustomBlk(CacheBlk *blk);
+
+        // Return the current PacketPtr
+        PacketPtr getCustomPkt();
+
+        // Return the current CacheBlk
+        CacheBlk *getCustomBlk();
+
+        // cmpAndSwap() from the BaseCache - redefining it here
+        void cmpAndSwap(CacheBlk *blk, PacketPtr pkt);
+
+        // satisfyRequest() from the cache - redefining it here
         void satisfyRequest(PacketPtr pkt, CacheBlk *blk,
-                            bool deferred_response = false,
-                            bool pending_downgrade = false) override;
+                            bool deferred_response, bool pending_downgrade);
 
-        void serviceMSHRTargets(MSHR *mshr, const PacketPtr pkt,
-                                CacheBlk *blk) override;
+        // access() from the cache - redefining it here
+        bool access(PacketPtr pkt, CacheBlk *&blk, Cycles &lat,
+                    PacketList &writebacks);
 
-        CacheBlk *handleFill(PacketPtr pkt, CacheBlk *blk,
-                             PacketList &writebacks, bool allocate);
+        // handleFill() from the BaseCache - redefining it here
+        CacheBlk *handleFill(PacketPtr pkt, CacheBlk *blk, PacketList &writebacks,
+                             bool allocate);
+        // Overriding the serviceMSHRTargets() from the BaseCache
+        void serviceMSHRTargets(MSHR *mshr, const PacketPtr pkt, CacheBlk *blk) override;
+
+        // writebackBlk() from the BaseCache - redefining it here
+        PacketPtr writebackBlk(CacheBlk *blk);
+
+        // writecleanBlk() from the BaseCache - redefining it here
+        PacketPtr writecleanBlk(CacheBlk *blk, Request::Flags dest, PacketId id);
+
+        // cleanEvictBlk() from the cache - redefining it here
+        PacketPtr cleanEvictBlk(CacheBlk *blk);
+
+        // handleSnoop() from the cache - redefining it here
+        uint32_t handleSnoop(PacketPtr pkt, CacheBlk *blk, bool is_timing,
+                             bool is_deferred, bool pending_inval);
+
+        // evictBlock() from the cache - redefining it here
+        PacketPtr evictBlock(CacheBlk *blk);
 
     public:
+        // Object of DBICacheStats
+        DBICacheStats dbistats;
         // A constructor for the DBI augmented cache.
         DBICache(const DBICacheParams &p);
     };
-}
-
+} // namespace gem5
 #endif // _MEM_CACHE_DBI_HH_

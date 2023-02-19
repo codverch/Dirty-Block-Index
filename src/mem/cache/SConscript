@@ -42,6 +42,7 @@ Source('noncoherent_cache.cc')
 Source('write_queue.cc')
 Source('write_queue_entry.cc')
 Source('dbi.cc')
+Source('dbi_cache_stats.cc')
 
 
 

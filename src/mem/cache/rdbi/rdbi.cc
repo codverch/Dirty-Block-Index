@@ -1,19 +1,29 @@
-
-#include "mem/cache/rdbi/rdbi.hh"
-#include "mem/cache/rdbi/rdbi_entry.hh"
+// Header file to add custom statistics
+#include "sim/stat_control.hh"
+#include "sim/stats.hh"
 #include "base/statistics.hh"
+#include "base/stats/types.hh"
+#include "base/types.hh"
+#include "mem/packet.hh"
+#include "mem/cache/cache.hh"
+#include "mem/cache/base.hh"
+#include "mem/cache/dbi_cache_stats.hh"
 #include "mem/cache/dbi.hh"
-
+#include "mem/cache/rdbi/rdbi_entry.hh"
+#include "mem/cache/rdbi/rdbi.hh"
 
 using namespace std;
+using namespace gem5::statistics;
 
 namespace gem5
 {
 
-    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback)
+    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats)
 
     {
-        cout << "Hey, I am a RDBI component + Deepanjali" << endl;
+
+        dbiCacheStats = &dbistats;
+        cout << "Hey, I am a RDBI component" << endl;
         numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
         numblkIndexBits = _numblkIndexBits;
@@ -57,8 +67,7 @@ namespace gem5
     RDBIEntry *
     RDBI::getRDBIEntry(PacketPtr pkt)
     {
-        // Get the block index from the bitset
-        blkIndexInBitset = getblkIndexInBitset(pkt);
+
         regAddr = getRegDBITag(pkt);
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt);
@@ -84,17 +93,18 @@ namespace gem5
     bool
     RDBI::isDirty(PacketPtr pkt)
     {
-        // Get the RDBI entry
+        // cout << "Deepanjali, I am being called from RDBI isdirty" << endl; // works
+        //  Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
         // Check if a valid RDBI entry is found
-        if (entry != NULL)
+        if (entry)
         {
             // If the entry is valid, check if the dirty bit is set
             if (entry->validBit == 1)
             {
                 // Compute the cache block index from the bitset
-                blkIndexInBitset = getblkIndexInBitset(pkt);
+                int blkIndexInBitset = getblkIndexInBitset(pkt);
                 // Check the entry's dirty bit from the bitset
                 return entry->dirtyBits.test(blkIndexInBitset);
             }
@@ -111,6 +121,9 @@ namespace gem5
     void
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
+        dbiCacheStats->writebacksGenerated++;
+        // Print the wriebacks generated
+        cout << "Deepanjali, I am being called from RDBI cleardirty" << endl;
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
@@ -121,7 +134,7 @@ namespace gem5
             if (entry->validBit == 1)
             {
                 // Compute the cache block index from the bitset
-                blkIndexInBitset = getblkIndexInBitset(pkt);
+                int blkIndexInBitset = getblkIndexInBitset(pkt);
 
                 // Clear the dirty bit from the bitset
                 entry->dirtyBits.reset(blkIndexInBitset);
@@ -146,8 +159,10 @@ namespace gem5
     void
     RDBI::setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks)
     {
+        cout << "Deepanjali, I am being called from RDBI setdirty" << endl;
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
+        int blkIndexInBitset = getblkIndexInBitset(pkt);
 
         // Check if a valid RDBI entry is found
         if (entry != NULL)
@@ -179,6 +194,9 @@ namespace gem5
 
         // Get the index of the RDBI entry
         rDBIIndex = getRDBIEntryIndex(pkt);
+
+        // Get the block index from the bitset
+        int blkIndexInBitset = getblkIndexInBitset(pkt);
 
         // Get the inner vector of DBI entries at the specified index location
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
@@ -252,6 +270,7 @@ namespace gem5
         {
             if (entry->dirtyBits.test(i))
             {
+                dbiCacheStats->writebacksGenerated++; // DEEPANJALi
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                 CacheBlk *blk = entry->blkPtrs[i];
 
@@ -282,35 +301,10 @@ namespace gem5
 
                 // Append the packet to the PacketList
                 writebacks.push_back(wbPkt);
+
+                // Increment the Scalar writebacks stat
+                dbiCacheStats->writebacksGenerated++;
             }
         }
     }
-
-    RDBI::RDBIStats::RDBIStats(RDBI &r)
-        : statistics::Group(&r), rdbi(r),
-
-          ADD_STAT(numRDBIEntries, statistics::units::Count::get(),
-                   "Number of RDBI entries"),
-          cmd(MemCmd::NUM_MEM_CMDS)
-    {
-        for (int i = 0; i < MemCmd::NUM_MEM_CMDS; i++)
-        {
-            cmd[i] = new statistics::Counter(&rdbi, MemCmd::toString(MemCmd(i)));
-        }
-    }
-
-    void
-    RDBI::RDBIStats::regStats()
-    {
-        using namespace statistics;
-        ADD_STAT(numRDBIEntries, statistics::units::Count::get(),
-                 "Number of RDBI entries");
-        for (int i = 0; i < MemCmd::NUM_MEM_CMDS; i++)
-        {
-            cmd[i] = new statistics::Counter(&rdbi, MemCmd::toString(MemCmd(i)));
-            // Print "Deepanjali", just to check if the stats are being printed
-            std::cout << "Deepanjali" << std::endl;
-        }
-    }
 }
-
