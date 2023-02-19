@@ -175,7 +175,7 @@ namespace gem5
                 entry->dirtyBits.reset(blkIndexInBitset);
 
                 // If the dirty bitset is empty, invalidate the entry
-                else if (entry->dirtyBits.none())
+                if (entry->dirtyBits.none())
                 {
                     entry->validBit = 0;
                 }

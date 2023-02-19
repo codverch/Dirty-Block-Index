@@ -55,6 +55,20 @@ class L3Cache(DBICache):
 
 ```
 
-## Contributing
+## Implementation Details
 
-We are open to contributions via forks, issues, pull requests, or emails. Your input is highly valued by us. Our objective is to integrate DBICache as a replacement for the conventional cache in gem5, to facilitate further research in computer architecture.
+DBICache - `gem5/src/mem/cache/dbi.cc`   
+DBI component - `gem5/src/mem/cche/rdbi/rdbi.cc`  
+DBI Entry - `gem5/src/mem/cache/rdbi/rdbi_entry.hh`   
+
+
+**Note:** Add the name of any new source file you create in the `SConscript`   
+``` python
+For example: Source('new-file-name.cc')
+```
+
+
+
+<!-- ## Contributing
+
+We are open to contributions via forks, issues, pull requests, or emails. Your input is highly valued by us. Our objective is to integrate DBICache as a replacement for the conventional cache in gem5, to facilitate further research in computer architecture. -->

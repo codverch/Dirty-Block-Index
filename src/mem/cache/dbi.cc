@@ -130,6 +130,9 @@ namespace gem5
         {
             std::memcpy(blk_data, &overwrite_val, pkt->getSize());
             // blk->setCoherenceBits(CacheBlk::DirtyBit);
+            // Print the cacheblock address
+            DPRINTF(DBICache, "DEEAIZSHELL CacheBlock address: %d", blk->getTag());
+
             rdbi->setDirtyBit(pkt, blk, writebacks);
 
             if (ppDataUpdate->hasListeners())
@@ -407,6 +410,7 @@ namespace gem5
             {
                 // TODO: the coherent cache can assert that the dirty bit is set
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
+                DPRINTF(DBICache, "DEEAIZSHELL2 CacheBlock address: %d", blk->getTag());
                 rdbi->setDirtyBit(pkt, blk, writebacks);
             }
             // if the packet does not have sharers, it is passing
@@ -501,6 +505,7 @@ namespace gem5
             if (!pkt->writeThrough())
             {
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
+                DPRINTF(DBICache, "DEEAIZSHELL3 CacheBlock address: %d", blk->getTag());
                 rdbi->setDirtyBit(pkt, blk, writebacks);
             }
             // nothing else to do; writeback doesn't expect response
@@ -641,6 +646,7 @@ namespace gem5
                 // we got the block in Modified state, and invalidated the
                 // owners copy
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
+                DPRINTF(DBICache, "DEEAIZSHELL4 CacheBlock address: %d", blk->getTag());
                 rdbi->setDirtyBit(pkt, blk, writebacks);
 
                 gem5_assert(!isReadOnly, "Should never see dirty snoop response "
@@ -742,6 +748,7 @@ namespace gem5
                         // proactively mark the block as Dirty.
                         assert(blk);
                         // blk->setCoherenceBits(CacheBlk::DirtyBit);
+                        DPRINTF(DBICache, "DEEAIZSHELL5 CacheBlock address: %d", blk->getTag());
                         rdbi->setDirtyBit(pkt, blk, writebacks);
 
                         panic_if(isReadOnly, "Prefetch exclusive requests from "
