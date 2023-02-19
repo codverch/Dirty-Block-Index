@@ -93,9 +93,25 @@ namespace gem5
     bool
     RDBI::isDirty(PacketPtr pkt)
     {
-        // cout << "Deepanjali, I am being called from RDBI isdirty" << endl; // works
+        cout << "Hey, I am from RDBI's isDirty()" << endl; // FOR DEBUGGING
         //  Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
+
+        // -------------------------------FOR DEBUGGING------------------------------
+        // Extract the block address from the packet
+        Addr blkAddr = pkt->getBlockAddr(blkSize);
+
+        // Calculate the regTag and blkIndexInRegion
+        uint64_t regTag = blkAddr >> numBlkBits;
+        uint64_t blkIndexInRegion = (blkAddr >> numblkIndexBits) & (numBlksInRegion - 1);
+
+        // Re-generate the address from the regTag and blkIndexInRegion
+        Addr addr = (regTag << numblkIndexBits) | (blkIndexInRegion << numBlkBits);
+
+        // Print the re-generated address
+        cout << "Re-generated address: " << addr << endl;
+
+        // ------------------------------ DONE DEBUGGING ------------------------------
 
         // Check if a valid RDBI entry is found
         if (entry)
@@ -121,9 +137,7 @@ namespace gem5
     void
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
-        dbiCacheStats->writebacksGenerated++;
-        // Print the wriebacks generated
-        cout << "Deepanjali, I am being called from RDBI cleardirty" << endl;
+        cout << "Hey, I am from RDBI's clearDirtyBit()" << endl; // FOR DEBUGGING
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
@@ -186,152 +200,154 @@ namespace gem5
     void
     RDBI::setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks)
     {
-        cout << "Deepanjali, I am being called from RDBI setdirty" << endl;
-        // Get the RDBI entry
-        RDBIEntry *entry = getRDBIEntry(pkt);
-        int blkIndexInBitset = getblkIndexInBitset(pkt);
+                cout << "Hey, I am from RDBI's setDirty()" << endl;
+                // Get the RDBI entry
+                RDBIEntry *entry = getRDBIEntry(pkt);
+                int blkIndexInBitset = getblkIndexInBitset(pkt);
 
-        // Check if a valid RDBI entry is found
-        if (entry != NULL)
-        {
-            // If the entry is valid, set the dirty bit from the bitset
-            if (entry->validBit == 1)
-            {
+                // Check if a valid RDBI entry is found
+                if (entry != NULL)
+                {
+                    // If the entry is valid, set the dirty bit from the bitset
+                    if (entry->validBit == 1)
+                    {
                 entry->dirtyBits.set(blkIndexInBitset);
                 // Get the block pointer
                 entry->blkPtrs[blkIndexInBitset] = blkPtr;
-            }
-        }
+                    }
+                }
 
-        else
-        {
-            // If a valid RDBI entry is not found, create a new entry and set the dirty bit
-            createRDBIEntry(writebacks, pkt, blkPtr);
-            setDirtyBit(pkt, blkPtr, writebacks);
-        }
+                else
+                {
+                    // If a valid RDBI entry is not found, create a new entry and set the dirty bit
+                    createRDBIEntry(writebacks, pkt, blkPtr);
+                    setDirtyBit(pkt, blkPtr, writebacks);
+                }
     }
 
-    void
-    RDBI::createRDBIEntry(PacketList &writebacks, PacketPtr pkt, CacheBlk *blkPtr)
-    {
-        // Iterate through the inner vector of RDBI Entries
-        // Look for an invalid entry
-        // If an invalid entry is found, create a new entry
-        // If no invalid entry is found, evict an entry
-
-        // Get the index of the RDBI entry
-        rDBIIndex = getRDBIEntryIndex(pkt);
-
-        // Get the block index from the bitset
-        int blkIndexInBitset = getblkIndexInBitset(pkt);
-
-        // Get the inner vector of DBI entries at the specified index location
-        vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
-
-        // Iterate through the inner vector of DBI entries using an iterator
-        // Fetch an invalid entry if found
-        // If no invalid entry is found at the end of the for loop, evict an entry
-        for (vector<RDBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
-        {
-            RDBIEntry &entry = *i;
-            if (entry.validBit == 0)
+            void
+            RDBI::createRDBIEntry(PacketList &writebacks, PacketPtr pkt, CacheBlk *blkPtr)
             {
-                // Create a new entry
-                entry.regTag = regAddr;
-                entry.validBit = 1;
-                entry.dirtyBits.set(blkIndexInBitset);
-                entry.blkPtrs[blkIndexInBitset] = blkPtr;
-                return;
+                // Iterate through the inner vector of RDBI Entries
+                // Look for an invalid entry
+                // If an invalid entry is found, create a new entry
+                // If no invalid entry is found, evict an entry
+
+                // Get the index of the RDBI entry
+                rDBIIndex = getRDBIEntryIndex(pkt);
+
+                // Get the block index from the bitset
+                int blkIndexInBitset = getblkIndexInBitset(pkt);
+
+                // Get the inner vector of DBI entries at the specified index location
+                vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
+
+                // Iterate through the inner vector of DBI entries using an iterator
+                // Fetch an invalid entry if found
+                // If no invalid entry is found at the end of the for loop, evict an entry
+                for (vector<RDBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
+                {
+                    RDBIEntry &entry = *i;
+                    if (entry.validBit == 0)
+                    {
+                        // Create a new entry
+                        entry.regTag = regAddr;
+                        entry.validBit = 1;
+                        entry.dirtyBits.set(blkIndexInBitset);
+                        entry.blkPtrs[blkIndexInBitset] = blkPtr;
+                        return;
+                    }
+                }
+
+                // If no invalid entry is found, evict an entry
+                evictRDBIEntry(writebacks, rDBIEntries);
+                createRDBIEntry(writebacks, pkt, blkPtr);
             }
-        }
 
-        // If no invalid entry is found, evict an entry
-        evictRDBIEntry(writebacks, rDBIEntries);
-        createRDBIEntry(writebacks, pkt, blkPtr);
-    }
-
-    RDBIEntry *
-    RDBI::pickRDBIEntry(vector<RDBIEntry> &rDBIEntries)
-    {
-        // Return the RDBIEntry returned by the replacement policy
-        return randomReplacementPolicy(rDBIEntries);
-    }
-
-    RDBIEntry *
-    RDBI::randomReplacementPolicy(vector<RDBIEntry> &rDBIEntries)
-    {
-        // Generate a random index within the range of the associativity of the set
-        int randomIndex = rand() % Assoc;
-        // Get the RDBIEntry at the generated index
-        RDBIEntry &entry = rDBIEntries[randomIndex];
-        return &entry;
-    }
-
-    void
-    RDBI::evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries)
-    {
-
-        // Get the RDBIEntry to be evicted
-        RDBIEntry *entry = pickRDBIEntry(rDBIEntries);
-
-        // Generate writebacks for all the dirty cache blocks in the region
-        // Invalidate the RDBIEntry
-        writebackRDBIEntry(writebacks, entry);
-        entry->validBit = 0;
-    }
-
-    void
-    RDBI::writebackRDBIEntry(PacketList &writebacks, RDBIEntry *entry)
-    {
-
-        // Iterate over the bitset field of the RDBIEntry and check if any of the dirtyBit is set
-        // If a dirty bit is set, fetch the corresponding cache block pointer from the blkPtrs field
-        // Re-generate the cache block address from the rowTag
-        // Create a new packet and set the address to the cache block address
-        // Create a new request and set the requestor ID to the writeback requestor ID
-        // Create a new writeback packet and set the address to the cache block address
-        // Set the writeback packet's destination to the memory controller
-        // Push the writeback packet to the writebacks list
-
-        for (int i = 0; i < numBlksInRegion; i++)
-        {
-            if (entry->dirtyBits.test(i))
+            RDBIEntry *
+            RDBI::pickRDBIEntry(vector<RDBIEntry> &rDBIEntries)
             {
-                dbiCacheStats->writebacksGenerated++; // DEEPANJALi
-                // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
-                CacheBlk *blk = entry->blkPtrs[i];
+                // Return the RDBIEntry returned by the replacement policy
+                return randomReplacementPolicy(rDBIEntries);
+            }
 
-                //_stats.writebacks[Request::wbRequestorId]++;
+            RDBIEntry *
+            RDBI::randomReplacementPolicy(vector<RDBIEntry> &rDBIEntries)
+            {
+                // Generate a random index within the range of the associativity of the set
+                int randomIndex = rand() % Assoc;
+                // Get the RDBIEntry at the generated index
+                RDBIEntry &entry = rDBIEntries[randomIndex];
+                return &entry;
+            }
 
+            void
+            RDBI::evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries)
+            {
+
+                // Get the RDBIEntry to be evicted
+                RDBIEntry *entry = pickRDBIEntry(rDBIEntries);
+
+                // Generate writebacks for all the dirty cache blocks in the region
+                // Invalidate the RDBIEntry
+                writebackRDBIEntry(writebacks, entry);
+                entry->validBit = 0;
+            }
+
+            void
+            RDBI::writebackRDBIEntry(PacketList &writebacks, RDBIEntry *entry)
+            {
+
+                // Iterate over the bitset field of the RDBIEntry and check if any of the dirtyBit is set
+                // If a dirty bit is set, fetch the corresponding cache block pointer from the blkPtrs field
                 // Re-generate the cache block address from the rowTag
-                Addr addr = (entry->regTag << numBlkBits) | (i << numBlkBits);
+                // Create a new packet and set the address to the cache block address
+                // Create a new request and set the requestor ID to the writeback requestor ID
+                // Create a new writeback packet and set the address to the cache block address
+                // Set the writeback packet's destination to the memory controller
+                // Push the writeback packet to the writebacks list
 
-                RequestPtr req = std::make_shared<Request>(
-                    addr, blkSize, 0, Request::wbRequestorId);
+                for (int i = 0; i < numBlksInRegion; i++)
+                {
+                    if (entry->dirtyBits.test(i))
+                    {
+                        dbiCacheStats->writebacksGenerated++; // DEEPANJALi
+                        // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
+                        CacheBlk *blk = entry->blkPtrs[i];
 
-                if (blk->isSecure())
+                        //_stats.writebacks[Request::wbRequestorId]++;
+
+                        // Re-generate the cache block address from the rowTag
+                        Addr addr = (entry->regTag << numBlkBits) | (i << numBlkBits);
+                        // Print the re-generated address
+                        cout << "Re-generated address: " << addr << endl;
+
+                        RequestPtr req = std::make_shared<Request>(
+                            addr, blkSize, 0, Request::wbRequestorId);
+
+                        if (blk->isSecure())
                     req->setFlags(Request::SECURE);
 
-                req->taskId(blk->getTaskId());
+                        req->taskId(blk->getTaskId());
 
-                // Create a new packet and set the address to the cache block address
-                PacketPtr wbPkt = new Packet(req, MemCmd::WritebackDirty);
-                wbPkt->setAddr(addr);
+                        // Create a new packet and set the address to the cache block address
+                        PacketPtr wbPkt = new Packet(req, MemCmd::WritebackDirty);
+                        wbPkt->setAddr(addr);
 
-                wbPkt->allocate();
-                wbPkt->setDataFromBlock(blk->data, blkSize);
+                        wbPkt->allocate();
+                        wbPkt->setDataFromBlock(blk->data, blkSize);
 
-                // if (compressor)
-                // {
-                //     pkt->payloadDelay = compressor->getDecompressionLatency(blk);
-                // }
+                        // if (compressor)
+                        // {
+                        //     pkt->payloadDelay = compressor->getDecompressionLatency(blk);
+                        // }
 
-                // Append the packet to the PacketList
-                writebacks.push_back(wbPkt);
+                        // Append the packet to the PacketList
+                        writebacks.push_back(wbPkt);
 
-                // Increment the Scalar writebacks stat
-                dbiCacheStats->writebacksGenerated++;
+                        // Increment the Scalar writebacks stat
+                        dbiCacheStats->writebacksGenerated++;
+                    }
+                }
             }
-        }
-    }
 }

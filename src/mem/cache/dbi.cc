@@ -40,7 +40,7 @@ namespace gem5
           dbistats(*this, &stats)
 
     {
-        cout << "Hey, I am a DBICache component + Deepanjali" << endl;
+        DPRINTF(DBICache, "Hey, I am a DBICache component");
         numBlksInCache = cacheSize / blkSize;
         numBlksInDBI = numBlksInCache * alpha;
         numDBIEntries = numBlksInDBI / numBlksInRegion;
@@ -48,8 +48,10 @@ namespace gem5
         //  numDBISetsBits = log2(numDBISets);
         numBlockSizeBits = log2(blkSize);
         numBlockIndexBits = log2(numBlksInRegion);
-        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize, useAggressiveWriteback, dbistats);
-        DPRINTF(DBICache, "Hey, I am a DBICache object");
+        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits,
+                        dbiAssoc, numBlksInRegion, blkSize,
+                        useAggressiveWriteback, dbistats);
+        // For debugging purposes - update the dbi cache stats
         dbistats.writebacksGenerated++;
     }
 
@@ -80,7 +82,7 @@ namespace gem5
     void
     DBICache::cmpAndSwap(CacheBlk *blk, PacketPtr pkt)
     {
-        PacketList writebacks;
+        PacketList writebacks; // NEEDS TO BE REMOVED
 
         assert(pkt->isRequest());
 
@@ -131,8 +133,7 @@ namespace gem5
             std::memcpy(blk_data, &overwrite_val, pkt->getSize());
             // blk->setCoherenceBits(CacheBlk::DirtyBit);
             // Print the cacheblock address
-            DPRINTF(DBICache, "DEEAIZSHELL CacheBlock address: %d", blk->getTag());
-
+            DPRINTF(DBICache, "Debugging(Yo): Packet CacheBlock address: %d", blk->getTag());
             rdbi->setDirtyBit(pkt, blk, writebacks);
 
             if (ppDataUpdate->hasListeners())
@@ -148,8 +149,9 @@ namespace gem5
     DBICache::satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                              bool deferred_response, bool pending_downgrade)
     {
-        PacketList writebacks;
-        setCustomPkt(pkt);
+        PacketList writebacks; // NEEDS TO BE REMOVED
+        setCustomPkt(pkt);     // NEEDS TO BE REMOVED
+        cout << "DBICache::satisfyRequest, packet address: " << pkt->getAddr() << endl;
         BaseCache::satisfyRequest(pkt, blk);
         if (pkt->isRead())
         {
