@@ -77,9 +77,12 @@ namespace gem5
         // Check if the cache block is dirty
         bool isDirty(PacketPtr pkt);
 
-        // Clear the dirty bit of the cache block
+        // Clear the dirty bit of the cache block and generate a writeback
         void clearDirtyBit(PacketPtr pkt, PacketList &writebacks);
         // cleardirty(CacheBlk *blkPtr) - only clears the dirty bit (No writebacks)
+
+        // Clear the dirty bit of the cache block
+        void clearDirty(PacketPtr pkt, CacheBlk *blkPtr);
 
         // Set the dirty bit of the cache block
         void setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks);

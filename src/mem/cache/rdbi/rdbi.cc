@@ -157,6 +157,33 @@ namespace gem5
     }
 
     void
+    RDBI::clearDirty(PacketPtr pkt, CacheBlk *blk)
+    {
+        // Get the RDBI entry
+        RDBIEntry *entry = getRDBIEntry(pkt);
+
+        // Check if a valid RDBI entry is found
+        if (entry != NULL)
+        {
+            // If the entry is valid
+            if (entry->validBit == 1)
+            {
+                // Compute the cache block index from the bitset
+                int blkIndexInBitset = getblkIndexInBitset(pkt);
+
+                // Clear the dirty bit from the bitset
+                entry->dirtyBits.reset(blkIndexInBitset);
+
+                // If the dirty bitset is empty, invalidate the entry
+                else if (entry->dirtyBits.none())
+                {
+                    entry->validBit = 0;
+                }
+            }
+        }
+    }
+
+    void
     RDBI::setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks)
     {
         cout << "Deepanjali, I am being called from RDBI setdirty" << endl;
