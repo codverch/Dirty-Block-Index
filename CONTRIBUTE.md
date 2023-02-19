@@ -1,9 +1,16 @@
+DBICache routes all access to dirty bits to the DBI component, instead of the tag store in a conventional cache.   
+
 ## Implementation Details
 
-DBICache - `gem5/src/mem/cache/dbi.cc`   
-DBI component - `gem5/src/mem/cche/rdbi/rdbi.cc`  
-DBI Entry - `gem5/src/mem/cache/rdbi/rdbi_entry.hh`   
+DBICache - Inherits from `cache.cc` 
 
+In DBICache, an instance of the Dirty Block Index (DBI) is created in the constructor by instantiating a DBI object.
+
+### Relevant file locations
+- `gem5/src/mem/cache/dbi.hh`: Header file
+- `gem5/src/mem/cache/dbi.cc`: C++ implementation of DBICache
+- `gem5/src/mem/cache/SConscript`
+- `gem5/src/mem/cache/Cache.py`
 
 **Note:** Add the name of any new source file you create in the `SConscript`.    
 
@@ -11,7 +18,9 @@ DBI Entry - `gem5/src/mem/cache/rdbi/rdbi_entry.hh`
 For example: Source('new-file-name.cc')
 ```
 
-DBICache routes all access to dirty bits to the DBI component, instead of the tag store in a conventional cache.   
+DBI component: Contains a number DBI Entries `gem5/src/mem/cache/rdbi/rdbi_entry.hh`
+
+The key functions are:
 
 1. `setDirtyBit()` - sets the dirty bit for a specific cache block.  
 2. `clearDirtyBit()` - generates writebacks and clears the dirty bit for a specific cache block.  
