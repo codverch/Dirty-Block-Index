@@ -25,6 +25,20 @@ namespace gem5
         rDBIStore = vector<vector<RDBIEntry>>(_numSets, vector<RDBIEntry>(_assoc, RDBIEntry(numBlksInRegion)));
     }
 
+    unsigned int
+    DBICache::getBytesInBlock(PacketPtr pkt)
+    {
+        // Fetch the numBlkBits number of LHS bits from the packet address
+        Addr addr = pkt->getAddr();
+        // Obtain the total number of bits in the packet address
+        int numAddrBits = sizeof(addr) * 8;
+        // Create a mask with 1's in the LHS numBlkBits bits and 0's in the rest numAddrBits - numBlkBits bits
+        Addr mask = ((1 << numBlkBits) - 1);
+        // Fetch the numBlkBits number of LHS bits from the packet address
+        Addr bytesInBlock = addr & mask;
+        return bytesInBlock;
+    }
+
     Addr
     RDBI::getRegDBITag(PacketPtr pkt)
     {
@@ -110,6 +124,7 @@ namespace gem5
     void
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
+        cout << "RDBI::clearDirtyBit" << endl; // DEBUGGING
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
@@ -251,7 +266,11 @@ namespace gem5
                 //_stats.writebacks[Request::wbRequestorId]++;
 
                 // Re-generate the cache block address from the rowTag
-                Addr addr = (entry->regTag << numBlkBits) | (i << numBlkBits);
+                // Addr addr = (entry->regTag << numBlkBits) | (i << numBlkBits);
+
+                // Re-generate the packet addres from the rowTag
+                // The packet address has: RowTag + Blocks inside region + bytes inside block
+                // Add the block inside region and bytes in blocks bits to the LHS of the rowTag
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);

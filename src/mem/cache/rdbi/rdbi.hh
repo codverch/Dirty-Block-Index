@@ -44,6 +44,10 @@ namespace gem5
         unsigned int blkSize;
         // Use aggressive writeback mechanism
         bool useAggressiveWriteback;
+        // Value of bytes in block field
+        unsigned int bytesInBlock;
+        // Value of blocks inside region field
+        unsigned int blocksInRegion;
 
         // BaseCache::CacheStats &_stats;
 
