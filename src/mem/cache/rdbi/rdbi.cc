@@ -39,6 +39,7 @@ namespace gem5
     {
         Addr addr = pkt->getAddr();
         regAddr = addr >> (numBlkBits + numblkIndexBits);
+        // regAddr = addr >> numBlkBits;
         return regAddr;
     }
 
@@ -96,22 +97,6 @@ namespace gem5
         cout << "Hey, I am from RDBI's isDirty()" << endl; // FOR DEBUGGING
         //  Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
-
-        // -------------------------------FOR DEBUGGING------------------------------
-        // Extract the block address from the packet
-        Addr blkAddr = pkt->getBlockAddr(blkSize);
-
-        // Calculate the regTag and blkIndexInRegion
-        uint64_t regTag = blkAddr >> numBlkBits;
-        uint64_t blkIndexInRegion = (blkAddr >> numblkIndexBits) & (numBlksInRegion - 1);
-
-        // Re-generate the address from the regTag and blkIndexInRegion
-        Addr addr = (regTag << numblkIndexBits) | (blkIndexInRegion << numBlkBits);
-
-        // Print the re-generated address
-        cout << "Re-generated address: " << addr << endl;
-
-        // ------------------------------ DONE DEBUGGING ------------------------------
 
         // Check if a valid RDBI entry is found
         if (entry)
@@ -173,6 +158,7 @@ namespace gem5
     void
     RDBI::clearDirty(PacketPtr pkt, CacheBlk *blk)
     {
+
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
@@ -235,6 +221,9 @@ namespace gem5
 
                 // Get the index of the RDBI entry
                 rDBIIndex = getRDBIEntryIndex(pkt);
+
+                // Get the region tag from the packet
+                regAddr = getRegDBITag(pkt);
 
                 // Get the block index from the bitset
                 int blkIndexInBitset = getblkIndexInBitset(pkt);
@@ -311,19 +300,27 @@ namespace gem5
                 {
                     if (entry->dirtyBits.test(i))
                     {
-                        dbiCacheStats->writebacksGenerated++; // DEEPANJALi
+
                         // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                         CacheBlk *blk = entry->blkPtrs[i];
 
                         //_stats.writebacks[Request::wbRequestorId]++;
 
                         // Re-generate the cache block address from the rowTag
-                        Addr addr = (entry->regTag << numBlkBits) | (i << numBlkBits);
+                        Addr blkaddr = (entry->regTag << numBlkBits) | (i << numBlkBits);
+
+                        // Calculate the region address and block index from the RDBIEntry object
+                        Addr regionAddr = entry->regTag << (numBlkBits + numblkIndexBits);
+                        ;
+
+                        // Calculate the packet address using the region address and block index
+                        Addr pktAddr = regionAddr | (i << numBlkBits);
+
                         // Print the re-generated address
-                        cout << "Re-generated address: " << addr << endl;
+                        cout << "Re-generated address: " << pktAddr << endl;
 
                         RequestPtr req = std::make_shared<Request>(
-                            addr, blkSize, 0, Request::wbRequestorId);
+                            pktAddr, blkSize, 0, Request::wbRequestorId);
 
                         if (blk->isSecure())
                     req->setFlags(Request::SECURE);
@@ -332,7 +329,7 @@ namespace gem5
 
                         // Create a new packet and set the address to the cache block address
                         PacketPtr wbPkt = new Packet(req, MemCmd::WritebackDirty);
-                        wbPkt->setAddr(addr);
+                        wbPkt->setAddr(pktAddr);
 
                         wbPkt->allocate();
                         wbPkt->setDataFromBlock(blk->data, blkSize);

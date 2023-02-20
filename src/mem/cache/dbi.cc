@@ -176,7 +176,8 @@ namespace gem5
                         pkt->setCacheResponding();
 
                         // blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                        rdbi->clearDirtyBit(pkt, writebacks);
+                        // rdbi->clearDirtyBit(pkt, writebacks);
+                        rdbi->clearDirty(pkt, blk);
                     }
                 }
                 else if (blk->isSet(CacheBlk::WritableBit) &&
@@ -220,7 +221,8 @@ namespace gem5
                             // and first snoop upwards in all other
                             // branches
                             // blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                            rdbi->clearDirtyBit(pkt, writebacks);
+                            // rdbi->clearDirtyBit(pkt, writebacks);
+                            rdbi->clearDirty(pkt, blk);
                         }
 
                         else
@@ -1012,7 +1014,8 @@ namespace gem5
         // make sure the block is not marked dirty
         //  blk->clearCoherenceBits(CacheBlk::DirtyBit);
         PacketList writebacks;
-        rdbi->clearDirtyBit(pkt, writebacks);
+        // rdbi->clearDirtyBit(pkt, writebacks);
+        rdbi->clearDirty(pkt, blk);
 
         pkt->allocate();
         pkt->setDataFromBlock(blk->data, blkSize);
@@ -1065,7 +1068,8 @@ namespace gem5
         // make sure the block is not marked dirty
         //  blk->clearCoherenceBits(CacheBlk::DirtyBit);
         PacketList writebacks;
-        rdbi->clearDirtyBit(pkt, writebacks);
+        // rdbi->clearDirtyBit(pkt, writebacks);
+        rdbi->clearDirty(pkt, blk);
 
         pkt->allocate();
         pkt->setDataFromBlock(blk->data, blkSize);
