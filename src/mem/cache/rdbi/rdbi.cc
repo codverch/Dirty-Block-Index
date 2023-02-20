@@ -39,6 +39,20 @@ namespace gem5
         return bytesInBlock;
     }
 
+    unsigned int
+    DBICache::getBytesInRegion(PacketPtr pkt)
+    {
+        // Fetch the packet address
+        Addr addr = pkt->getAddr();
+        // Remove the bytes in block field from the packet address
+        Addr temp = addr >> numBlkBits;
+        // Create a mask with 1's in the numblkIndexBits number of LHS bits and 0's in the rest numAddrBits - numblkIndexBits bits
+        Addr mask = (1 << numblkIndexBits) - 1;
+        // Fetch the blocks in region field from the packet address
+        Addr bytesInRegion = temp & mask;
+        return bytesInRegion;
+    }
+
     Addr
     RDBI::getRegDBITag(PacketPtr pkt)
     {

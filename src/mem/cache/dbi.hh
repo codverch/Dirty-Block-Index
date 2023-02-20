@@ -52,7 +52,7 @@ namespace gem5
         uint32_t numDBISetsBits;
         // The number of bits required to represent the cache block size
         uint32_t numBlockSizeBits;
-        // The number of bits required to index into a set in the DBI.
+        // The number of blocks in region field
         uint32_t numBlockIndexBits;
 
         // Use aggressive writeback mechanism.
