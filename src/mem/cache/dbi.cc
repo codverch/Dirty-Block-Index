@@ -47,6 +47,7 @@ namespace gem5
         // Number of sets in DBI
         numDBISets = numDBIEntries / dbiAssoc;
         //  numDBISetsBits = log2(numDBISets);
+        // Bytes in block bits
         numBlockSizeBits = log2(blkSize);
         numBlockIndexBits = log2(numBlksInRegion);
         rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize, useAggressiveWriteback, dbistats);
@@ -107,7 +108,7 @@ namespace gem5
 
             rdbi->setDirtyBit(pkt, blk, writebacks);
 
-            if (rdbi->isDirty(pkt))
+            if (!rdbi->isDirty(pkt))
             {
                 cout << pkt->getAddr() << endl;
             }
@@ -142,7 +143,7 @@ namespace gem5
                            pkt->cmd == MemCmd::SCUpgradeFailReq);
                     assert(!pkt->hasSharers());
 
-                    if (rdbi->isDirty(pkt))
+                    if (!rdbi->isDirty(pkt))
                     {
                         pkt->setCacheResponding();
                         rdbi->clearDirtyBit(pkt, writebacks);
@@ -153,7 +154,7 @@ namespace gem5
                          pkt->cmd != MemCmd::ReadCleanReq)
                 {
 
-                    if (rdbi->isDirty(pkt))
+                    if (!rdbi->isDirty(pkt))
                     {
                         cout << pkt->getAddr() << endl;
                         if (!deferred_response)
@@ -256,7 +257,7 @@ namespace gem5
 
                         // do_writebacks(writebacks); Edited by Vivek
 
-                        if (rdbi->isDirty(pkt))
+                        if (!rdbi->isDirty(pkt))
                         {
                             cout << pkt->getAddr() << endl;
                         }
@@ -569,7 +570,7 @@ namespace gem5
                 //     cout << pkt->getAddr() << endl;
                 // }
 
-                if (rdbi->isDirty(pkt))
+                if (!rdbi->isDirty(pkt))
                 {
                     cout << pkt->getAddr() << endl;
                 }

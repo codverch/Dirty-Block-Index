@@ -86,8 +86,10 @@ namespace gem5
     RDBIEntry *
     RDBI::getRDBIEntry(PacketPtr pkt)
     {
+
         // Get the block index from the bitset
         blkIndexInBitset = getblkIndexInBitset(pkt);
+        cout << "blkIndexInBitset from getRDBIEntry: " << blkIndexInBitset << endl; // FOR DEBUGGING
         regAddr = getRegDBITag(pkt);
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt);
@@ -116,18 +118,26 @@ namespace gem5
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
+        cout << "Before the isDirty entry!=NULL check" << endl;                // DEBUGGING
+        cout << "blkIndexInBitset from isDirty: " << blkIndexInBitset << endl; // FOR DEBUGGING
+
         // Check if a valid RDBI entry is found
         if (entry != NULL)
         {
             // If the entry is valid, check if the dirty bit is set
             if (entry->validBit == 1)
             {
+                cout << "blkIndexInBitset from isDirty: " << blkIndexInBitset << endl; // FOR DEBUGGING
                 // Check the entry's dirty bit from the bitset
                 return entry->dirtyBits.test(blkIndexInBitset);
             }
 
             else
+            {
+                cout << "inside the isDirty entry!=NULL check else condition" << endl; // DEBUGGING
+                cout << "blkIndexInBitset from isDirty: " << blkIndexInBitset << endl; // FOR DEBUGGING
                 return false;
+            }
         }
 
         // If a valid RDBI entry is not found, return false
@@ -139,7 +149,7 @@ namespace gem5
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
         cout << "RDBI::clearDirtyBit" << endl; // DEBUGGING
-        // Get the RDBI entry
+        // Get the RDBI entrywritebackRDBIEntry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
         // Check if a valid RDBI entry is found
@@ -290,6 +300,8 @@ namespace gem5
         {
             if (entry->dirtyBits.test(i))
             {
+                // DBI Stats
+                dbiCacheStats->writebacksGenerated++;
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                 CacheBlk *blk = entry->blkPtrs[i];
 
@@ -315,6 +327,8 @@ namespace gem5
                 // Step 4: A bitwise OR operation between the rowTag, blocksInRegion and bytesInBlock fields
                 // will give the packet address
                 Addr addr = rowTag | blocksInRegion | bytesInBlock;
+
+                cout << "Re-gemerated Writeback address: " << addr << endl;
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);
