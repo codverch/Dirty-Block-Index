@@ -26,21 +26,21 @@ namespace gem5
     }
 
     unsigned int
-    DBICache::getBytesInBlock(PacketPtr pkt)
+    RDBI::getBytesInBlock(PacketPtr pkt)
     {
         // Fetch the numBlkBits number of LHS bits from the packet address
         Addr addr = pkt->getAddr();
         // Obtain the total number of bits in the packet address
-        int numAddrBits = sizeof(addr) * 8;
+        // int numAddrBits = sizeof(addr) * 8;
         // Create a mask with 1's in the LHS numBlkBits bits and 0's in the rest numAddrBits - numBlkBits bits
         Addr mask = ((1 << numBlkBits) - 1);
         // Fetch the numBlkBits number of LHS bits from the packet address
-        Addr bytesInBlock = addr & mask;
-        return bytesInBlock;
+        Addr BytesInBlock = addr & mask;
+        return BytesInBlock;
     }
 
     unsigned int
-    DBICache::getBytesInRegion(PacketPtr pkt)
+    RDBI::getBlocksInRegion(PacketPtr pkt)
     {
         // Fetch the packet address
         Addr addr = pkt->getAddr();
@@ -49,8 +49,8 @@ namespace gem5
         // Create a mask with 1's in the numblkIndexBits number of LHS bits and 0's in the rest numAddrBits - numblkIndexBits bits
         Addr mask = (1 << numblkIndexBits) - 1;
         // Fetch the blocks in region field from the packet address
-        Addr bytesInRegion = temp & mask;
-        return bytesInRegion;
+        Addr BlocksInRegion = temp & mask;
+        return BlocksInRegion;
     }
 
     Addr
@@ -152,6 +152,12 @@ namespace gem5
                 // Then clear the dirty bits from the bitset
                 if (useAggressiveWriteback)
                 {
+                    // Fetch the value of the bytes in block field from the packet address
+                    // Store it in the bytesInBlock variable
+                    bytesInBlock = getBytesInBlock(pkt);
+                    // Fetch the value of the blocks in region field from the packet address
+                    // Store it in the blocksInRegion variable
+                    blocksInRegion = getBlocksInRegion(pkt);
                     writebackRDBIEntry(writebacks, entry);
                     entry->dirtyBits.reset();
                 }
@@ -253,6 +259,12 @@ namespace gem5
 
         // Generate writebacks for all the dirty cache blocks in the region
         // Invalidate the RDBIEntry
+        // Fetch the value of the bytes in block field from the packet address
+        // Store it in the bytesInBlock variable
+        bytesInBlock = getBytesInBlock(pkt);
+        // Fetch the value of the blocks in region field from the packet address
+        // Store it in the blocksInRegion variable
+        blocksInRegion = getBlocksInRegion(pkt);
         writebackRDBIEntry(writebacks, entry);
         entry->validBit = 0;
     }
@@ -282,9 +294,12 @@ namespace gem5
                 // Re-generate the cache block address from the rowTag
                 // Addr addr = (entry->regTag << numBlkBits) | (i << numBlkBits);
 
-                // Re-generate the packet addres from the rowTag
                 // The packet address has: RowTag + Blocks inside region + bytes inside block
-                // Add the block inside region and bytes in blocks bits to the LHS of the rowTag
+                // The different fields of the packet address from MSB to LSB are:
+                // 1. RowTag: Row address + Bits to index into DBI
+                // 2. Blocks inside region
+                // 3. Bytes inside block
+                //
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);

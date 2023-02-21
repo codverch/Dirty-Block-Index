@@ -61,6 +61,12 @@ namespace gem5
         // Get the cache block index from the bitset
         unsigned int getblkIndexInBitset(PacketPtr pkt);
 
+        // Fetch the bytes in block field
+        unsigned int getBytesInBlock(PacketPtr pkt);
+
+        // Fetch the blocks inside region field
+        unsigned int getBlocksInRegion(PacketPtr pkt);
+
         // Get the region address of the RDBI entry
         Addr getRegDBITag(PacketPtr pkt);
 
