@@ -48,6 +48,8 @@ namespace gem5
         unsigned int bytesInBlock;
         // Value of blocks inside region field
         unsigned int blocksInRegion;
+        // Number of bits in the blocks in region field
+        unsigned int numBlocksInRegionBits;
 
         // BaseCache::CacheStats &_stats;
 

@@ -158,6 +158,8 @@ namespace gem5
                     // Fetch the value of the blocks in region field from the packet address
                     // Store it in the blocksInRegion variable
                     blocksInRegion = getBlocksInRegion(pkt);
+                    // Set the numBlocksInRegionBits variable to the number of bits required to represent the number of blocks in a region
+                    numBlocksInRegionBits = log2(blocksInRegion);
                     writebackRDBIEntry(writebacks, entry);
                     entry->dirtyBits.reset();
                 }
@@ -229,6 +231,12 @@ namespace gem5
         }
 
         // If no invalid entry is found, evict an entry
+        // Fetch the value of the bytes in block field from the packet address
+        // Store it in the bytesInBlock variable
+        bytesInBlock = getBytesInBlock(pkt);
+        // Fetch the value of the blocks in region field from the packet address
+        // Store it in the blocksInRegion variable
+        blocksInRegion = getBlocksInRegion(pkt);
         evictRDBIEntry(writebacks, rDBIEntries);
         createRDBIEntry(writebacks, pkt, blkPtr);
     }
@@ -259,12 +267,8 @@ namespace gem5
 
         // Generate writebacks for all the dirty cache blocks in the region
         // Invalidate the RDBIEntry
-        // Fetch the value of the bytes in block field from the packet address
-        // Store it in the bytesInBlock variable
-        bytesInBlock = getBytesInBlock(pkt);
-        // Fetch the value of the blocks in region field from the packet address
-        // Store it in the blocksInRegion variable
-        blocksInRegion = getBlocksInRegion(pkt);
+        // Set the numBlocksInRegionBits variable to the number of bits required to represent the number of blocks in a region
+        numBlocksInRegionBits = log2(blocksInRegion);
         writebackRDBIEntry(writebacks, entry);
         entry->validBit = 0;
     }
@@ -299,7 +303,18 @@ namespace gem5
                 // 1. RowTag: Row address + Bits to index into DBI
                 // 2. Blocks inside region
                 // 3. Bytes inside block
-                //
+                // Re-generate the packet address from the rowTag
+
+                // Step 1: Get the rowTag from the packet address
+                Addr rowTag = entry->regTag;
+                // Step 2: Shift the rowTag to the left by the sum of number of bits in the Blocks in region
+                // and Bytes in block field
+                rowTag = rowTag << (numBlkBits + numBlocksInRegionBits);
+                // Step 3: Shift the blocksInRegion field to the left by the number of bits in the Bytes in block field
+                blocksInRegion = blocksInRegion << numBlkBits;
+                // Step 4: A bitwise OR operation between the rowTag, blocksInRegion and bytesInBlock fields
+                // will give the packet address
+                Addr addr = rowTag | blocksInRegion | bytesInBlock;
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);
