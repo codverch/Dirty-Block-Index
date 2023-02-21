@@ -34,7 +34,7 @@ The key functions are:
 
 ### Aggressive writeback mechanism: Re-generating the packet address 
 
-Packet address is re-generate and appended to the PacketList writebacks to be written back to the DRAM in the `RDBI::writebackRDBIEntry()`.
+Packet address is re-generated and appended to the PacketList writebacks to be written back to the DRAM in the `RDBI::writebackRDBIEntry()`.
 
 The packet address contains: Row Tag, Blocks in row, and Bytes in block(MSB to LSB)
 
