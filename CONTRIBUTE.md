@@ -40,12 +40,12 @@ The packet address contains: Row Tag, Blocks in row, and Bytes in block(MSB to L
 
 ### Steps involved in re-generating the packet address:
 
-1.Generate a bit mask consisting of all ones with the same number of bits as the original packet address, and store it in a variable.
-2. Retrieve the Row Tag (regTag) from the DBI entry and store it in the least significant bits of a new variable, filling the remaining bits with zeroes to match the number of bits in the original packet address.
+1.Generate a bit mask consisting of all ones with the same number of bits as the original packet address, and store it in a variable.   
+2. Retrieve the Row Tag (regTag) from the DBI entry and store it in the least significant bits of a new variable, filling the remaining bits with zeroes to match the number of bits in the original packet address.   
 3. Perform a bitwise AND operation between the bit mask from step 1 and the regTag from step 2 to obtain a packet address with the regTag.
-4. Left shift the result from step 3 by the number of bits in a row, and perform a bitwise AND operation with a bit mask consisting of all ones to obtain a packet address with only the block information.
-5. Create a new bit mask with the block information in the least significant bits and all other bits set to one, with the same number of bits as the original packet address.
-6. Perform a bitwise AND operation between the result from step 4 and the bit mask from step 5 to obtain a packet address with both the regTag and block information.
-7. Left shift the result from step 6 by the number of bits in a block, and perform a bitwise AND operation with a bit mask consisting of all ones to obtain a packet address with only the byte information.
-8. Create a new bit mask with the byte information in the least significant bits and all other bits set to one, with the same number of bits as the original packet address.
+4. Left shift the result from step 3 by the number of bits in a row, and perform a bitwise AND operation with a bit mask consisting of all ones to obtain a packet address with only the block information.   
+5. Create a new bit mask with the block information in the least significant bits and all other bits set to one, with the same number of bits as the original packet address.   
+6. Perform a bitwise AND operation between the result from step 4 and the bit mask from step 5 to obtain a packet address with both the regTag and block information.   
+7. Left shift the result from step 6 by the number of bits in a block, and perform a bitwise AND operation with a bit mask consisting of all ones to obtain a packet address with only the byte information.  
+8. Create a new bit mask with the byte information in the least significant bits and all other bits set to one, with the same number of bits as the original packet address.   
 9. Perform a bitwise AND operation between the result from step 7 and the bit mask from step 8 to obtain a packet address with all three fields: regTag, block, and byte information.
