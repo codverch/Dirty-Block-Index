@@ -46,6 +46,4 @@ The packet address contains: Row Tag, Blocks in row, and Bytes in block(MSB to L
 3. A bitwise OR operation is performed between the shifted Row Tag and Blocks in Region fields, and the Bytes in Block field to create the final packet address.
 ```
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 18" fill="none">
-    <text x="0" y="15" fill="#9E9E">Github</text>
-</svg>
+
