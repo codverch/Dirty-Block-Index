@@ -12,7 +12,7 @@ namespace gem5
     RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats)
 
     {
-        cout << "Hey, I am a RDBI component + Deepanjali" << endl;
+        cout << "Hey, I am a RDBI component" << endl;
         dbiCacheStats = &dbistats;
         numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
@@ -89,7 +89,7 @@ namespace gem5
 
         // Get the block index from the bitset
         blkIndexInBitset = getblkIndexInBitset(pkt);
-        cout << "blkIndexInBitset from getRDBIEntry: " << blkIndexInBitset << endl; // FOR DEBUGGING
+        // cout << "blkIndexInBitset from getRDBIEntry: " << blkIndexInBitset << endl; // FOR DEBUGGING
         regAddr = getRegDBITag(pkt);
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt);
@@ -117,27 +117,18 @@ namespace gem5
     {
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
-
-        cout << "Before the isDirty entry!=NULL check" << endl;                // DEBUGGING
-        cout << "blkIndexInBitset from isDirty: " << blkIndexInBitset << endl; // FOR DEBUGGING
-
         // Check if a valid RDBI entry is found
         if (entry != NULL)
         {
             // If the entry is valid, check if the dirty bit is set
             if (entry->validBit == 1)
             {
-                cout << "blkIndexInBitset from isDirty: " << blkIndexInBitset << endl; // FOR DEBUGGING
                 // Check the entry's dirty bit from the bitset
                 return entry->dirtyBits.test(blkIndexInBitset);
             }
 
             else
-            {
-                cout << "inside the isDirty entry!=NULL check else condition" << endl; // DEBUGGING
-                cout << "blkIndexInBitset from isDirty: " << blkIndexInBitset << endl; // FOR DEBUGGING
                 return false;
-            }
         }
 
         // If a valid RDBI entry is not found, return false
@@ -148,10 +139,8 @@ namespace gem5
     void
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
-        cout << "RDBI::clearDirtyBit" << endl; // DEBUGGING
-        // Get the RDBI entrywritebackRDBIEntry
-        RDBIEntry *entry = getRDBIEntry(pkt);
 
+        RDBIEntry *entry = getRDBIEntry(pkt);
         // Check if a valid RDBI entry is found
         if (entry != NULL)
         {
@@ -164,7 +153,7 @@ namespace gem5
                 {
                     // Fetch the value of the bytes in block field from the packet address
                     // Store it in the bytesInBlock variable
-                    bytesInBlock = getBytesInBlock(pkt);
+                    // bytesInBlock = getBytesInBlock(pkt);
                     // Fetch the value of the blocks in region field from the packet address
                     // Store it in the blocksInRegion variable
                     blocksInRegion = getBlocksInRegion(pkt);
@@ -188,7 +177,6 @@ namespace gem5
     {
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
-
         // Check if a valid RDBI entry is found
         if (entry != NULL)
         {
@@ -295,7 +283,6 @@ namespace gem5
         // Create a new writeback packet and set the address to the cache block address
         // Set the writeback packet's destination to the memory controller
         // Push the writeback packet to the writebacks list
-
         for (int i = 0; i < numBlksInRegion; i++)
         {
             if (entry->dirtyBits.test(i))
@@ -327,9 +314,6 @@ namespace gem5
                 // Step 4: A bitwise OR operation between the rowTag, blocksInRegion and bytesInBlock fields
                 // will give the packet address
                 Addr addr = rowTag | blocksInRegion | bytesInBlock;
-
-                cout << "Re-gemerated Writeback address: " << addr << endl;
-
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);
 
