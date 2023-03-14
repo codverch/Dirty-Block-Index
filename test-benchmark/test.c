@@ -60,9 +60,9 @@ int main(int argc, char *argv[])
 
             int d = row_id * 1024 + block_id * 16;
 
-            // Write to the first element of the cache block
+            // Write to the cache block
             arr[d] = 1;
-        }
+                }
 
         i++;
     }
@@ -77,9 +77,6 @@ int main(int argc, char *argv[])
 
     // Free the memory
     free(arr);
-<<<<<<< HEAD
-}
-=======
-}
 
->>>>>>> test
+    return 0;
+}

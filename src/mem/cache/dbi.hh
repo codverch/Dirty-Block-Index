@@ -29,6 +29,9 @@ namespace gem5
         // The size of the DBI augmented cache.
         unsigned int cacheSize;
 
+        // Tag Latency
+        const Cycles lookupLatency;
+
         // Also, don't keep these as public
         // Alpha needs to be re-defined as type ALPHA
         float alpha;
@@ -68,6 +71,18 @@ namespace gem5
 
         CacheBlk *handleFill(PacketPtr pkt, CacheBlk *blk,
                              PacketList &writebacks, bool allocate);
+
+        uint32_t handleSnoop(PacketPtr pkt, CacheBlk *blk, bool is_timing,
+                             bool is_deferred, bool pending_inval);
+
+        Tick recvAtomic(PacketPtr pkt);
+
+        bool access(PacketPtr pkt, CacheBlk *&blk, Cycles &lat,
+                    PacketList &writebacks);
+
+        void functionalAccess(PacketPtr pkt, bool from_cpu_side);
+
+        bool sendMSHRQueuePacket(MSHR *mshr);
 
     public:
         // Object of DBICacheStats

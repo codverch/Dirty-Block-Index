@@ -171,6 +171,9 @@ class DBICache(Cache):
     cxx_header = 'mem/cache/dbi.hh'
     cxx_class = 'gem5::DBICache'
     
+    
+    tag_latency = Param.Cycles("Tag lookup latency")
+    
     # Parameters to DBI 
     alpha = Param.Float("Alpha value for the DBI") # Needs to be defined of type Alpha
     dbi_assoc = Param.Unsigned("Associativity of the DBI")

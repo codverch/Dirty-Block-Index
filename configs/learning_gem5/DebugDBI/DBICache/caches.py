@@ -1,5 +1,6 @@
 import m5
 from m5.objects import Cache
+from m5.objects import DBICache
 from m5.objects import *
 
 # Add the common scripts to our path
@@ -141,7 +142,7 @@ class L2Cache(Cache):
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
     
-class L3Cache(Cache):
+class L3Cache(DBICache):
     """DBI augmented L3 Cache with default values"""
 
     # DBICache parameters
@@ -153,6 +154,12 @@ class L3Cache(Cache):
     mshrs = 20
     tgts_per_mshr = 12
     replacement_policy = RandomRP()
+    
+    alpha = 1
+    dbi_assoc = 8
+    blk_per_dbi_entry = 128
+    aggr_writeback = True
+    blkSize = '64'
 
 
     SimpleOpts.add_option('--l3_size', help="L3 cache size. Default: %s" % size) 

@@ -53,6 +53,9 @@ namespace gem5
 
         // BaseCache::CacheStats &_stats;
 
+        // BaseCache object
+        BaseCache *baseCache;
+
     public:
         // Variable to store instance of a structure, overcoming the invalid type error
         DBICacheStats *dbiCacheStats;
