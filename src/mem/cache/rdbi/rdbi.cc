@@ -16,8 +16,6 @@ namespace gem5
         dbiCacheStats = &dbistats;
         numSetBits = log2(_numSets);
         cout << "Number of sets in DBI: " << _numSets;
-        // Print the number of bits required to index into DBI
-        cout << "Number of bits required to index into DBI: " << numSetBits << endl;
         numBlkBits = _numBlkBits;
         // Bits required to index into DBI entries
         numblkIndexBits = _numblkIndexBits;
@@ -123,34 +121,11 @@ namespace gem5
     RDBI::isDirty(PacketPtr pkt)
     {
 
-        // Debugging the address re-generation logic
-        cout << "Packet address request from CPU: " << pkt->getAddr() << endl; // FOR DEBUGGING
-        // Print the packet address in binary
-        cout << "Packet address request from CPU in binary: " << bitset<64>(pkt->getAddr()) << endl; // FOR DEBUGGING
-
-        // // Print the bytes in block field of the packet address
-        // cout << "Bytes in block field of the packet address: " << getBytesInBlock(pkt) << endl; // FOR DEBUGGING
-
-        // // Print the blocks in region field of the packet address
-        // cout << "Blocks in region field of the packet address: " << getBlocksInRegion(pkt) << endl; // FOR DEBUGGING
-        // // Print the blocks in region field of the packet address in binary
-        // cout << "Blocks in region field of the packet address in binary: " << bitset<64>(getBlocksInRegion(pkt)) << endl; // FOR DEBUGGING
-
-        // Print the region DBI tag of the packet address
-        cout << "Region DBI tag of the packet address: " << getRegDBITag(pkt) << endl; // FOR DEBUGGING
-        // Print the region DBI tag of the packet address in binary
-        cout << "regTag in binary: " << bitset<64>(getRegDBITag(pkt)) << endl; // FOR DEBUGGING
-
-        // Print the bits used to index into DBI in decimal
-        cout << "Bits to index into DBI in decimal: " << getRDBIEntryIndex(pkt) << endl; // FOR DEBUGGING
-
-        // Print the bits to index into DBI in binary(LHS 5 bits of the regTag)
-        cout << "Bits to index into DBI in binary: " << bitset<64>(getRDBIEntryIndex(pkt)) << endl; // FOR DEBUGGING
-
-        // Print statement for debugging
-        // cout << "RDBI::isDirty() called" << endl;
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
+
+        // Print the blocks in region field of this packet
+        cout << "Blocks in region: " << getBlocksInRegion(pkt) << endl;
 
         // Check if a valid RDBI entry is found
         if (entry != NULL)
@@ -158,8 +133,21 @@ namespace gem5
             // If the entry is valid, check if the dirty bit is set
             if (entry->validBit == 1)
             {
+
+                // if (entry->dirtyBits.test(blkIndexInBitset))
+                // {
+                //     cout << "The dirty bit is set" << endl;
+                //     cout << "Blocks in region: " << getBlocksInRegion(pkt) << endl;
+                // }
+                if (entry->dirtyBits.test(blkIndexInBitset))
+                {
+                    // Print the packet address
+                    cout << "Packet address: " << bitset<64>(pkt->getAddr()) << endl;
+                }
                 // Check the entry's dirty bit from the bitset
                 return entry->dirtyBits.test(blkIndexInBitset);
+                // DEBUGGING
+                // If the dirty bit is set, then print the blocks in region field of from the packet address
             }
 
             else
@@ -174,10 +162,6 @@ namespace gem5
     void
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
-        // Print statement for debugging
-        // cout << "RDBI::clearDirtyBit() called" << endl;
-        // Adding print statements for debugging
-        // cout << "Packet address request from CPU: " << pkt->getAddr() << endl;
 
         RDBIEntry *entry = getRDBIEntry(pkt);
 
@@ -186,21 +170,15 @@ namespace gem5
         // Check if a valid RDBI entry is found
         if (entry != NULL)
         {
-            // cout << "Checking if the entry is valid" << endl;
+
             // If the entry is valid
             if (entry->validBit == 1)
             {
-                // cout << "Entry is valid" << endl;
                 // If the useAggressiveWriteback flag is set, writeback the entire region
                 // Then clear the dirty bits from the bitset
                 if (useAggressiveWriteback)
                 {
-                    // Fetch the value of the bytes in block field from the packet address
-                    // Store it in the bytesInBlock variable
-                    // bytesInBlock = getBytesInBlock(pkt);
-                    // Fetch the value of the blocks in region field from the packet address
-                    // Store it in the blocksInRegion variable
-                    blocksInRegion = getBlocksInRegion(pkt);
+
                     // Set the numBlocksInRegionBits variable to the number of bits required to represent the number of blocks in a region
                     numBlocksInRegionBits = log2(blocksInRegion);
                     writebackRDBIEntry(writebacks, entry);
@@ -215,24 +193,6 @@ namespace gem5
                 }
             }
         }
-
-        // // Debugging start: Check if the re-generated address matches the packet address
-
-        // // Step 1: Get the rowTag from the packet address
-        // Addr rowTag = entry->regTag;
-        // // Step 2: Shift the rowTag to the left by the sum of number of bits in the Blocks in region
-        // // and Bytes in block field
-        // rowTag = rowTag << (numBlkBits + numBlocksInRegionBits);
-        // // Step 3: Shift the blocksInRegion field to the left by the number of bits in the Bytes in block field
-        // blocksInRegion = blocksInRegion << numBlkBits;
-        // // Step 4: A bitwise OR operation between the rowTag, blocksInRegion and bytesInBlock fields
-        // // will give the packet address
-        // Addr addr = rowTag | blocksInRegion | bytesInBlock;
-
-        // // Print the re-generated address
-        // cout << "Re-generated address: " << addr << endl;
-
-        // // Debugging end
     }
 
     void
@@ -252,21 +212,6 @@ namespace gem5
                 entry->dirtyBits.set(blkIndexInBitset);
                 // Get the block pointer
                 entry->blkPtrs[blkIndexInBitset] = blkPtr;
-
-                // Adding the addres re-generation logic code here for debugging
-                // Step 1: Get the rowTag from the packet address
-                Addr rowTag = entry->regTag;
-                // Step 2: Shift the rowTag to the left by the sum of number of bits in the Blocks in region
-                // and Bytes in block field
-                rowTag = rowTag << (numBlkBits + numBlocksInRegionBits);
-                // Step 3: Shift the blocksInRegion field to the left by the number of bits in the Bytes in block field
-                blocksInRegion = blocksInRegion << numBlkBits;
-                // Step 4: A bitwise OR operation between the rowTag, blocksInRegion and bytesInBlock fields
-                // will give the packet address
-                Addr addr = rowTag | blocksInRegion | bytesInBlock;
-
-                // Print the regenerated address for debugging
-                // cout << "Regenerated address: " << addr << endl;
             }
         }
 
@@ -281,12 +226,9 @@ namespace gem5
     void
     RDBI::createRDBIEntry(PacketList &writebacks, PacketPtr pkt, CacheBlk *blkPtr)
     {
-        // Print statement for debugging
-        // cout << "RDBI::createRDBIEntry() called" << endl;
-        // Iterate through the inner vector of RDBI Entries
-        // Look for an invalid entry
-        // If an invalid entry is found, create a new entry
-        // If no invalid entry is found, evict an entry
+
+        // From the packet address, stores the blocksInRegion field so that we can use it to re-generate the packet address
+        blocksInRegion = getBlocksInRegion(pkt);
 
         // Get the regAddr from the packet address
         regAddr = getRegDBITag(pkt);
@@ -314,16 +256,13 @@ namespace gem5
             }
         }
 
-        // cout << "Successfully created a new RDBI entry" << endl;
-
-        // If no invalid entry is found, evict an entry
-        // Fetch the value of the bytes in block field from the packet address
-        // Store it in the bytesInBlock variable
-        bytesInBlock = getBytesInBlock(pkt);
-        // Fetch the value of the blocks in region field from the packet address
-        // Store it in the blocksInRegion variable
-        blocksInRegion = getBlocksInRegion(pkt);
+        // If no invalid entry found, call the pickRDBIEntry() function to pick an entry to evict
+        RDBIEntry *entry = pickRDBIEntry(rDBIEntries);
+        // Call the evictRDBIEntry() function to evict the entry
         evictRDBIEntry(writebacks, rDBIEntries);
+        // Set the valid bit of the evicted entry to 0
+        entry->validBit = 0;
+        // Create a new entry by calling the createRDBIEntry() function
         createRDBIEntry(writebacks, pkt, blkPtr);
     }
 
@@ -347,8 +286,7 @@ namespace gem5
     void
     RDBI::evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries)
     {
-        // Print statement for debugging
-        // cout << "RDBI::evictRDBIEntry() called" << endl;
+
         // Get the RDBIEntry to be evicted
         RDBIEntry *entry = pickRDBIEntry(rDBIEntries);
 
@@ -364,9 +302,6 @@ namespace gem5
     RDBI::writebackRDBIEntry(PacketList &writebacks, RDBIEntry *entry)
     {
 
-        // Print statement for debugging
-        // cout << "RDBI::writebackRDBIEntry() called (at the start)" << endl;
-
         // Iterate over the bitset field of the RDBIEntry and check if any of the dirtyBit is set
         // If a dirty bit is set, fetch the corresponding cache block pointer from the blkPtrs field
         // Re-generate the cache block address from the rowTag
@@ -377,6 +312,8 @@ namespace gem5
         // Push the writeback packet to the writebacks list
         for (int i = 0; i < numBlksInRegion; i++)
         {
+
+            // cout << "In binary: " << bitset<64>(blocksInRegion) << endl;
             if (entry->dirtyBits.test(i))
             {
                 // DBI Stats
@@ -401,11 +338,15 @@ namespace gem5
                 // Step 2: Shift the rowTag to the left by the sum of number of bits in the Blocks in region
                 // and Bytes in block field
                 rowTag = rowTag << (numBlkBits + numBlocksInRegionBits);
-                // Step 3: Shift the blocksInRegion field to the left by the number of bits in the Bytes in block field
-                blocksInRegion = blocksInRegion << numBlkBits;
-                // Step 4: A bitwise OR operation between the rowTag, blocksInRegion and bytesInBlock fields
-                // will give the packet address
-                Addr addr = rowTag | blocksInRegion | bytesInBlock;
+                // Step 3: Re-generate the blocksInRegion field, this is based on the index of the cache block in the bitset, would be modulo of bitset index of this dbi entry and number of blocks in region
+                Addr blocksInRegion = i % numBlksInRegion;
+                // Step 4: Now, store the block in offset field on the LHS(6 bits), followed by the blocksInRegion field and then the rest of the bits as the rowTag
+                Addr addr = (rowTag | (blocksInRegion << numBlkBits) | (i << numBlkBits));
+
+                // cout << "Re-generated packet address: " << bitset<64>(addr) << endl;
+                // Print the blocks in region field
+                cout << "Re-generated blocks in region: " << blocksInRegion << endl;
+
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);
 
@@ -436,29 +377,20 @@ namespace gem5
             }
         }
 
-        // Print statement for debugging
-        // cout << "RDBI::writebackRDBIEntry() called (at the end1)" << endl;
-
-        // Adding the code snippet to actually do the writebacks
-        while (!writebacks.empty())
-        {
-            PacketPtr wbPkt = writebacks.front();
-            if (wbPkt->cmd == MemCmd::WritebackDirty)
-            {
-                // cout << "Inside the if condition" << endl;
-                wbPkt->setBlockCached();
-                // Allocate write buffer by sending the packet for writeback
-                // cout << "Before calling allocateWriteBuffer()" << endl;
-                baseCache->allocateWriteBuffer(wbPkt, 0);
-                // cout << "After calling allocateWriteBuffer()" << endl;
-            }
-            writebacks.pop_front();
-
-            // Print statement for debugging
-            // cout << "In the doWritebacks loop" << endl; // Doesn't get printed
-        }
-
-        // Print statement for debugging
-        // cout << "RDBI::createRDBIEntry() called (at the end2)" << endl; // Doesn't get printed
+        // // Adding the code snippet to actually do the writebacks
+        // while (!writebacks.empty())
+        // {
+        //     PacketPtr wbPkt = writebacks.front();
+        //     if (wbPkt->cmd == MemCmd::WritebackDirty)
+        //     {
+        //         // cout << "Inside the if condition" << endl;
+        //         wbPkt->setBlockCached();
+        //         // Allocate write buffer by sending the packet for writeback
+        //         // cout << "Before calling allocateWriteBuffer()" << endl;
+        //         baseCache->allocateWriteBuffer(wbPkt, 0);
+        //         // cout << "After calling allocateWriteBuffer()" << endl;
+        //     }
+        //     writebacks.pop_front();
+        // }
     }
 }
