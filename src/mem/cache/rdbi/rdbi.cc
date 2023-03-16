@@ -124,9 +124,6 @@ namespace gem5
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
-        // Print the blocks in region field of this packet
-        cout << "Blocks in region: " << getBlocksInRegion(pkt) << endl;
-
         // Check if a valid RDBI entry is found
         if (entry != NULL)
         {
@@ -323,29 +320,9 @@ namespace gem5
 
                 //_stats.writebacks[Request::wbRequestorId]++;
 
-                // Re-generate the cache block address from the rowTag
-                // Addr addr = (entry->regTag << numBlkBits) | (i << numBlkBits);
-
-                // The packet address has: RowTag + Blocks inside region + bytes inside block
-                // The different fields of the packet address from MSB to LSB are:
-                // 1. RowTag: Row address + Bits to index into DBI
-                // 2. Blocks inside region
-                // 3. Bytes inside block
-                // Re-generate the packet address from the rowTag
-
-                // Step 1: Get the rowTag from the packet address
-                Addr rowTag = entry->regTag;
-                // Step 2: Shift the rowTag to the left by the sum of number of bits in the Blocks in region
-                // and Bytes in block field
-                rowTag = rowTag << (numBlkBits + numBlocksInRegionBits);
-                // Step 3: Re-generate the blocksInRegion field, this is based on the index of the cache block in the bitset, would be modulo of bitset index of this dbi entry and number of blocks in region
-                Addr blocksInRegion = i % numBlksInRegion;
-                // Step 4: Now, store the block in offset field on the LHS(6 bits), followed by the blocksInRegion field and then the rest of the bits as the rowTag
-                Addr addr = (rowTag | (blocksInRegion << numBlkBits) | (i << numBlkBits));
-
-                // cout << "Re-generated packet address: " << bitset<64>(addr) << endl;
-                // Print the blocks in region field
-                cout << "Re-generated blocks in region: " << blocksInRegion << endl;
+                // Re-generate the cache block address
+                Addr addr = (entry->regTag << numBlocksInRegionBits) | i;
+                // cout << "Address: " << addr << endl;
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);
