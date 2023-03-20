@@ -13,6 +13,7 @@ namespace gem5
 
     {
         cout << "Hey, I am a RDBI component" << endl;
+
         dbiCacheStats = &dbistats;
         numSetBits = log2(_numSets);
         cout << "Number of sets in DBI: " << _numSets;
@@ -319,6 +320,7 @@ namespace gem5
                 CacheBlk *blkPtr = entry->blkPtrs[i];
 
                 //_stats.writebacks[Request::wbRequestorId]++;
+                cout << "yo" << endl;
 
                 // Re-generate the cache block address from the cache block pointer in the RDBIEntry using regenerateBlkAddr of base.cc
                 addr = dbiCache->regenerateBlkAddr(blkPtr);
