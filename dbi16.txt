@@ -1,0 +1,32 @@
+Global frequency set at 1000000000000 ticks per second
+Hey, I am a DBICache component + Deepanjali
+Hey, I am a RDBI component
+Number of sets in DBI: 32gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 22.0.0.2
+gem5 compiled Mar 16 2023 05:18:28
+gem5 started Mar 16 2023 05:20:30
+gem5 executing on v100-gpu-4, pid 4877
+command line: build/X86/gem5.opt --stats-file =dbi.txt configs/learning_gem5/DebugDBI/DBICache/config.py test-benchmark/test -n 3000 -k 4 -t 1
+
+Beginning simulation!
+Number of elements: 3000, Number of cache blocks: 4, Number of iterations: 1
+Sum: 4 
+Packet address: 0000000000000000000000000000000000000000000000111110100011000000
+regTag: 31
+block index: 16
+cache block address: 2000
+regTag: 31
+block index: 21
+cache block address: 2005
+regTag: 31
+block index: 35
+cache block address: 2019
+regTag: 31
+block index: 100
+cache block address: 2020
+regTag: 31
+block index: 122
+cache block address: 2042
+Exiting @ tick 761915000 because exiting with last active thread context

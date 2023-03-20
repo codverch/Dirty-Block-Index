@@ -53,15 +53,17 @@ namespace gem5
 
         // BaseCache::CacheStats &_stats;
 
-        // BaseCache object
-        BaseCache *baseCache;
-
     public:
         // Variable to store instance of a structure, overcoming the invalid type error
         DBICacheStats *dbiCacheStats;
 
+        // DBICache object
+        DBICache *dbiCache;
+
+        Addr addr;
+
         // Constructor
-        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats);
+        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats, DBICache &dbiCache);
 
         // Get the cache block index from the bitset
         unsigned int getblkIndexInBitset(PacketPtr pkt);

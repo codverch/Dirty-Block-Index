@@ -9,7 +9,7 @@ using namespace std;
 namespace gem5
 {
 
-    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats)
+    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats, DBICache &dbiCache)
 
     {
         cout << "Hey, I am a RDBI component" << endl;
@@ -320,9 +320,8 @@ namespace gem5
 
                 //_stats.writebacks[Request::wbRequestorId]++;
 
-                // Re-generate the cache block address
-                Addr addr = (entry->regTag << numBlocksInRegionBits) | i;
-                // cout << "Address: " << addr << endl;
+                // Re-generate the cache block address from the cache block pointer in the RDBIEntry using regenerateBlkAddr of base.cc
+                addr = dbiCache->regenerateBlkAddr(blkPtr);
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);

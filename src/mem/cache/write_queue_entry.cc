@@ -143,8 +143,7 @@ WriteQueueEntry::sendPacket(BaseCache &cache)
     return cache.sendWriteQueuePacket(this);
 }
 
-bool
-WriteQueueEntry::matchBlockAddr(const Addr addr, const bool is_secure) const
+bool WriteQueueEntry::matchBlockAddr(const Addr addr, const bool is_secure) const
 {
     assert(hasTargets());
     return (blkAddr == addr) && (isSecure == is_secure);

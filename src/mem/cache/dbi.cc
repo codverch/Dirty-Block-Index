@@ -28,8 +28,8 @@ namespace gem5
     // Constructor for the DBICache class
     DBICache::DBICache(const DBICacheParams &p)
         : Cache(p),
-          lookupLatency(p.tag_latency),             // Tag Latency
           cacheSize(p.size),                        // DBI Cache Size
+          lookupLatency(p.tag_latency),             // Tag Latency
           alpha(p.alpha),                           // Size of DBI in terms of cache size
           dbiAssoc(p.dbi_assoc),                    // DBI Associativity
           blkSize(p.blkSize),                       // Block Size
@@ -54,7 +54,7 @@ namespace gem5
         // Number of bits required to store the number of blocks in a region
         numBlockIndexBits = log2(numBlksInRegion);
         // Call the constructor of the RDBI class
-        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize, useAggressiveWriteback, dbistats);
+        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize, useAggressiveWriteback, dbistats, *this);
     }
 
     // cmpAndSwap function

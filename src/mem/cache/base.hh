@@ -449,16 +449,6 @@ class BaseCache : public ClockedObject
     }
 
     /**
-     * Regenerate block address using tags.
-     * Block address regeneration depends on whether we're using a temporary
-     * block or not.
-     *
-     * @param blk The block to regenerate address.
-     * @return The block's address.
-     */
-    Addr regenerateBlkAddr(CacheBlk* blk);
-
-    /**
      * Calculate latency of accesses that only touch the tag array.
      * @sa calculateAccessLatency
      *
@@ -984,6 +974,16 @@ class BaseCache : public ClockedObject
   public:
     /** System we are currently operating in. */
     System *system;
+
+    /**
+     * Regenerate block address using tags.
+     * Block address regeneration depends on whether we're using a temporary
+     * block or not.
+     *
+     * @param blk The block to regenerate address.
+     * @return The block's address.
+     */
+    Addr regenerateBlkAddr(CacheBlk *blk);
 
     struct CacheCmdStats : public statistics::Group
     {
