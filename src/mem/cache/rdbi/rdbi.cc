@@ -16,7 +16,6 @@ namespace gem5
 
         dbiCacheStats = &dbistats;
         numSetBits = log2(_numSets);
-        cout << "Number of sets in DBI: " << _numSets;
         numBlkBits = _numBlkBits;
         // Bits required to index into DBI entries
         numblkIndexBits = _numblkIndexBits;
@@ -121,7 +120,6 @@ namespace gem5
     bool
     RDBI::isDirty(PacketPtr pkt)
     {
-
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
@@ -131,21 +129,8 @@ namespace gem5
             // If the entry is valid, check if the dirty bit is set
             if (entry->validBit == 1)
             {
-
-                // if (entry->dirtyBits.test(blkIndexInBitset))
-                // {
-                //     cout << "The dirty bit is set" << endl;
-                //     cout << "Blocks in region: " << getBlocksInRegion(pkt) << endl;
-                // }
-                if (entry->dirtyBits.test(blkIndexInBitset))
-                {
-                    // Print the packet address
-                    cout << "Packet address: " << bitset<64>(pkt->getAddr()) << endl;
-                }
                 // Check the entry's dirty bit from the bitset
                 return entry->dirtyBits.test(blkIndexInBitset);
-                // DEBUGGING
-                // If the dirty bit is set, then print the blocks in region field of from the packet address
             }
 
             else
@@ -160,7 +145,7 @@ namespace gem5
     void
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
-
+        cout << "Clearing the dirty bit" << endl;
         RDBIEntry *entry = getRDBIEntry(pkt);
 
         // cout << "Got the RDBI entry" << endl;
@@ -196,8 +181,6 @@ namespace gem5
     void
     RDBI::setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks)
     {
-        // Print statement for debugging
-        // cout << "RDBI::setDirtyBit() called" << endl;
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
 
@@ -308,6 +291,7 @@ namespace gem5
         // Create a new writeback packet and set the address to the cache block address
         // Set the writeback packet's destination to the memory controller
         // Push the writeback packet to the writebacks list
+        cout << "In writebackRDBIEntry" << endl;
         for (int i = 0; i < numBlksInRegion; i++)
         {
 
@@ -321,9 +305,19 @@ namespace gem5
 
                 //_stats.writebacks[Request::wbRequestorId]++;
                 cout << "yo" << endl;
+                // Re-generate the cacheblock address
+                // addr = dbiCache->regenerateBlkAddr(blkPtr);
+                // addr = baseSetAssoc->regenerateBlkAddr(blkPtr);
 
-                // Re-generate the cache block address from the cache block pointer in the RDBIEntry using regenerateBlkAddr of base.cc
-                addr = dbiCache->regenerateBlkAddr(blkPtr);
+                // Get the rowTag from the RDBIEntry
+                Addr rowTag = entry->regTag;
+
+                cout << "Row Tag" << rowTag << endl;
+
+                // addr = IndexingPolicy->regenerateAddr(rowTag, blkPtr);
+                addr = sectorTags->regenerateBlkAddr(blkPtr);
+
+                cout << "Writeback address: " << addr << endl;
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);
@@ -358,15 +352,13 @@ namespace gem5
         // // Adding the code snippet to actually do the writebacks
         // while (!writebacks.empty())
         // {
-        //     PacketPtr wbPkt = writebacks.front();
+        //     PacketPtr wbPkt =
+        // writebacks.front();
         //     if (wbPkt->cmd == MemCmd::WritebackDirty)
         //     {
-        //         // cout << "Inside the if condition" << endl;
         //         wbPkt->setBlockCached();
-        //         // Allocate write buffer by sending the packet for writeback
-        //         // cout << "Before calling allocateWriteBuffer()" << endl;
-        //         baseCache->allocateWriteBuffer(wbPkt, 0);
-        //         // cout << "After calling allocateWriteBuffer()" << endl;
+
+        //         dbiCache->allocateWriteBuffer(wbPkt, 0);
         //     }
         //     writebacks.pop_front();
         // }

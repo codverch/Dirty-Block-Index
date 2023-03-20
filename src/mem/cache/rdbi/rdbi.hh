@@ -11,6 +11,9 @@
 #include "mem/cache/dbi.hh"
 #include "mem/cache/cache.hh"
 #include "mem/cache/base.hh"
+#include "mem/cache/tags/base_set_assoc.hh"
+#include "mem/cache/tags/indexing_policies/set_associative.hh"
+#include "mem/cache/tags/sector_tags.hh"
 
 using namespace std;
 
@@ -59,6 +62,12 @@ namespace gem5
 
         // DBICache object
         DBICache *dbiCache;
+
+        // BaseSetAssoc *baseSetAssoc;
+
+        // SetAssociative *IndexingPolicy;
+
+        SectorTags *sectorTags;
 
         Addr addr;
 
