@@ -664,8 +664,7 @@ namespace gem5
                          PacketList &writebacks, bool allocate)
 
     {
-            // Print statement for debugging
-            // cout << "DBICache::handleFill" << endl;
+
             assert(pkt->isResponse());
             Addr addr = pkt->getAddr();
             bool is_secure = pkt->isSecure();
@@ -1296,8 +1295,8 @@ namespace gem5
 
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
                 // Replace the above line with the following
-                PacketList writebacks;
-                rdbi->setDirtyBit(pkt, blk, writebacks);
+
+                                rdbi->setDirtyBit(pkt, blk, writebacks);
             }
             // if the packet does not have sharers, it is passing
             // writable, and we got the writeback in Modified or Exclusive

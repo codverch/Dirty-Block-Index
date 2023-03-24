@@ -115,6 +115,9 @@ namespace gem5
 
         // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
         void evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
+
+        // Re-generate the address
+        Addr regenerateBlkAddr(Addr regTag, unsigned int blkIndexInBitset);
     };
 }
 
