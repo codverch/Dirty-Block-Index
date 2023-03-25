@@ -1,0 +1,9 @@
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 22.0.0.2
+gem5 compiled Mar 25 2023 12:12:47
+gem5 started Mar 25 2023 12:36:08
+gem5 executing on v100-gpu-4, pid 2087
+command line: ./build/X86/gem5.opt configs/learning_gem5/test_dbi/baseline_cache/three_level_old.py configs/learning_gem5/test_dbi/baseline_cache/test -n 100000 -t 1
+

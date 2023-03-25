@@ -160,7 +160,7 @@ class L3Cache(DBICache):
     blkSize = '64'
     alpha = 0.5
     dbi_assoc = 2
-    blk_per_dbi_entry = 64
+    blk_per_dbi_entry = 128
     aggr_writeback = True
 
     SimpleOpts.add_option('--l3_size', help="L3 cache size. Default: %s" % size) 

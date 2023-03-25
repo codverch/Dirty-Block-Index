@@ -62,8 +62,7 @@ namespace gem5
     DBICache::cmpAndSwap(CacheBlk *blk, PacketPtr pkt)
 
     {
-        // Print statement for debugging
-        // cout << "cmpAndSwap function called" << endl;
+
         assert(pkt->isRequest());
 
         uint64_t overwrite_val;
@@ -112,8 +111,6 @@ namespace gem5
             {
             std::memcpy(blk_data, &overwrite_val, pkt->getSize());
             // blk->setCoherenceBits(CacheBlk::DirtyBit);
-            // Replacing the above line with the following lines
-            // Create a list of writebacks by calling the Packet List function
             PacketList writebacks;
             rdbi->setDirtyBit(pkt, blk, writebacks);
 
@@ -131,8 +128,7 @@ namespace gem5
     DBICache::satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                              bool deferred_response, bool pending_downgrade)
     {
-            // Print statement for debugging
-            // cout << "satisfyRequest function called" << endl;
+
             assert(pkt->isRequest());
 
             assert(blk && blk->isValid());
@@ -179,8 +175,7 @@ namespace gem5
 
                 // set block status to dirty
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
-                // Replacing the above line with the following lines
-                // Create a list of writebacks by calling the Packet List function
+                // blk->setCoherenceBits(CacheBlk::DirtyBit);
                 PacketList writebacks;
                 rdbi->setDirtyBit(pkt, blk, writebacks);
             }
@@ -207,8 +202,7 @@ namespace gem5
             // this cache before knowing the store will fail.
 
             // blk->setCoherenceBits(CacheBlk::DirtyBit);
-            // Replacing the above line with the following lines
-            // Create a list of writebacks by calling the Packet List function
+            // blk->setCoherenceBits(CacheBlk::DirtyBit);
             PacketList writebacks;
             rdbi->setDirtyBit(pkt, blk, writebacks);
 
@@ -240,8 +234,6 @@ namespace gem5
                 pkt->setCacheResponding();
 
                 // blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                // Replacing the above line with the following lines
-                // Create a list of writebacks by calling the Packet List function
                 PacketList writebacks;
                 rdbi->clearDirtyBit(pkt, writebacks);
             }
@@ -249,8 +241,6 @@ namespace gem5
             else if (pkt->isClean())
             {
             // blk->clearCoherenceBits(CacheBlk::DirtyBit);
-            // Replacing the above line with the following lines
-            // Create a list of writebacks by calling the Packet List function
             PacketList writebacks;
             rdbi->clearDirtyBit(pkt, writebacks);
             }
@@ -286,8 +276,6 @@ namespace gem5
                     {
                         pkt->setCacheResponding();
                         // blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                        // Replacing the above line with the following lines
-                        // Create a list of writebacks by calling the Packet List function
                         PacketList writebacks;
                         rdbi->clearDirtyBit(pkt, writebacks);
                     }
@@ -335,8 +323,6 @@ namespace gem5
                             // branches
 
                             // blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                            // Replacing the above line with the following lines
-                            // Create a list of writebacks by calling the Packet List function
                             PacketList writebacks;
                             rdbi->clearDirtyBit(pkt, writebacks);
                         }
@@ -436,8 +422,7 @@ namespace gem5
                         assert(blk);
 
                         // blk->setCoherenceBits(CacheBlk::DirtyBit);
-                        // Replacing the above line with the following lines
-                        // Create a list of writebacks by calling the Packet List function
+                        // blk->setCoherenceBits(CacheBlk::DirtyBit);
                         PacketList writebacks;
                         rdbi->setDirtyBit(pkt, blk, writebacks);
 
@@ -1296,7 +1281,7 @@ namespace gem5
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
                 // Replace the above line with the following
 
-                                rdbi->setDirtyBit(pkt, blk, writebacks);
+                rdbi->setDirtyBit(pkt, blk, writebacks);
             }
             // if the packet does not have sharers, it is passing
             // writable, and we got the writeback in Modified or Exclusive

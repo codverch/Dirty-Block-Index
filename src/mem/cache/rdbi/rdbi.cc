@@ -95,16 +95,9 @@ namespace gem5
 
         // Get the block index from the bitset
         blkIndexInBitset = getblkIndexInBitset(pkt);
-        cout << "blkIndexInBitset from getRDBIEntry: " << bitset<24>(blkIndexInBitset) << endl; // FOR DEBUGGING
         regAddr = getRegDBITag(pkt);
-        cout << "Region Tag" << bitset<24>(regAddr) << endl; // FOR DEBUGGING
-
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt);
-        cout << "rDBIIndex from getRDBIEntry: " << bitset<24>(rDBIIndex) << endl; // FOR DEBUGGING
-
-        cout << "Re-generated address: " << bitset<24>(regenerateBlkAddr(regAddr, blkIndexInBitset)) << endl; // FOR DEBUGGING
-
         // Get the inner vector of DBI entries at the specified index location
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
 
@@ -151,10 +144,7 @@ namespace gem5
     void
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
-        cout << "Clearing the dirty bit" << endl;
         RDBIEntry *entry = getRDBIEntry(pkt);
-
-        // cout << "Got the RDBI entry" << endl;
 
         // Check if a valid RDBI entry is found
         if (entry != NULL)
@@ -187,7 +177,6 @@ namespace gem5
     void
     RDBI::setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks)
     {
-        cout << "Packet address: " << bitset<24>(pkt->getAddr()) << endl;
 
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
@@ -299,7 +288,6 @@ namespace gem5
         // Create a new writeback packet and set the address to the cache block address
         // Set the writeback packet's destination to the memory controller
         // Push the writeback packet to the writebacks list
-        cout << "In writebackRDBIEntry" << endl;
         for (int i = 0; i < numBlksInRegion; i++)
         {
 
@@ -318,7 +306,7 @@ namespace gem5
                 // addr = baseSetAssoc->regenerateBlkAddr(blkPtr);
 
                 // Get the rowTag from the RDBIEntry
-                Addr rowTag = entry->regTag;
+                Addr addr = regenerateBlkAddr(entry->regTag, i);
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);
@@ -335,15 +323,12 @@ namespace gem5
                 wbPkt->allocate();
                 // Copy the data pointed by the cache block pointer in the RDBIEntry to the packet
                 wbPkt->setDataFromBlock(blkPtr->data, blkSize);
-                // wbPkt->setDataFromBlock(blk->data, blkSize);
-
-                // if (compressor)
-                // {
-                //     pkt->payloadDelay = compressor->getDecompressionLatency(blk);
-                // }
 
                 // Append the packet to the PacketList
                 writebacks.push_back(wbPkt);
+
+                // Update the DBI stats
+                dbiCacheStats->writebacksGenerated++;
 
                 // Clear the corresponding dirty bit in the dirtyBits field
                 entry->dirtyBits.reset(i);
