@@ -11,6 +11,9 @@
 #include "mem/cache/dbi.hh"
 #include "mem/cache/cache.hh"
 #include "mem/cache/base.hh"
+#include "mem/cache/tags/base_set_assoc.hh"
+#include "mem/cache/tags/indexing_policies/set_associative.hh"
+#include "mem/cache/tags/sector_tags.hh"
 
 using namespace std;
 
@@ -57,8 +60,19 @@ namespace gem5
         // Variable to store instance of a structure, overcoming the invalid type error
         DBICacheStats *dbiCacheStats;
 
+        // DBICache object
+        DBICache *dbiCache;
+
+        // BaseSetAssoc *baseSetAssoc;
+
+        // SetAssociative *IndexingPolicy;
+
+        SectorTags *sectorTags;
+
+        Addr addr;
+
         // Constructor
-        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats);
+        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats, DBICache &dbiCache);
 
         // Get the cache block index from the bitset
         unsigned int getblkIndexInBitset(PacketPtr pkt);
@@ -101,6 +115,9 @@ namespace gem5
 
         // evictDBIEntry function that takes PacketList and pointer to the rDBIEntries as arguments
         void evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
+
+        // Re-generate the address
+        Addr regenerateBlkAddr(Addr regTag, unsigned int blkIndexInBitset);
     };
 }
 
