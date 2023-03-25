@@ -1,4 +1,3 @@
-
 #include "mem/cache/rdbi/rdbi.hh"
 #include "mem/cache/rdbi/rdbi_entry.hh"
 #include "base/statistics.hh"
@@ -12,11 +11,9 @@ namespace gem5
     RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats, DBICache &dbiCache)
 
     {
-        cout << "Hey, I am a RDBI component" << endl;
-
         dbiCacheStats = &dbistats;
-        cout << "Sets: " << _numSets << endl;
         numSetBits = log2(_numSets);
+        numBlocksInRegionBits = log2(blocksInRegion);
         numBlkBits = _numBlkBits;
         // Bits required to index into DBI entries
         numblkIndexBits = _numblkIndexBits;
@@ -149,7 +146,6 @@ namespace gem5
         // Check if a valid RDBI entry is found
         if (entry != NULL)
         {
-
             // If the entry is valid
             if (entry->validBit == 1)
             {
@@ -157,17 +153,13 @@ namespace gem5
                 // Then clear the dirty bits from the bitset
                 if (useAggressiveWriteback)
                 {
-
-                    // Set the numBlocksInRegionBits variable to the number of bits required to represent the number of blocks in a region
-                    numBlocksInRegionBits = log2(blocksInRegion);
+                    // Clear the dirty bits after they are written back, in the writebackRDBIEntry function
                     writebackRDBIEntry(writebacks, entry);
-                    entry->dirtyBits.reset();
                 }
 
                 // Else, clear the dirty bit from the bitset
                 else
                 {
-                    // cout << "Valid entry not found" << endl;
                     entry->dirtyBits.reset(blkIndexInBitset);
                 }
             }
@@ -197,7 +189,6 @@ namespace gem5
         {
             // If a valid RDBI entry is not found, create a new entry and set the dirty bit
             createRDBIEntry(writebacks, pkt, blkPtr);
-            setDirtyBit(pkt, blkPtr, writebacks);
         }
     }
 
@@ -234,12 +225,8 @@ namespace gem5
             }
         }
 
-        // If no invalid entry found, call the pickRDBIEntry() function to pick an entry to evict
-        RDBIEntry *entry = pickRDBIEntry(rDBIEntries);
-        // Call the evictRDBIEntry() function to evict the entry
+        // Call the evictRDBIEntry() function to evict an entry
         evictRDBIEntry(writebacks, rDBIEntries);
-        // Set the valid bit of the evicted entry to 0
-        entry->validBit = 0;
         // Create a new entry by calling the createRDBIEntry() function
         createRDBIEntry(writebacks, pkt, blkPtr);
     }
@@ -269,10 +256,9 @@ namespace gem5
         RDBIEntry *entry = pickRDBIEntry(rDBIEntries);
 
         // Generate writebacks for all the dirty cache blocks in the region
-        // Invalidate the RDBIEntry
-        // Set the numBlocksInRegionBits variable to the number of bits required to represent the number of blocks in a region
-        numBlocksInRegionBits = log2(blocksInRegion);
         writebackRDBIEntry(writebacks, entry);
+
+        // Invalidate the RDBIEntry
         entry->validBit = 0;
     }
 
@@ -291,21 +277,12 @@ namespace gem5
         for (int i = 0; i < numBlksInRegion; i++)
         {
 
-            // cout << "In binary: " << bitset<64>(blocksInRegion) << endl;
             if (entry->dirtyBits.test(i))
             {
-                // DBI Stats
-                dbiCacheStats->writebacksGenerated++;
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                 CacheBlk *blkPtr = entry->blkPtrs[i];
 
-                //_stats.writebacks[Request::wbRequestorId]++;
-
-                // Re-generate the cacheblock address
-                // addr = dbiCache->regenerateBlkAddr(blkPtr);
-                // addr = baseSetAssoc->regenerateBlkAddr(blkPtr);
-
-                // Get the rowTag from the RDBIEntry
+                // Re-generate the cache block address from the rowTag
                 Addr addr = regenerateBlkAddr(entry->regTag, i);
 
                 RequestPtr req = std::make_shared<Request>(

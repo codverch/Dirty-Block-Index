@@ -29,7 +29,6 @@ namespace gem5
     DBICache::DBICache(const DBICacheParams &p)
         : Cache(p),
           cacheSize(p.size),                        // DBI Cache Size
-          lookupLatency(p.tag_latency),             // Tag Latency
           alpha(p.alpha),                           // Size of DBI in terms of cache size
           dbiAssoc(p.dbi_assoc),                    // DBI Associativity
           blkSize(p.blkSize),                       // Block Size
