@@ -38,6 +38,12 @@ int main(int argc, char *argv[])
     // Allocate memory for the array
     arr = (int *)malloc(num_ele * sizeof(int));
 
+    if (arr == NULL)
+    {
+        printf("Memory allocation failed\n");
+        return 1;
+    }
+
     // Initialize the array with zeroes
     for (int i = 0; i < num_ele; i++)
         arr[i] = 0;

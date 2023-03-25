@@ -143,6 +143,9 @@ namespace gem5
     {
         RDBIEntry *entry = getRDBIEntry(pkt);
 
+        // Get the block index from the bitset
+        blkIndexInBitset = getblkIndexInBitset(pkt);
+
         // Check if a valid RDBI entry is found
         if (entry != NULL)
         {
@@ -211,11 +214,14 @@ namespace gem5
         // Iterate through the inner vector of DBI entries using an iterator
         // Fetch an invalid entry if found
         // If no invalid entry is found at the end of the for loop, evict an entry
+        bool foundInvalidEntry = false;
         for (vector<RDBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
         {
             RDBIEntry &entry = *i;
             if (entry.validBit == 0)
             {
+                // Set the foundInvalidEntry flag to true
+                foundInvalidEntry = true;
                 // Create a new entry
                 entry.regTag = regAddr;
                 entry.validBit = 1;
@@ -225,10 +231,28 @@ namespace gem5
             }
         }
 
-        // Call the evictRDBIEntry() function to evict an entry
-        evictRDBIEntry(writebacks, rDBIEntries);
-        // Create a new entry by calling the createRDBIEntry() function
-        createRDBIEntry(writebacks, pkt, blkPtr);
+        if (!foundInvalidEntry)
+        {
+            // Call the evictRDBIEntry() function to evict an entry
+            // evictRDBIEntry(writebacks, rDBIEntries); // For now don't generate writebacks (to fix write queue error)
+
+            // Now that an entry has been evicted, there is an empty slot in the inner vector
+            // Create a new entry in the empty slot
+            for (vector<RDBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
+            {
+                // Pick a random entry to evict
+                RDBIEntry &entry = *i;
+                if (entry.validBit == 0)
+                {
+                    // Create a new entry
+                    entry.regTag = regAddr;
+                    entry.validBit = 1;
+                    entry.dirtyBits.set(blkIndexInBitset);
+                    entry.blkPtrs[blkIndexInBitset] = blkPtr;
+                    return;
+                }
+            }
+        }
     }
 
     RDBIEntry *

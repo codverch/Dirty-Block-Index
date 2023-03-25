@@ -61,7 +61,7 @@ namespace gem5
     DBICache::cmpAndSwap(CacheBlk *blk, PacketPtr pkt)
 
     {
-
+        PacketList writebacks; // TODO
         assert(pkt->isRequest());
 
         uint64_t overwrite_val;
@@ -110,8 +110,8 @@ namespace gem5
             {
             std::memcpy(blk_data, &overwrite_val, pkt->getSize());
             // blk->setCoherenceBits(CacheBlk::DirtyBit);
-            PacketList writebacks;
             rdbi->setDirtyBit(pkt, blk, writebacks);
+            // doWritebacks(writebacks, 0);
 
             if (ppDataUpdate->hasListeners())
             {
@@ -127,7 +127,7 @@ namespace gem5
     DBICache::satisfyRequest(PacketPtr pkt, CacheBlk *blk,
                              bool deferred_response, bool pending_downgrade)
     {
-
+            PacketList writebacks; // TODO
             assert(pkt->isRequest());
 
             assert(blk && blk->isValid());
@@ -175,8 +175,8 @@ namespace gem5
                 // set block status to dirty
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
-                PacketList writebacks;
                 rdbi->setDirtyBit(pkt, blk, writebacks);
+                // doWritebacks(writebacks, 0);
             }
             else
             {
@@ -202,8 +202,8 @@ namespace gem5
 
             // blk->setCoherenceBits(CacheBlk::DirtyBit);
             // blk->setCoherenceBits(CacheBlk::DirtyBit);
-            PacketList writebacks;
             rdbi->setDirtyBit(pkt, blk, writebacks);
+            // doWritebacks(writebacks, 0);
 
             DPRINTF(CacheVerbose, "%s for %s (write)\n", __func__, pkt->print());
             }
@@ -233,14 +233,12 @@ namespace gem5
                 pkt->setCacheResponding();
 
                 // blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                PacketList writebacks;
                 rdbi->clearDirtyBit(pkt, writebacks);
             }
             }
             else if (pkt->isClean())
             {
             // blk->clearCoherenceBits(CacheBlk::DirtyBit);
-            PacketList writebacks;
             rdbi->clearDirtyBit(pkt, writebacks);
             }
             else
@@ -275,7 +273,6 @@ namespace gem5
                     {
                         pkt->setCacheResponding();
                         // blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                        PacketList writebacks;
                         rdbi->clearDirtyBit(pkt, writebacks);
                     }
                 }
@@ -322,7 +319,6 @@ namespace gem5
                             // branches
 
                             // blk->clearCoherenceBits(CacheBlk::DirtyBit);
-                            PacketList writebacks;
                             rdbi->clearDirtyBit(pkt, writebacks);
                         }
                         else
@@ -349,7 +345,7 @@ namespace gem5
     DBICache::serviceMSHRTargets(MSHR *mshr, const PacketPtr pkt,
                                  CacheBlk *blk)
     {
-
+            PacketList writebacks; // ToDo
             // Print statement for debugging
             // cout << "Service MSHR Targets" << endl;
             QueueEntry::Target *initial_tgt = mshr->getTarget();
@@ -422,8 +418,8 @@ namespace gem5
 
                         // blk->setCoherenceBits(CacheBlk::DirtyBit);
                         // blk->setCoherenceBits(CacheBlk::DirtyBit);
-                        PacketList writebacks;
                         rdbi->setDirtyBit(pkt, blk, writebacks);
+                        // doWritebacks(writebacks, 0);
 
                         panic_if(isReadOnly, "Prefetch exclusive requests from "
                                              "read-only cache %s\n",
