@@ -4,9 +4,9 @@ gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 22.0.0.2
-gem5 compiled Mar 27 2023 14:06:11
-gem5 started Mar 27 2023 14:07:59
-gem5 executing on v100-gpu-4, pid 4765
+gem5 compiled Mar 27 2023 05:27:08
+gem5 started Mar 27 2023 05:28:41
+gem5 executing on v100-gpu-4, pid 12070
 command line: build/X86/gem5.opt --stats-file =trew_dbi.txt configs/learning_gem5/DebugDBI/DBICache/config.py test-benchmark/test -n 1000000 -k 4 -t 10
 
 Beginning simulation!
@@ -80331,17 +80331,11 @@ cpkt address: 229f00
 Setting Dirty, Packet address: 229f00
 Evicting a random entry 
 Regenerated address in the writebackRDBIEntry(): 1e9e00
-Regenerated address in the writebackRDBIEntry() from the block pointer: 7
 Regenerated address in the writebackRDBIEntry(): 1e9e40
-Regenerated address in the writebackRDBIEntry() from the block pointer: 7
 Regenerated address in the writebackRDBIEntry(): 1e9ec0
-Regenerated address in the writebackRDBIEntry() from the block pointer: 7
 Regenerated address in the writebackRDBIEntry(): 1e9f00
-Regenerated address in the writebackRDBIEntry() from the block pointer: 8
 Regenerated address in the writebackRDBIEntry(): 1e9f80
-Regenerated address in the writebackRDBIEntry() from the block pointer: 7
 Regenerated address in the writebackRDBIEntry(): 1e9fc0
-Regenerated address in the writebackRDBIEntry() from the block pointer: 7
 cpkt address: 231f00
 cpkt address: 1e9e00
 cpkt address: 1e9e40

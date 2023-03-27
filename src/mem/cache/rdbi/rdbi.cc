@@ -13,13 +13,13 @@ namespace gem5
     {
         dbiCacheStats = &dbistats;
         numSetBits = log2(_numSets);
-        numBlocksInRegionBits = log2(blocksInRegion);
         numBlkBits = _numBlkBits;
         // Bits required to index into DBI entries
         numblkIndexBits = _numblkIndexBits;
         // Print the number of Blk in region bits
         Assoc = _assoc;
         numBlksInRegion = _numBlksInRegion;
+        numBlocksInRegionBits = log2(numBlksInRegion);
         blkSize = _blkSize;
         useAggressiveWriteback = _useAggressiveWriteback;
         rDBIStore = vector<vector<RDBIEntry>>(_numSets, vector<RDBIEntry>(_assoc, RDBIEntry(numBlksInRegion)));
@@ -92,9 +92,16 @@ namespace gem5
 
         // Get the block index from the bitset
         blkIndexInBitset = getblkIndexInBitset(pkt);
+        // cout << "blkIndexInBitset from getRDBIEntry: " << hex << blkIndexInBitset << endl; // FOR DEBUGGING
         regAddr = getRegDBITag(pkt);
+        // cout << "Region Tag" << hex << regAddr << endl; // FOR DEBUGGING
+
         // Identify the entry
         rDBIIndex = getRDBIEntryIndex(pkt);
+        // cout << "rDBIIndex from getRDBIEntry: " << hex << rDBIIndex << endl; // FOR DEBUGGING
+
+        // cout << "Re-generated address: " << hex << regenerateBlkAddr(regAddr, blkIndexInBitset) << endl; // FOR DEBUGGING
+
         // Get the inner vector of DBI entries at the specified index location
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
 
@@ -141,6 +148,7 @@ namespace gem5
     void
     RDBI::clearDirtyBit(PacketPtr pkt, PacketList &writebacks)
     {
+        // cout << "Clearing the dirty bit" << endl;
         RDBIEntry *entry = getRDBIEntry(pkt);
 
         // Get the block index from the bitset
@@ -149,6 +157,7 @@ namespace gem5
         // Check if a valid RDBI entry is found
         if (entry != NULL)
         {
+
             // If the entry is valid
             if (entry->validBit == 1)
             {
@@ -156,13 +165,13 @@ namespace gem5
                 // Then clear the dirty bits from the bitset
                 if (useAggressiveWriteback)
                 {
-                    // Clear the dirty bits after they are written back, in the writebackRDBIEntry function
                     writebackRDBIEntry(writebacks, entry);
                 }
 
                 // Else, clear the dirty bit from the bitset
                 else
                 {
+                    // cout << "Valid entry not found" << endl;
                     entry->dirtyBits.reset(blkIndexInBitset);
                 }
             }
@@ -172,9 +181,12 @@ namespace gem5
     void
     RDBI::setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks)
     {
+        cout << "Setting Dirty, Packet address: " << hex << pkt->getAddr() << endl;
 
         // Get the RDBI entry
         RDBIEntry *entry = getRDBIEntry(pkt);
+        // Get the block index from the bitset
+        blkIndexInBitset = getblkIndexInBitset(pkt);
 
         // Check if a valid RDBI entry is found
         if (entry != NULL)
@@ -191,14 +203,15 @@ namespace gem5
         else
         {
             // If a valid RDBI entry is not found, create a new entry and set the dirty bit
-            createRDBIEntry(writebacks, pkt, blkPtr);
+            createRDBIEntry(writebacks, pkt, blkPtr, 0);
         }
     }
 
     void
-    RDBI::createRDBIEntry(PacketList &writebacks, PacketPtr pkt, CacheBlk *blkPtr)
+    RDBI::createRDBIEntry(PacketList &writebacks, PacketPtr pkt, CacheBlk *blkPtr, int count)
     {
 
+        // cout << "Recursion depth: " << count << endl;
         // From the packet address, stores the blocksInRegion field so that we can use it to re-generate the packet address
         blocksInRegion = getBlocksInRegion(pkt);
 
@@ -211,16 +224,17 @@ namespace gem5
         // Get the inner vector of DBI entries at the specified index location
         vector<RDBIEntry> &rDBIEntries = rDBIStore[rDBIIndex];
 
+        bool foundInvalidEntry = false;
+
         // Iterate through the inner vector of DBI entries using an iterator
         // Fetch an invalid entry if found
         // If no invalid entry is found at the end of the for loop, evict an entry
-        bool foundInvalidEntry = false;
         for (vector<RDBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
         {
             RDBIEntry &entry = *i;
             if (entry.validBit == 0)
             {
-                // Set the foundInvalidEntry flag to true
+                // Found an invalid entry
                 foundInvalidEntry = true;
                 // Create a new entry
                 entry.regTag = regAddr;
@@ -231,27 +245,14 @@ namespace gem5
             }
         }
 
+        // If no invalid entry is not found, evict an entry
         if (!foundInvalidEntry)
         {
-            // Call the evictRDBIEntry() function to evict an entry
-            // evictRDBIEntry(writebacks, rDBIEntries); // For now don't generate writebacks (to fix write queue error)
-
-            // Now that an entry has been evicted, there is an empty slot in the inner vector
-            // Create a new entry in the empty slot
-            for (vector<RDBIEntry>::iterator i = rDBIEntries.begin(); i != rDBIEntries.end(); ++i)
-            {
-                // Pick a random entry to evict
-                RDBIEntry &entry = *i;
-                if (entry.validBit == 0)
-                {
-                    // Create a new entry
-                    entry.regTag = regAddr;
-                    entry.validBit = 1;
-                    entry.dirtyBits.set(blkIndexInBitset);
-                    entry.blkPtrs[blkIndexInBitset] = blkPtr;
-                    return;
-                }
-            }
+            cout << "Evicting a random entry " << endl;
+            // Evict an entry
+            evictRDBIEntry(writebacks, rDBIEntries);
+            // createRDBIEntry() function
+            createRDBIEntry(writebacks, pkt, blkPtr, count + 1);
         }
     }
 
@@ -278,10 +279,12 @@ namespace gem5
 
         // Get the RDBIEntry to be evicted
         RDBIEntry *entry = pickRDBIEntry(rDBIEntries);
-
         // Generate writebacks for all the dirty cache blocks in the region
         writebackRDBIEntry(writebacks, entry);
-
+        // Clear the values of the RDBIEntry
+        entry->regTag = 0;
+        entry->dirtyBits.reset();
+        entry->blkPtrs.clear();
         // Invalidate the RDBIEntry
         entry->validBit = 0;
     }
@@ -298,16 +301,29 @@ namespace gem5
         // Create a new writeback packet and set the address to the cache block address
         // Set the writeback packet's destination to the memory controller
         // Push the writeback packet to the writebacks list
+        // cout << "In writebackRDBIEntry" << endl;
         for (int i = 0; i < numBlksInRegion; i++)
         {
 
+            // cout << "In binary: " << bitset<64>(blocksInRegion) << endl;
             if (entry->dirtyBits.test(i))
             {
+                // DBI Stats
+                dbiCacheStats->writebacksGenerated++;
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                 CacheBlk *blkPtr = entry->blkPtrs[i];
+                // Check if the block pointer is valid
+                // Is the block pointer address same as re-generated address?
 
-                // Re-generate the cache block address from the rowTag
+                //_stats.writebacks[Request::wbRequestorId]++;
+
+                // Re-generate the packet address from the RDBIEntry
                 Addr addr = regenerateBlkAddr(entry->regTag, i);
+                cout << "Regenerated address in the writebackRDBIEntry(): " << hex << addr << endl;
+
+                // Re-generat the packet address from the block pointer
+                Addr blkPtrAddr = blkPtr->getTag();
+                cout << "Regenerated address in the writebackRDBIEntry() from the block pointer: " << hex << blkPtrAddr << endl;
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);
@@ -324,12 +340,10 @@ namespace gem5
                 wbPkt->allocate();
                 // Copy the data pointed by the cache block pointer in the RDBIEntry to the packet
                 wbPkt->setDataFromBlock(blkPtr->data, blkSize);
+                // wbPkt->setDataFromBlock(blk->data, blkSize);
 
                 // Append the packet to the PacketList
                 writebacks.push_back(wbPkt);
-
-                // Update the DBI stats
-                dbiCacheStats->writebacksGenerated++;
 
                 // Clear the corresponding dirty bit in the dirtyBits field
                 entry->dirtyBits.reset(i);

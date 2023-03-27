@@ -140,10 +140,12 @@ SnoopFilter::lookupRequest(const Packet* cpkt, const ResponsePort&
         }
     } else { // if (!cpkt->needsResponse())
         assert(cpkt->isEviction());
+        std::cout << "cpkt address: " << std::hex << cpkt->getAddr() << std::endl;
         // make sure that the sender actually had the line
         panic_if((sf_item.holder & req_port).none(), "requestor %x is not a " \
                  "holder :( SF value %x.%x\n", req_port,
                  sf_item.requested, sf_item.holder);
+
         // CleanEvicts and Writebacks -> the sender and all caches above
         // it may not have the line anymore.
         if (!cpkt->isBlockCached()) {

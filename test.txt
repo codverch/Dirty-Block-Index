@@ -1,18 +1,13 @@
 Global frequency set at 1000000000000 ticks per second
 Hey, I am a DBICache component + Deepanjali
-Hey, I am a RDBI component
 gem5 Simulator System.  https://www.gem5.org
 gem5 is copyrighted software; use the --copyright option for details.
 
 gem5 version 22.0.0.2
-gem5 compiled Mar 20 2023 14:08:14
-gem5 started Mar 20 2023 14:09:49
-gem5 executing on v100-gpu-4, pid 11744
-command line: build/X86/gem5.opt --stats-file =dbi99.txt configs/learning_gem5/DebugDBI/DBICache/config.py test-benchmark/test -n 6000 -k 4 -t 100
+gem5 compiled Mar 27 2023 04:18:57
+gem5 started Mar 27 2023 04:20:38
+gem5 executing on v100-gpu-4, pid 2897
+command line: build/X86/gem5.opt --stats-file =trew_dbi.txt configs/learning_gem5/DebugDBI/DBICache/config.py test-benchmark/test -n 1000000 -k 4 -t 10
 
 Beginning simulation!
-Number of elements: 6000, Number of cache blocks: 4, Number of iterations: 100
-Clearing the dirty bit
-In writebackRDBIEntry
-yo
-Row Tag68
+Number of elements: 1000000, Number of cache blocks: 4, Number of iterations: 10

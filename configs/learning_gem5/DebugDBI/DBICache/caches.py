@@ -157,7 +157,7 @@ class L3Cache(DBICache):
     
     alpha = 1
     dbi_assoc = 8
-    blk_per_dbi_entry = 128
+    blk_per_dbi_entry = 8
     aggr_writeback = True
     blkSize = '64'
 

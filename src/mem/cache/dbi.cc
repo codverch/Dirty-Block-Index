@@ -176,7 +176,7 @@ namespace gem5
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
                 // blk->setCoherenceBits(CacheBlk::DirtyBit);
                 rdbi->setDirtyBit(pkt, blk, writebacks);
-                // doWritebacks(writebacks, 0);
+                //  doWritebacks(writebacks, 0); print warning
             }
             else
             {

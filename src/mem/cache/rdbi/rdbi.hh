@@ -69,8 +69,7 @@ namespace gem5
 
         SectorTags *sectorTags;
 
-        Addr addr;
-
+       
         // Constructor
         RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats, DBICache &dbiCache);
 
@@ -108,7 +107,7 @@ namespace gem5
         void setDirtyBit(PacketPtr pkt, CacheBlk *blkPtr, PacketList &writebacks);
 
         // Create a new RDBI entry
-        void createRDBIEntry(PacketList &writebacks, PacketPtr pkt, CacheBlk *blkPtr);
+        void createRDBIEntry(PacketList &writebacks, PacketPtr pkt, CacheBlk *blkPtr, int count = 0);
 
         // Writeback the dirty cache blocks in the RDBI entry
         void writebackRDBIEntry(PacketList &writebacks, RDBIEntry *rDBIEntry);
