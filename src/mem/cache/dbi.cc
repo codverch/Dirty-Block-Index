@@ -53,7 +53,7 @@ namespace gem5
         // Number of bits required to store the number of blocks in a region
         numBlockIndexBits = log2(numBlksInRegion);
         // Call the constructor of the RDBI class
-        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize, useAggressiveWriteback, dbistats, *this);
+        rdbi = new RDBI(numDBISets, numBlockSizeBits, numBlockIndexBits, dbiAssoc, numBlksInRegion, blkSize, useAggressiveWriteback, dbistats, this);
     }
 
     // cmpAndSwap function

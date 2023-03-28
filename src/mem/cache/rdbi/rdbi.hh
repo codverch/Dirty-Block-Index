@@ -27,6 +27,8 @@ namespace gem5
         // RDBI store
         vector<vector<RDBIEntry>> rDBIStore;
 
+        // Number of sets
+        unsigned int numSets;
         // Number of bits required to store the number of sets in RDBI
         unsigned int numSetBits;
         // Number of bits required to store the cache block size
@@ -71,7 +73,7 @@ namespace gem5
 
        
         // Constructor
-        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats, DBICache &dbiCache);
+        RDBI(unsigned int _numSetBits, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int numBlksInRegion, unsigned int blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats, DBICache *dbiCache);
 
         // Get the cache block index from the bitset
         unsigned int getblkIndexInBitset(PacketPtr pkt);
@@ -116,7 +118,7 @@ namespace gem5
         void evictRDBIEntry(PacketList &writebacks, vector<RDBIEntry> &rDBIEntries);
 
         // Re-generate the address
-        Addr regenerateBlkAddr(Addr regTag, unsigned int blkIndexInBitset);
+        Addr regenerateDBIBlkAddr(Addr regTag, unsigned int blkIndexInBitset);
     };
 }
 

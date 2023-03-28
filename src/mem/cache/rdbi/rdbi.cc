@@ -8,10 +8,12 @@ using namespace std;
 namespace gem5
 {
 
-    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats, DBICache &dbiCache)
+    RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats, DBICache *_dbiCache)
 
     {
         dbiCacheStats = &dbistats;
+        dbiCache = _dbiCache;
+        numSets = _numSets;
         numSetBits = log2(_numSets);
         numBlkBits = _numBlkBits;
         // Bits required to index into DBI entries
@@ -318,12 +320,16 @@ namespace gem5
                 //_stats.writebacks[Request::wbRequestorId]++;
 
                 // Re-generate the packet address from the RDBIEntry
-                Addr addr = regenerateBlkAddr(entry->regTag, i);
+                Addr addr = regenerateDBIBlkAddr(entry->regTag, i);
                 cout << "Regenerated address in the writebackRDBIEntry(): " << hex << addr << endl;
 
-                // Re-generat the packet address from the block pointer
-                Addr blkPtrAddr = blkPtr->getTag();
-                cout << "Regenerated address in the writebackRDBIEntry() from the block pointer: " << hex << blkPtrAddr << endl;
+                // Check if the block pointer is valid
+                // if (blkPtr == nullptr)
+                // {
+                //     cout << "Block pointer is null" << endl;
+                // }
+                Addr BlkAddr = dbiCache->regenerateBlkAddr(blkPtr);
+                cout << "Regenerated address from the block pointer: " << hex << BlkAddr << endl;
 
                 RequestPtr req = std::make_shared<Request>(
                     addr, blkSize, 0, Request::wbRequestorId);
@@ -352,7 +358,7 @@ namespace gem5
     }
 
     Addr
-    RDBI::regenerateBlkAddr(Addr regTag, unsigned int blkIndexInBitset)
+    RDBI::regenerateDBIBlkAddr(Addr regTag, unsigned int blkIndexInBitset)
     {
         return ((regTag << numblkIndexBits) | blkIndexInBitset) << numBlkBits;
     }
