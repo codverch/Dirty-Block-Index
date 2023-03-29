@@ -38,7 +38,8 @@ namespace gem5
 
     {
         // Print a message to the console to show that the constructor is called
-        cout << "Hey, I am a DBICache component + Deepanjali" << endl;
+        // cout << "Hey, I am a DBICache component + Deepanjali" << endl;
+        DPRINTF(DBICache, "Hey, I am a DBICache component + Deepanjali");
         // Number of blocks in the cache
         numBlksInCache = cacheSize / blkSize;
         // Number of blocks in DBI

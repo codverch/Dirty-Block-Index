@@ -14,6 +14,8 @@
 #include "mem/cache/tags/base_set_assoc.hh"
 #include "mem/cache/tags/indexing_policies/set_associative.hh"
 #include "mem/cache/tags/sector_tags.hh"
+#include "params/DBICache.hh"
+#include "debug/RDBI.hh"
 
 using namespace std;
 

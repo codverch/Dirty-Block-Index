@@ -1,3 +1,5 @@
 Import('*')
 
+
 Source("rdbi.cc")
+DebugFlag('RDBI')

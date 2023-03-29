@@ -2,6 +2,7 @@
 #include "mem/cache/rdbi/rdbi_entry.hh"
 #include "base/statistics.hh"
 #include "mem/cache/dbi.hh"
+#include "debug/RDBI.hh"
 
 using namespace std;
 
@@ -11,6 +12,7 @@ namespace gem5
     RDBI::RDBI(unsigned int _numSets, unsigned int _numBlkBits, unsigned int _numblkIndexBits, unsigned int _assoc, unsigned int _numBlksInRegion, unsigned int _blkSize, bool _useAggressiveWriteback, DBICacheStats &dbistats, DBICache *_dbiCache)
 
     {
+        DPRINTF(RDBI, "RDBI constructor called");
         dbiCacheStats = &dbistats;
         dbiCache = _dbiCache;
         numSets = _numSets;
@@ -314,45 +316,52 @@ namespace gem5
                 dbiCacheStats->writebacksGenerated++;
                 // If there is a dirty bit set, fetch the cache block pointer corresponding to the dirtyBit in the blkPtrs field
                 CacheBlk *blkPtr = entry->blkPtrs[i];
-                // Check if the block pointer is valid
-                // Is the block pointer address same as re-generated address?
-
-                //_stats.writebacks[Request::wbRequestorId]++;
 
                 // Re-generate the packet address from the RDBIEntry
                 Addr addr = regenerateDBIBlkAddr(entry->regTag, i);
-                cout << "Regenerated address in the writebackRDBIEntry(): " << hex << addr << endl;
 
-                // Check if the block pointer is valid
-                // if (blkPtr == nullptr)
-                // {
-                //     cout << "Block pointer is null" << endl;
-                // }
+                // cout << "Regenerated address in the writebackRDBIEntry(): " << hex << addr << endl;
+                // DPRINTF(DBICache, "Regenerated address in the writebackRDBIEntry(): %x ", addr);
+
                 Addr BlkAddr = dbiCache->regenerateBlkAddr(blkPtr);
-                cout << "Regenerated address from the block pointer: " << hex << BlkAddr << endl;
+                // cout << "Regenerated address from the block pointer: " << hex << BlkAddr << endl;
+                DPRINTF(RDBI, "Regenerated address from the block pointer: %x ", addr);
+                DPRINTF(RDBI, "Regenerated address from the block pointer: %x ", BlkAddr);
 
-                RequestPtr req = std::make_shared<Request>(
-                    addr, blkSize, 0, Request::wbRequestorId);
+                // If the addr and BlkAddr are not same, then don't writeback the block
+                if (addr == BlkAddr)
+                {
+                    RequestPtr req = std::make_shared<Request>(
+                        addr, blkSize, 0, Request::wbRequestorId);
 
-                if (blkPtr->isSecure())
-                    req->setFlags(Request::SECURE);
+                    if (blkPtr->isSecure())
+                        req->setFlags(Request::SECURE);
 
-                req->taskId(blkPtr->getTaskId());
+                    req->taskId(blkPtr->getTaskId());
 
-                // Create a new packet and set the address to the cache block address
-                PacketPtr wbPkt = new Packet(req, MemCmd::WritebackDirty);
-                wbPkt->setAddr(addr);
+                    // Create a new packet and set the address to the cache block address
+                    PacketPtr wbPkt = new Packet(req, MemCmd::WritebackDirty);
+                    wbPkt->setAddr(addr);
 
-                wbPkt->allocate();
-                // Copy the data pointed by the cache block pointer in the RDBIEntry to the packet
-                wbPkt->setDataFromBlock(blkPtr->data, blkSize);
-                // wbPkt->setDataFromBlock(blk->data, blkSize);
+                    wbPkt->allocate();
+                    // Copy the data pointed by the cache block pointer in the RDBIEntry to the packet
+                    wbPkt->setDataFromBlock(blkPtr->data, blkSize);
+                    // wbPkt->setDataFromBlock(blk->data, blkSize);
 
-                // Append the packet to the PacketList
-                writebacks.push_back(wbPkt);
+                    // Append the packet to the PacketList
+                    writebacks.push_back(wbPkt);
 
-                // Clear the corresponding dirty bit in the dirtyBits field
-                entry->dirtyBits.reset(i);
+                    DPRINTF(RDBI, "Writeback packet created in writebackRDBIEntry(),for address: %x ", addr);
+
+                    // Clear the corresponding dirty bit in the dirtyBits field
+                    entry->dirtyBits.reset(i);
+                }
+
+                else
+                {
+                    cout << "Block pointer is not valid" << endl;
+                    continue;
+                }
             }
         }
     }
