@@ -574,7 +574,7 @@ namespace gem5
                     // propagate that.  Response should not have
                     // isInvalidate() set otherwise.
                     tgt_pkt->cmd = MemCmd::ReadRespWithInvalidate;
-                    DPRINTF(Cache, "%s: updated cmd to %s\n", __func__,
+                    DPRINTF(DBICache, "%s: updated cmd to %s\n", __func__,
                             tgt_pkt->print());
                 }
                 // Reset the bus additional time as it is now accounted for
@@ -593,7 +593,7 @@ namespace gem5
                 // I don't believe that a snoop can be in an error state
                 assert(!is_error);
                 // response to snoop request
-                DPRINTF(Cache, "processing deferred snoop...\n");
+                DPRINTF(DBICache, "processing deferred snoop...\n");
                 // If the response is invalidating, a snooping target can
                 // be satisfied if it is also invalidating. If the reponse is, not
                 // only invalidating, but more specifically an InvalidateResp and
@@ -672,7 +672,7 @@ namespace gem5
                 // current request and then get rid of it
                 blk = tempBlock;
                 tempBlock->insert(addr, is_secure);
-                DPRINTF(Cache, "using temp block for %#llx (%s)\n", addr,
+                DPRINTF(DBICache, "using temp block for %#llx (%s)\n", addr,
                         is_secure ? "s" : "ns");
             }
             }
@@ -729,7 +729,7 @@ namespace gem5
             }
             }
 
-            DPRINTF(Cache, "Block addr %#llx (%s) moving from %s to %s\n",
+            DPRINTF(DBICache, "Block addr %#llx (%s) moving from %s to %s\n",
                     addr, is_secure ? "s" : "ns", old_state, blk->print());
 
             // if we got new data, copy it in (checking for a read response
@@ -884,7 +884,7 @@ namespace gem5
             }
             else
             {
-            DPRINTF(Cache, "%s: snoop hit for %s, old state is %s\n", __func__,
+            DPRINTF(DBICache, "%s: snoop hit for %s, old state is %s\n", __func__,
                     pkt->print(), blk->print());
 
             // We may end up modifying both the block state and the packet (if
@@ -914,8 +914,8 @@ namespace gem5
             // downstream caches observe.
             if (pkt->mustCheckAbove())
             {
-            DPRINTF(Cache, "Found addr %#llx in upper level cache for snoop %s "
-                           "from lower cache\n",
+            DPRINTF(DBICache, "Found addr %#llx in upper level cache for snoop %s "
+                              "from lower cache\n",
                     pkt->getAddr(), pkt->print());
             pkt->setBlockCached();
             return snoop_delay;
@@ -936,7 +936,7 @@ namespace gem5
             {
                 blk->clearCoherenceBits(CacheBlk::WritableBit);
             }
-            DPRINTF(Cache, "new state is %s\n", blk->print());
+            DPRINTF(DBICache, "new state is %s\n", blk->print());
             }
 
             if (respond)
@@ -1003,7 +1003,7 @@ namespace gem5
             if (blk_valid && invalidate)
             {
             invalidateBlock(blk);
-            DPRINTF(Cache, "new state is %s\n", blk->print());
+            DPRINTF(DBICache, "new state is %s\n", blk->print());
             }
 
             return snoop_delay;
@@ -1115,7 +1115,7 @@ namespace gem5
                         "Should never see a write in a read-only cache %s\n",
                         name());
 
-            DPRINTF(Cache, "%s for %s\n", __func__, pkt->print());
+            DPRINTF(DBICache, "%s for %s\n", __func__, pkt->print());
 
             // flush and invalidate any existing block
             CacheBlk *old_blk(tags->findBlock(pkt->getAddr(), pkt->isSecure()));
@@ -1143,7 +1143,7 @@ namespace gem5
             Cycles tag_latency(0);
             blk = tags->accessBlock(pkt, tag_latency);
 
-            DPRINTF(Cache, "%s for %s %s\n", __func__, pkt->print(),
+            DPRINTF(DBICache, "%s for %s %s\n", __func__, pkt->print(),
                     blk ? "hit " + blk->print() : "miss");
 
             if (pkt->req->isCacheMaintenance())
@@ -1228,8 +1228,8 @@ namespace gem5
             if (pkt->cmd == MemCmd::WritebackClean &&
                 mshrQueue.findMatch(pkt->getAddr(), pkt->isSecure()))
             {
-                DPRINTF(Cache, "Clean writeback %#llx to block with MSHR, "
-                               "dropping\n",
+                DPRINTF(DBICache, "Clean writeback %#llx to block with MSHR, "
+                                  "dropping\n",
                         pkt->getAddr());
 
                 // A writeback searches for the block, then writes the data.
@@ -1290,7 +1290,7 @@ namespace gem5
             assert(!pkt->needsResponse());
 
             updateBlockData(blk, pkt, has_old_data);
-            DPRINTF(Cache, "%s new state is %s\n", __func__, blk->print());
+            DPRINTF(DBICache, "%s new state is %s\n", __func__, blk->print());
             incHitCount(pkt);
 
             // When the packet metadata arrives, the tag lookup will be done while
@@ -1517,7 +1517,7 @@ namespace gem5
             // use request from 1st target
             PacketPtr tgt_pkt = mshr->getTarget()->pkt;
 
-            DPRINTF(Cache, "%s: MSHR %s\n", __func__, tgt_pkt->print());
+            DPRINTF(DBICache, "%s: MSHR %s\n", __func__, tgt_pkt->print());
 
             // if the cache is in write coalescing mode or (additionally) in
             // no allocation mode, and we have a write packet with an MSHR

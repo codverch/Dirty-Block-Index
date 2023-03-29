@@ -325,8 +325,8 @@ namespace gem5
 
                 Addr BlkAddr = dbiCache->regenerateBlkAddr(blkPtr);
                 // cout << "Regenerated address from the block pointer: " << hex << BlkAddr << endl;
-                DPRINTF(RDBI, "Regenerated address from the block pointer: %x ", addr);
-                DPRINTF(RDBI, "Regenerated address from the block pointer: %x ", BlkAddr);
+                DPRINTF(RDBI, "Regenerated address from the block pointer: %x\n ", addr);
+                DPRINTF(RDBI, "Regenerated address from the block pointer: %x\n ", BlkAddr);
 
                 // If the addr and BlkAddr are not same, then don't writeback the block
                 if (addr == BlkAddr)
@@ -351,7 +351,7 @@ namespace gem5
                     // Append the packet to the PacketList
                     writebacks.push_back(wbPkt);
 
-                    DPRINTF(RDBI, "Writeback packet created in writebackRDBIEntry(),for address: %x ", addr);
+                    DPRINTF(RDBI, "\nWriteback packet created in writebackRDBIEntry(),for address: %x ", addr);
 
                     // Clear the corresponding dirty bit in the dirtyBits field
                     entry->dirtyBits.reset(i);
